@@ -15,18 +15,20 @@ limitations under the License.
 """
 
 import pprint
-from typing import Any, Dict, Optional
+from typing import Any
 
-from requests import Response
+from httpx import Response
 
 from dynatrace.http_client import HttpClient
 
 
 class DynatraceObject:
-    def __init__(self,
-                 http_client: Optional[HttpClient] = None,
-                 headers: Optional[Dict[str, str]] = None,
-                 raw_element: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        http_client: HttpClient | None = None,
+        headers: dict[str, str] | None = None,
+        raw_element: dict[str, Any] | None = None,
+    ):
         if raw_element is None:
             raw_element = {}
         self._http_client = http_client
@@ -34,19 +36,23 @@ class DynatraceObject:
         self._raw_element = raw_element
         self._create_from_raw_data(raw_element)
 
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         pass
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({pprint.pformat(self._raw_element, width=130)})"
+        return (
+            f"{self.__class__.__name__}({pprint.pformat(self._raw_element, width=130)})"
+        )
 
-    def _make_request(self,
-                      path: str,
-                      params: Optional[Dict] = None,
-                      headers: Optional[Dict] = None,
-                      method = "GET",
-                      data = None) -> Response:
-        return self._http_client.make_request(path, params, headers, method, data)
+    async def _make_request(
+        self,
+        path: str,
+        params: dict | None = None,
+        headers: dict | None = None,
+        method="GET",
+        data=None,
+    ) -> Response:
+        return await self._http_client.make_request(path, params, headers, method, data)
 
     def json(self):
         return self._raw_element

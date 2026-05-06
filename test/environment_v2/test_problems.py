@@ -1,28 +1,30 @@
 from datetime import datetime
 
 import dynatrace.environment_v2.problems as pb
-from dynatrace import Dynatrace
+from dynatrace import DynatraceAsync
+from dynatrace.configuration_v1.alerting_profiles import AlertingProfileStub
+from dynatrace.environment_v2.custom_tags import METag
+from dynatrace.environment_v2.monitored_entities import EntityId, EntityStub
+from dynatrace.environment_v2.schemas import ManagementZone
 from dynatrace.pagination import PaginatedList
 from dynatrace.utils import int64_to_datetime
-from dynatrace.configuration_v1.alerting_profiles import AlertingProfileStub
-from dynatrace.environment_v2.monitored_entities import EntityStub, EntityId
-from dynatrace.environment_v2.schemas import ManagementZone
-from dynatrace.environment_v2.custom_tags import METag
+from test.async_utils import collect
 
 PROBLEM_ID = "-1719139739592062093_1623004451641V2"
 COMMENT_ID = "-7228967546616810529_1623004451641"
 
 
-def test_list(dt: Dynatrace):
-    problems = dt.problems.list(time_from="now-3d")
+async def test_list(dt: DynatraceAsync):
+    problems = await dt.problems.list(time_from="now-3d")
 
     assert isinstance(problems, PaginatedList)
-    assert len(list(problems)) == 2
-    assert all(isinstance(p, pb.Problem) for p in problems)
+    problem_list = await collect(problems)
+    assert len(problem_list) == 2
+    assert all(isinstance(p, pb.Problem) for p in problem_list)
 
 
-def test_get(dt: Dynatrace):
-    problem = dt.problems.get(problem_id=PROBLEM_ID)
+async def test_get(dt: DynatraceAsync):
+    problem = await dt.problems.get(problem_id=PROBLEM_ID)
 
     # type checks
     assert isinstance(problem, pb.Problem)
@@ -43,8 +45,13 @@ def test_get(dt: Dynatrace):
     assert all(isinstance(pf, AlertingProfileStub) for pf in problem.problem_filters)
     assert isinstance(problem.evidence_details, pb.EvidenceDetails)
     assert all(isinstance(e, pb.Evidence) for e in problem.evidence_details.details)
-    assert all(isinstance(e.entity, EntityStub) for e in problem.evidence_details.details)
-    assert all(isinstance(e.grouping_entity, EntityStub) for e in problem.evidence_details.details)
+    assert all(
+        isinstance(e.entity, EntityStub) for e in problem.evidence_details.details
+    )
+    assert all(
+        isinstance(e.grouping_entity, EntityStub)
+        for e in problem.evidence_details.details
+    )
     assert isinstance(problem.recent_comments, pb.CommentList)
     assert all(isinstance(c, pb.Comment) for c in problem.recent_comments.comments)
     assert isinstance(problem.impact_analysis, pb.ImpactAnalysis)
@@ -57,12 +64,28 @@ def test_get(dt: Dynatrace):
     assert problem.impact_level == pb.ImpactLevel.INFRASTRUCTURE
     assert problem.severity_level == pb.SeverityLevel.RESOURCE_CONTENTION
     assert problem.status == pb.Status.CLOSED
-    assert all(ae.entity_id.id == "PROCESS_GROUP_INSTANCE-8092E71D6FBB914E" for ae in problem.affected_entities)
-    assert all(ae.entity_id.type == "PROCESS_GROUP_INSTANCE" for ae in problem.affected_entities)
-    assert all(ae.name == "easytravel.customer.frontend" for ae in problem.affected_entities)
-    assert all(ie.entity_id.id == "PROCESS_GROUP_INSTANCE-8092E71D6FBB914E" for ie in problem.impacted_entities)
-    assert all(ie.entity_id.type == "PROCESS_GROUP_INSTANCE" for ie in problem.impacted_entities)
-    assert all(ie.name == "easytravel.customer.frontend" for ie in problem.impacted_entities)
+    assert all(
+        ae.entity_id.id == "PROCESS_GROUP_INSTANCE-8092E71D6FBB914E"
+        for ae in problem.affected_entities
+    )
+    assert all(
+        ae.entity_id.type == "PROCESS_GROUP_INSTANCE"
+        for ae in problem.affected_entities
+    )
+    assert all(
+        ae.name == "easytravel.customer.frontend" for ae in problem.affected_entities
+    )
+    assert all(
+        ie.entity_id.id == "PROCESS_GROUP_INSTANCE-8092E71D6FBB914E"
+        for ie in problem.impacted_entities
+    )
+    assert all(
+        ie.entity_id.type == "PROCESS_GROUP_INSTANCE"
+        for ie in problem.impacted_entities
+    )
+    assert all(
+        ie.name == "easytravel.customer.frontend" for ie in problem.impacted_entities
+    )
     assert problem.root_cause_entity.entity_id.id == "PROCESS_GROUP-C44FB250621B8036"
     assert problem.root_cause_entity.entity_id.type == "PROCESS_GROUP"
     assert problem.root_cause_entity.name == "easytravel.customer.frontend"
@@ -77,8 +100,10 @@ def test_get(dt: Dynatrace):
     assert len(problem.recent_comments.comments) == 2
 
 
-def test_close(dt: Dynatrace):
-    close_result = dt.problems.close(problem_id=PROBLEM_ID, message="Closing this. 1234")
+async def test_close(dt: DynatraceAsync):
+    close_result = await dt.problems.close(
+        problem_id=PROBLEM_ID, message="Closing this. 1234"
+    )
 
     # type checks
     assert isinstance(close_result, pb.ProblemCloseResult)
@@ -94,19 +119,22 @@ def test_close(dt: Dynatrace):
     assert close_result.comment.author == "radu.stefan@dynatrace.com"
     assert close_result.comment.context == "dynatrace-problem-close"
     assert close_result.close_timestamp == int64_to_datetime(1623047022173)
-    assert close_result.closing == True
+    assert close_result.closing
 
 
-def test_list_comments(dt: Dynatrace):
-    comments = dt.problems.list_comments(problem_id=PROBLEM_ID, page_size=20)
+async def test_list_comments(dt: DynatraceAsync):
+    comments = await dt.problems.list_comments(problem_id=PROBLEM_ID, page_size=20)
 
     assert isinstance(comments, PaginatedList)
-    assert len(list(comments)) == 2
-    assert all(isinstance(c, pb.Comment) for c in comments)
+    comment_list = await collect(comments)
+    assert len(comment_list) == 2
+    assert all(isinstance(c, pb.Comment) for c in comment_list)
 
 
-def test_get_comment(dt: Dynatrace):
-    comment = dt.problems.get_comment(problem_id=PROBLEM_ID, comment_id=COMMENT_ID)
+async def test_get_comment(dt: DynatraceAsync):
+    comment = await dt.problems.get_comment(
+        problem_id=PROBLEM_ID, comment_id=COMMENT_ID
+    )
 
     assert isinstance(comment, pb.Comment)
 

@@ -14,10 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from datetime import datetime, timedelta, timezone
 from collections.abc import MutableSequence
-from typing import Optional, List, Dict, Tuple
-
+from datetime import UTC, datetime, timedelta
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -30,17 +28,17 @@ class CustomDeviceService:
     def create(
         self,
         device_id: str,
-        display_name: Optional[str] = None,
-        group: Optional[str] = None,
-        ip_addresses: Optional[List[str]] = None,
-        listen_ports: Optional[List[int]] = None,
-        technology: Optional[str] = None,
-        favicon: Optional[str] = None,
-        config_url: Optional[str] = None,
-        properties: Optional[Dict[str, str]] = None,
-        tags: Optional[List[str]] = None,
-        series: Optional[List] = None,
-        host_names: Optional[List[str]] = None,
+        display_name: str | None = None,
+        group: str | None = None,
+        ip_addresses: list[str] | None = None,
+        listen_ports: list[int] | None = None,
+        technology: str | None = None,
+        favicon: str | None = None,
+        config_url: str | None = None,
+        properties: dict[str, str] | None = None,
+        tags: list[str] | None = None,
+        series: list | None = None,
+        host_names: list[str] | None = None,
     ) -> "CustomDevicePushMessage":
         return CustomDevicePushMessage(
             self.__http_client,
@@ -61,12 +59,15 @@ class CustomDeviceService:
 
 class Series(MutableSequence):
     def __init__(self, *args):
-        self.list: List["EntityTimeseriesData"] = []
+        self.list: list[EntityTimeseriesData] = []
         self.extend(list(args))
 
     def append(self, time_series: "EntityTimeseriesData") -> None:
         for element in self.list:
-            if time_series.timeseries_id == element.timeseries_id and time_series.dimensions == element.dimensions:
+            if (
+                time_series.timeseries_id == element.timeseries_id
+                and time_series.dimensions == element.dimensions
+            ):
                 element.data_points.extend(time_series.data_points)
                 return
         self.list.append(time_series)
@@ -95,32 +96,32 @@ class CustomDevicePushMessage(DynatraceObject):
         self,
         http_client,
         device_id: str,
-        display_name: Optional[str] = None,
-        group: Optional[str] = None,
-        ip_addresses: Optional[List[str]] = None,
-        listen_ports: Optional[List[int]] = None,
-        technology: Optional[str] = None,
-        favicon: Optional[str] = None,
-        config_url: Optional[str] = None,
-        properties: Optional[Dict[str, str]] = None,
-        tags: Optional[List[str]] = None,
-        series: Optional[Series] = None,
-        host_names: Optional[List[str]] = None,
+        display_name: str | None = None,
+        group: str | None = None,
+        ip_addresses: list[str] | None = None,
+        listen_ports: list[int] | None = None,
+        technology: str | None = None,
+        favicon: str | None = None,
+        config_url: str | None = None,
+        properties: dict[str, str] | None = None,
+        tags: list[str] | None = None,
+        series: Series | None = None,
+        host_names: list[str] | None = None,
     ):
         self.device_id = device_id
-        self.display_name: Optional[str] = display_name
-        self.group: Optional[str] = group
-        self.ip_addresses: Optional[List[str]] = ip_addresses
-        self.listen_ports: Optional[List[int]] = listen_ports
-        self.technology: Optional[str] = technology
-        self.favicon: Optional[str] = favicon
-        self.config_url: Optional[str] = config_url
-        self.properties: Optional[Dict[str, str]] = properties
-        self.tags: Optional[List[str]] = tags
+        self.display_name: str | None = display_name
+        self.group: str | None = group
+        self.ip_addresses: list[str] | None = ip_addresses
+        self.listen_ports: list[int] | None = listen_ports
+        self.technology: str | None = technology
+        self.favicon: str | None = favicon
+        self.config_url: str | None = config_url
+        self.properties: dict[str, str] | None = properties
+        self.tags: list[str] | None = tags
         self.__series: Series = series
         if self.__series is None:
             self.__series: Series = Series()
-        self.host_names: Optional[List[str]] = host_names
+        self.host_names: list[str] | None = host_names
 
         raw_element = {
             "displayName": self.display_name,
@@ -132,7 +133,9 @@ class CustomDevicePushMessage(DynatraceObject):
             "configUrl": self.config_url,
             "properties": self.properties,
             "tags": self.tags,
-            "series": [s._raw_element for s in self.__series] if self.__series else None,
+            "series": (
+                [s._raw_element for s in self.__series] if self.__series else None
+            ),
             "hostNames": self.host_names,
         }
         super().__init__(http_client, None, raw_element)
@@ -146,40 +149,77 @@ class CustomDevicePushMessage(DynatraceObject):
         self.__series = series
         self._raw_element["series"] = [s._raw_element for s in self.__series]
 
-    def post(self, only_valid_data_points=False):
+    async def post(self, only_valid_data_points=False):
         try:
-            response = self._http_client.make_request(f"/api/v1/entity/infrastructure/custom/{self.device_id}", params=self._raw_element, method="POST")
+            response = await self._http_client.make_request(
+                f"/api/v1/entity/infrastructure/custom/{self.device_id}",
+                params=self._raw_element,
+                method="POST",
+            )
             return response
         except Exception as e:
-            if only_valid_data_points and ("configuration.Creation timestamp is:" in f"{e}" or "Data point timestamp is too far in the past" in f"{e}"):
+            if only_valid_data_points and (
+                "configuration.Creation timestamp is:" in f"{e}"
+                or "Data point timestamp is too far in the past" in f"{e}"
+            ):
                 if "configuration.Creation timestamp" in f"{e}":
-                    max_timestamp = int(f"{e}".split("configuration.Creation timestamp is:")[1].split('"')[0].strip())
-                    max_timestamp = datetime.fromtimestamp(max_timestamp / 1000, tz=timezone.utc)
+                    max_timestamp = int(
+                        f"{e}".split("configuration.Creation timestamp is:")[1]
+                        .split('"')[0]
+                        .strip()
+                    )
+                    max_timestamp = datetime.fromtimestamp(max_timestamp / 1000, tz=UTC)
                 else:
-                    max_timestamp = datetime.now(tz=timezone.utc) - timedelta(minutes=59)
-                self._http_client.log.warning(f"Some data points were invalid, removing data points older than {max_timestamp}")
+                    max_timestamp = datetime.now(tz=UTC) - timedelta(minutes=59)
+                self._http_client.log.warning(
+                    f"Some data points were invalid, removing data points older than {max_timestamp}"
+                )
                 for s in self.series:
-                    s.data_points = [d for d in s.data_points if d.timestamp.replace(tzinfo=max_timestamp.tzinfo) >= max_timestamp]
+                    s.data_points = [
+                        d
+                        for d in s.data_points
+                        if d.timestamp.replace(tzinfo=max_timestamp.tzinfo)
+                        >= max_timestamp
+                    ]
                 self._raw_element["series"] = [s._raw_element for s in self.series]
-                return self.post()
+                return await self.post()
             else:
                 raise e
 
-    def absolute(self, key: str, value: float, timestamp: Optional[datetime] = None, dimensions: Optional[Dict[str, str]] = None):
+    def absolute(
+        self,
+        key: str,
+        value: float,
+        timestamp: datetime | None = None,
+        dimensions: dict[str, str] | None = None,
+    ):
         data_point = DataPoint(value, timestamp)
-        self.series.append(EntityTimeseriesData(self._http_client, key, [data_point], dimensions))
-        self.series = self.series  # Ugly as hell hack because of setter, and I don't want to subclass list
+        self.series.append(
+            EntityTimeseriesData(self._http_client, key, [data_point], dimensions)
+        )
+        self.series = (
+            self.series
+        )  # Ugly as hell hack because of setter, and I don't want to subclass list
 
 
 class EntityTimeseriesData(DynatraceObject):
-    def __init__(self, http_client, timeseries_id: str, data_points: List["DataPoint"], dimensions: Optional[Dict[str, str]] = None):
+    def __init__(
+        self,
+        http_client,
+        timeseries_id: str,
+        data_points: list["DataPoint"],
+        dimensions: dict[str, str] | None = None,
+    ):
         self.timeseries_id: str = timeseries_id
         self.dimensions = dimensions
-        self.__data_points: List["DataPoint"] = data_points
+        self.__data_points: list[DataPoint] = data_points
         raw_element = {
             "timeseriesId": timeseries_id,
             "dimensions": dimensions,
-            "dataPoints": [[int(data_point.timestamp.timestamp() * 1000), data_point.value] for data_point in data_points],
+            "dataPoints": [
+                [int(data_point.timestamp.timestamp() * 1000), data_point.value]
+                for data_point in data_points
+            ],
         }
         super().__init__(http_client, None, raw_element)
 
@@ -187,17 +227,20 @@ class EntityTimeseriesData(DynatraceObject):
         return f"Series(id={self.timeseries_id}, data_points={self.data_points})"
 
     @property
-    def data_points(self) -> List["DataPoint"]:
+    def data_points(self) -> list["DataPoint"]:
         return self.__data_points
 
     @data_points.setter
-    def data_points(self, data_points: List["DataPoint"]):
+    def data_points(self, data_points: list["DataPoint"]):
         self.__data_points = data_points
-        self._raw_element["dataPoints"] = [[int(data_point.timestamp.timestamp() * 1000), data_point.value] for data_point in self.__data_points]
+        self._raw_element["dataPoints"] = [
+            [int(data_point.timestamp.timestamp() * 1000), data_point.value]
+            for data_point in self.__data_points
+        ]
 
 
 class DataPoint:
-    def __init__(self, value: float, timestamp: Optional[datetime] = None):
+    def __init__(self, value: float, timestamp: datetime | None = None):
         self.timestamp = timestamp
         if self.timestamp is None:
             self.timestamp = datetime.now()
