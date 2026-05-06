@@ -327,12 +327,12 @@ asyncio.run(main())
  API                                                        |       Level        | Access                               |
 :-----------------------------------------------------------|:------------------:|:-------------------------------------|
  Account Management - Account limits                        |        :x:         |                                      |
- Account Management - User management                       |        :x:         |                                      |
- Account Management - Group management                      |        :x:         |                                      |
- Account Management - Permission management                 |        :x:         |                                      |
- Account Management - Policy management                     |        :x:         |                                      |
- Account Management - Service user management               |        :x:         |                                      |
- Account Management - Platform tokens                       |        :x:         |                                      |
+ Account Management - User management                       | :heavy_check_mark: | `dt.account.iam_users`               |
+ Account Management - Group management                      | :heavy_check_mark: | `dt.account.iam_groups`              |
+ Account Management - Permission management                 | :heavy_check_mark: | `dt.account.iam_policies`            |
+ Account Management - Policy management                     | :heavy_check_mark: | `dt.account.iam_policies`            |
+ Account Management - Service user management               | :heavy_check_mark: | `dt.account.iam_service_users`       |
+ Account Management - Platform tokens                       | :heavy_check_mark: | `dt.account.iam_platform_tokens`     |
  Environment management API v1                              | :heavy_check_mark: | `dt.account.env_v1`                  |
  Environment management API v2                              | :heavy_check_mark: | `dt.account.env_v2`                  |
  Dynatrace Platform Subscription - Subscription management  | :heavy_check_mark: | `dt.account.sub_v2`                  |
