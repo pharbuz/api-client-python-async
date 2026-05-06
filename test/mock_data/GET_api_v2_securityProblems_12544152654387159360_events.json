@@ -1,0 +1,10 @@
+{
+  "totalCount": 1,
+  "events": [
+    {
+      "eventId": "sp-event-1",
+      "timestamp": 1717250400000,
+      "type": "RISK_SCORE_CHANGED"
+    }
+  ]
+}

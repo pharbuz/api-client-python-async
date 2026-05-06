@@ -15,24 +15,32 @@ limitations under the License.
 """
 
 from enum import Enum
-from typing import List, Optional, Dict, Any
-from requests import Response
+from typing import Any
 
-from dynatrace.pagination import PaginatedList
+from httpx import Response
+
+from dynatrace.configuration_v1.schemas import (
+    ConfigurationMetadata,
+    StringComparisonOperator,
+)
 from dynatrace.dynatrace_object import DynatraceObject
-from dynatrace.http_client import HttpClient
-from dynatrace.configuration_v1.schemas import ConfigurationMetadata, StringComparisonOperator
-from dynatrace.environment_v2.monitored_entities import EntityShortRepresentation
 from dynatrace.environment_v2.custom_tags import METag
+from dynatrace.environment_v2.monitored_entities import EntityShortRepresentation
+from dynatrace.http_client import HttpClient
+from dynatrace.pagination import PaginatedList
 
 
 class AlertingProfileTagFilter(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
-        self.include_mode: TagFilterIncludeMode = TagFilterIncludeMode(raw_element["includeMode"])
-        self.tag_filters: Optional[List[METag]] = [METag(raw_element=tag) for tag in raw_element.get("tagFilters", [])]
+        self.include_mode: TagFilterIncludeMode = TagFilterIncludeMode(
+            raw_element["includeMode"]
+        )
+        self.tag_filters: list[METag] | None = [
+            METag(raw_element=tag) for tag in raw_element.get("tagFilters", [])
+        ]
 
-    def to_json(self) -> Dict[str, Any]:
-        details: Dict[str, Any] = {"includeMode": str(self.include_mode)}
+    def to_json(self) -> dict[str, Any]:
+        details: dict[str, Any] = {"includeMode": str(self.include_mode)}
         if self.tag_filters:
             details["tagFilters"] = [tf.to_json() for tf in self.tag_filters]
         return details
@@ -41,19 +49,27 @@ class AlertingProfileTagFilter(DynatraceObject):
 class AlertingProfileSeverityRule(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
         self.severity_level: SeverityLevel = SeverityLevel(raw_element["severityLevel"])
-        self.tag_filter: AlertingProfileTagFilter = AlertingProfileTagFilter(raw_element=raw_element["tagFilter"])
+        self.tag_filter: AlertingProfileTagFilter = AlertingProfileTagFilter(
+            raw_element=raw_element["tagFilter"]
+        )
         self.delay_in_minutes: int = raw_element["delayInMinutes"]
 
-    def to_json(self) -> Dict[str, Any]:
-        return {"severityLevel": str(self.severity_level), "tagFilter": self.tag_filter.to_json(), "delayInMinutes": self.delay_in_minutes}
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "severityLevel": str(self.severity_level),
+            "tagFilter": self.tag_filter.to_json(),
+            "delayInMinutes": self.delay_in_minutes,
+        }
 
 
 class AlertingPredefinedEventFilter(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
-        self.event_type: AlertingPredefinedEvent = AlertingPredefinedEvent(raw_element["eventType"])
+        self.event_type: AlertingPredefinedEvent = AlertingPredefinedEvent(
+            raw_element["eventType"]
+        )
         self.negate: bool = raw_element["negate"]
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         return {"eventType": str(self.event_type), "negate": self.negate}
 
 
@@ -61,42 +77,64 @@ class AlertingCustomTextFilter(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
         self.enabled: bool = raw_element["enabled"]
         self.value: str = raw_element["value"]
-        self.operator: StringComparisonOperator = StringComparisonOperator(raw_element["operator"])
+        self.operator: StringComparisonOperator = StringComparisonOperator(
+            raw_element["operator"]
+        )
         self.negate: bool = raw_element["negate"]
         self.case_insensitive: bool = raw_element["caseInsensitive"]
 
-    def to_json(self) -> Dict[str, Any]:
-        return {"enabled": self.enabled, "value": self.value, "operator": str(self.operator), "negate": self.negate, "caseInsensitive": self.case_insensitive}
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "enabled": self.enabled,
+            "value": self.value,
+            "operator": str(self.operator),
+            "negate": self.negate,
+            "caseInsensitive": self.case_insensitive,
+        }
 
 
 class AlertingCustomEventFilter(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
-        self.custom_title_filter: Optional[AlertingCustomTextFilter] = (
-            AlertingCustomTextFilter(raw_element=raw_element.get("customTitleFilter")) if "customTitleFilter" in raw_element.keys() else None
+        self.custom_title_filter: AlertingCustomTextFilter | None = (
+            AlertingCustomTextFilter(raw_element=raw_element.get("customTitleFilter"))
+            if "customTitleFilter" in raw_element.keys()
+            else None
         )
-        self.custom_description_filter: Optional[AlertingCustomTextFilter] = (
-            AlertingCustomTextFilter(raw_element=raw_element.get("customDescriptionFilter")) if "customDescriptionFilter" in raw_element.keys() else None
+        self.custom_description_filter: AlertingCustomTextFilter | None = (
+            AlertingCustomTextFilter(
+                raw_element=raw_element.get("customDescriptionFilter")
+            )
+            if "customDescriptionFilter" in raw_element.keys()
+            else None
         )
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         details = {}
         if self.custom_title_filter:
             details["customTitleFilter"] = self.custom_title_filter.to_json()
         if self.custom_description_filter:
-            details["customDescriptionFilter"] = self.custom_description_filter.to_json()
+            details["customDescriptionFilter"] = (
+                self.custom_description_filter.to_json()
+            )
         return details
 
 
 class AlertingEventTypeFilter(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
-        self.predefined_event_filter: Optional[AlertingPredefinedEventFilter] = (
-            AlertingPredefinedEventFilter(raw_element=raw_element.get("predefinedEventFilter")) if "predefinedEventFilter" in raw_element.keys() else None
+        self.predefined_event_filter: AlertingPredefinedEventFilter | None = (
+            AlertingPredefinedEventFilter(
+                raw_element=raw_element.get("predefinedEventFilter")
+            )
+            if "predefinedEventFilter" in raw_element.keys()
+            else None
         )
-        self.custom_event_filter: Optional[AlertingCustomEventFilter] = (
-            AlertingCustomEventFilter(raw_element=raw_element.get("customEventFilter")) if "customEventFilter" in raw_element.keys() else None
+        self.custom_event_filter: AlertingCustomEventFilter | None = (
+            AlertingCustomEventFilter(raw_element=raw_element.get("customEventFilter"))
+            if "customEventFilter" in raw_element.keys()
+            else None
         )
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         details = {}
         if self.predefined_event_filter:
             details["predefinedEventFilter"] = self.predefined_event_filter.to_json()
@@ -106,17 +144,23 @@ class AlertingEventTypeFilter(DynatraceObject):
 
 
 class AlertingProfile(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
-        self.metadata: Optional[ConfigurationMetadata] = ConfigurationMetadata(raw_element=raw_element.get("metadata"))
-        self.id: Optional[str] = raw_element.get("id")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.metadata: ConfigurationMetadata | None = ConfigurationMetadata(
+            raw_element=raw_element.get("metadata")
+        )
+        self.id: str | None = raw_element.get("id")
         self.display_name: str = raw_element["displayName"]
-        self.rules: Optional[List[AlertingProfileSeverityRule]] = [AlertingProfileSeverityRule(raw_element=rule) for rule in raw_element.get("rules", [])]
-        self.management_zone_id: Optional[str] = raw_element.get("mzId")
-        self.event_type_filters: Optional[List[AlertingEventTypeFilter]] = [
-            AlertingEventTypeFilter(raw_element=event_filter) for event_filter in raw_element.get("eventTypeFilters", [])
+        self.rules: list[AlertingProfileSeverityRule] | None = [
+            AlertingProfileSeverityRule(raw_element=rule)
+            for rule in raw_element.get("rules", [])
+        ]
+        self.management_zone_id: str | None = raw_element.get("mzId")
+        self.event_type_filters: list[AlertingEventTypeFilter] | None = [
+            AlertingEventTypeFilter(raw_element=event_filter)
+            for event_filter in raw_element.get("eventTypeFilters", [])
         ]
 
-    def post(self) -> EntityShortRepresentation:
+    async def post(self) -> EntityShortRepresentation:
         """Creates the Alerting Profile configuration in Dynatrace (POST).
 
         :param alerting_profile: the Alerting Profile configuration details
@@ -126,13 +170,17 @@ class AlertingProfile(DynatraceObject):
         :throws ValueError: if operation cannot be executed due to missing HTTP Client
         """
         if not self._http_client:
-            raise ValueError("Object does not have an HTTP Client. Use alerting_profiles.post() instead.")
-        response = self._http_client.make_request(path=AlertingProfileService.ENDPOINT, params=self.to_json(), method="POST")
+            raise ValueError(
+                "Object does not have an HTTP Client. Use alerting_profiles.post() instead."
+            )
+        response = await self._http_client.make_request(
+            path=AlertingProfileService.ENDPOINT, params=self.to_json(), method="POST"
+        )
         self.id = response.json().get("id")
 
         return EntityShortRepresentation(raw_element=response.json())
 
-    def put(self) -> Response:
+    async def put(self) -> Response:
         """Updates the Alerting Profile configuration in Dynatrace (PUT).
         If the ID does not exist in Dynatrace, a new Alerting Profile will be created with the given ID.
 
@@ -143,33 +191,45 @@ class AlertingProfile(DynatraceObject):
         :throws ValueError: if operation cannot be executed due to missing HTTP Client
         """
         if not self._http_client:
-            raise ValueError("Object does not have an HTTP Client. Use alerting_profiles.put() instead.")
-        response = self._http_client.make_request(path=f"{AlertingProfileService.ENDPOINT}/{self.id}", params=self.to_json(), method="PUT")
+            raise ValueError(
+                "Object does not have an HTTP Client. Use alerting_profiles.put() instead."
+            )
+        response = await self._http_client.make_request(
+            path=f"{AlertingProfileService.ENDPOINT}/{self.id}",
+            params=self.to_json(),
+            method="PUT",
+        )
         if response.status_code == 201:
             self.id = response.json().get("id")
 
         return response
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         """Get a JSON (dict) representation of this config."""
-        details: Dict[str, Any] = {"displayName": self.display_name}
+        details: dict[str, Any] = {"displayName": self.display_name}
         if self.rules:
             details["rules"] = [r.to_json() for r in self.rules]
         if self.management_zone_id:
             details["mzId"] = self.management_zone_id
         if self.event_type_filters:
-            details["eventTypeFilters"] = [etf.to_json() for etf in self.event_type_filters]
+            details["eventTypeFilters"] = [
+                etf.to_json() for etf in self.event_type_filters
+            ]
         return details
 
 
 class AlertingProfileStub(EntityShortRepresentation):
-    def get_full_configuration(self):
+    async def get_full_configuration(self):
         """
         Gathers the full details of the alerting profile
         """
         if not self._http_client:
             raise ValueError("Object does not have an HTTP Client implemented.")
-        response = self._http_client.make_request(f"{AlertingProfileService.ENDPOINT}/{self.id}").json()
+        response = (
+            await self._http_client.make_request(
+                f"{AlertingProfileService.ENDPOINT}/{self.id}"
+            )
+        ).json()
         return AlertingProfile(self._http_client, None, response)
 
 
@@ -179,29 +239,42 @@ class AlertingProfileService:
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
 
-    def list(self) -> PaginatedList[AlertingProfileStub]:
+    async def list(self) -> PaginatedList[AlertingProfileStub]:
         """
         Lists all alerting profiles in the environmemt. No configurable parameters.
         """
-        return PaginatedList(AlertingProfileStub, self.__http_client, f"{self.ENDPOINT}", list_item="values")
+        return await PaginatedList(
+            AlertingProfileStub,
+            self.__http_client,
+            f"{self.ENDPOINT}",
+            list_item="values",
+        ).initialize()
 
-    def get(self, profile_id: str) -> AlertingProfile:
+    async def get(self, profile_id: str) -> AlertingProfile:
         """Gets the full details of the Alerting Profile referenced by ID.
 
         :param profile_id: ID of the alerting profile
 
         :returns AlertingProfile: alerting profile details
         """
-        response = self.__http_client.make_request(f"{self.ENDPOINT}/{profile_id}")
-        return AlertingProfile(http_client=self.__http_client, raw_element=response.json())
+        response = await self.__http_client.make_request(
+            f"{self.ENDPOINT}/{profile_id}"
+        )
+        return AlertingProfile(
+            http_client=self.__http_client, raw_element=response.json()
+        )
 
-    def delete(self, profile_id: str) -> Response:
+    async def delete(self, profile_id: str) -> Response:
         """
         Delete the alerting profile with the specified id.
         """
-        return self.__http_client.make_request(f"{self.ENDPOINT}/{profile_id}", method="DELETE")
+        return await self.__http_client.make_request(
+            f"{self.ENDPOINT}/{profile_id}", method="DELETE"
+        )
 
-    def post(self, alerting_profile: AlertingProfile) -> EntityShortRepresentation:
+    async def post(
+        self, alerting_profile: AlertingProfile
+    ) -> EntityShortRepresentation:
         """Creates the Alerting Profile configuration in Dynatrace (POST).
 
         :param alerting_profile: the Alerting Profile configuration details
@@ -210,9 +283,9 @@ class AlertingProfileService:
         """
         if not alerting_profile._http_client:
             alerting_profile._http_client = self.__http_client
-        return alerting_profile.post()
+        return await alerting_profile.post()
 
-    def put(self, alerting_profile: AlertingProfile) -> Response:
+    async def put(self, alerting_profile: AlertingProfile) -> Response:
         """Updates the Alerting Profile configuration in Dynatrace (PUT).
         If the ID does not exist in Dynatrace, a new Alerting Profile will be created with the given ID.
 
@@ -222,7 +295,7 @@ class AlertingProfileService:
         """
         if not alerting_profile._http_client:
             alerting_profile._http_client = self.__http_client
-        return alerting_profile.put()
+        return await alerting_profile.put()
 
 
 class TagFilterIncludeMode(Enum):
@@ -246,12 +319,16 @@ class AlertingPredefinedEvent(Enum):
     CUSTOM_APPLICATION_UNEXPECTED_LOW_LOAD = "CUSTOM_APPLICATION_UNEXPECTED_LOW_LOAD"
     CUSTOM_APP_CRASH_RATE_INCREASED = "CUSTOM_APP_CRASH_RATE_INCREASED"
     DATABASE_CONNECTION_FAILURE = "DATABASE_CONNECTION_FAILURE"
-    DATA_CENTER_SERVICE_PERFORMANCE_DEGRADATION = "DATA_CENTER_SERVICE_PERFORMANCE_DEGRADATION"
+    DATA_CENTER_SERVICE_PERFORMANCE_DEGRADATION = (
+        "DATA_CENTER_SERVICE_PERFORMANCE_DEGRADATION"
+    )
     DATA_CENTER_SERVICE_UNAVAILABLE = "DATA_CENTER_SERVICE_UNAVAILABLE"
     EBS_VOLUME_HIGH_LATENCY = "EBS_VOLUME_HIGH_LATENCY"
     EC2_HIGH_CPU = "EC2_HIGH_CPU"
     ELB_HIGH_BACKEND_ERROR_RATE = "ELB_HIGH_BACKEND_ERROR_RATE"
-    ENTERPRICE_APPLICATION_PERFORMANCE_DEGRADATION = "ENTERPRICE_APPLICATION_PERFORMANCE_DEGRADATION"
+    ENTERPRICE_APPLICATION_PERFORMANCE_DEGRADATION = (
+        "ENTERPRICE_APPLICATION_PERFORMANCE_DEGRADATION"
+    )
     ENTERPRISE_APPLICATION_UNAVAILABLE = "ENTERPRISE_APPLICATION_UNAVAILABLE"
     ESXI_GUEST_ACTIVE_SWAP_WAIT = "ESXI_GUEST_ACTIVE_SWAP_WAIT"
     ESXI_GUEST_CPU_LIMIT_REACHED = "ESXI_GUEST_CPU_LIMIT_REACHED"

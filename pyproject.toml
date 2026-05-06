@@ -1,20 +1,19 @@
 [tool.poetry]
-name = "dt"
-version = "1.2.1"
-description = "Dynatrace API Python client"
+name = "dt-async"
+version = "1.0.5"
+description = "Dynatrace async API Python client"
 readme = "README.md"
 authors = ["David Lopes <davidribeirolopes@gmail.com>"]
 maintainers = [
     "David Lopes <davidribeirolopes@gmail.com>",
     "James Kitson <james.kitson@dynatrace.com>",
-    "Vagiz Duseev <vagiz@duseev.com>"
+    "Vagiz Duseev <vagiz@duseev.com>",
+    "Pawel Harbuz <pawel.harbuz@outlook.com>",
 ]
 homepage = "https://github.com/dynatrace-oss/api-client-python"
 repository = "https://github.com/dynatrace-oss/api-client-python"
 documentation = "https://github.com/dynatrace-oss/api-client-python"
-packages = [
-    { include = "dynatrace*" }
-]
+packages = [{ include = "dynatrace*" }]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -22,14 +21,9 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
     "Operating System :: POSIX :: Linux",
     "Operating System :: Microsoft :: Windows",
@@ -38,15 +32,31 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.6"
-requests = ">=2.22"
+python = ">=3.12"
+authlib = ">=1.6.9"
+httpx = ">=0.28.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
+pytest-asyncio = "*"
 mock = "*"
 tox = "*"
 wrapt = "*"
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.optional-dependencies]
+dev = ["ruff==0.15.2", "black==26.3.1"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+ignore = ["E501", "UP046"]
+select = ["E", "F", "B", "UP", "I"]

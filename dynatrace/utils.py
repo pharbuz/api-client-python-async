@@ -14,13 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import warnings
 import functools
-from datetime import datetime, timezone
-from typing import Union, Optional
-import unicodedata
 import re
-
+import unicodedata
+import warnings
+from datetime import UTC, datetime
 
 ISO_8601 = "%Y-%m-%dT%H:%M:%S.%fZ"
 ISO_8601_NO_MS = "%Y-%m-%dT%H:%M:%SZ"
@@ -38,7 +36,11 @@ def deprecated(reason=""):
     def decorator(func):
         @functools.wraps(func)
         def new_func(*args, **kwargs):
-            warnings.warn(f"'{func.__name__}' is deprecated. {reason}", category=DeprecationWarning, stacklevel=2)
+            warnings.warn(
+                f"'{func.__name__}' is deprecated. {reason}",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
             return func(*args, **kwargs)
 
         return new_func
@@ -46,13 +48,17 @@ def deprecated(reason=""):
     return decorator
 
 
-def timestamp_to_string(timestamp: Optional[Union[datetime, str]]) -> Optional[str]:
+def timestamp_to_string(timestamp: datetime | str | None) -> str | None:
     if not isinstance(timestamp, datetime):
         return timestamp
-    return timestamp.isoformat(timespec="milliseconds")
+    return (
+        timestamp.astimezone(UTC)
+        .replace(tzinfo=None)
+        .isoformat(timespec="milliseconds")
+    )
 
 
-def iso8601_to_datetime(timestamp: Optional[str]) -> Optional[datetime]:
+def iso8601_to_datetime(timestamp: str | None) -> datetime | None:
     if isinstance(timestamp, str):
         try:
             return datetime.strptime(timestamp, ISO_8601)
@@ -62,13 +68,33 @@ def iso8601_to_datetime(timestamp: Optional[str]) -> Optional[datetime]:
     return timestamp
 
 
-def int64_to_datetime(timestamp: Optional[int]) -> Optional[datetime]:
+def int64_to_datetime(timestamp: int | None) -> datetime | None:
     if timestamp is None or not timestamp:
         return None
-    return datetime.fromtimestamp(timestamp / 1000, timezone.utc)
+    return datetime.fromtimestamp(timestamp / 1000, UTC)
 
 
-def datetime_to_int64(timestamp: Optional[datetime]) -> Optional[int]:
+def datetime_to_int64(timestamp: datetime | None) -> int | None:
     if not isinstance(timestamp, datetime):
         return timestamp
-    return int(timestamp.replace(tzinfo=timezone.utc).timestamp() * 1000)
+    return int(timestamp.replace(tzinfo=UTC).timestamp() * 1000)
+
+
+def bool_header_value(value: bool | None) -> str | None:
+    if value is None:
+        return None
+    return "true" if value else "false"
+
+
+def build_headers(
+    dt_client_context: str | None = None,
+    enforce_query_consumption_limit_header: bool | None = None,
+) -> dict[str, str] | None:
+    headers: dict[str, str] = {}
+    if dt_client_context is not None:
+        headers["dt-client-context"] = dt_client_context
+    if enforce_query_consumption_limit_header is not None:
+        headers["enforce-query-consumption-limit"] = bool_header_value(
+            enforce_query_consumption_limit_header
+        )
+    return headers or None

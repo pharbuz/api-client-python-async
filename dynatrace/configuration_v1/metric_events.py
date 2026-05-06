@@ -14,15 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import List, Optional, Dict, Any, Union
 from enum import Enum
-from requests import Response
+from typing import Any
 
-from dynatrace.environment_v2.schemas import ConfigurationMetadata
-from dynatrace.environment_v2.monitored_entities import EntityShortRepresentation
-from dynatrace.pagination import PaginatedList
+from httpx import Response
+
 from dynatrace.dynatrace_object import DynatraceObject
+from dynatrace.environment_v2.monitored_entities import EntityShortRepresentation
+from dynatrace.environment_v2.schemas import ConfigurationMetadata
 from dynatrace.http_client import HttpClient
+from dynatrace.pagination import PaginatedList
 
 
 class AggregationType(Enum):
@@ -144,91 +145,141 @@ class WarningReason(Enum):
 
 
 class MetricEventTextFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.value: str = raw_element.get("value")
         self.operator: str = raw_element.get("operator")
 
 
 class TagFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.context: str = raw_element.get("context")
         self.key: str = raw_element.get("key")
         self.value: str = raw_element.get("value")
 
 
 class MetricEventAlertingScope(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
-        self.filter_type: MetricEventAlertingScopeFilterType = MetricEventAlertingScopeFilterType(raw_element.get("filterType"))
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.filter_type: MetricEventAlertingScopeFilterType = (
+            MetricEventAlertingScopeFilterType(raw_element.get("filterType"))
+        )
         self.tag_filter: TagFilter = TagFilter(raw_element=raw_element.get("tagFilter"))
-        self.name_filter: MetricEventTextFilter = MetricEventTextFilter(raw_element=raw_element.get("nameFilter"))
+        self.name_filter: MetricEventTextFilter = MetricEventTextFilter(
+            raw_element=raw_element.get("nameFilter")
+        )
         self.entity_id: str = raw_element.get("entityId")
         self.management_zone_id: str = raw_element.get("mzId")
         self.process_group_id: str = raw_element.get("processGroupId")
 
 
 class MetricEventDimension(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
-        self.filter_type: MetricEventDimensionsFilterType = MetricEventDimensionsFilterType(raw_element.get("filterType"))
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.filter_type: MetricEventDimensionsFilterType = (
+            MetricEventDimensionsFilterType(raw_element.get("filterType"))
+        )
         self.key: str = raw_element.get("key")
-        self.name_filter: MetricEventTextFilter = MetricEventTextFilter(raw_element=raw_element.get("nameFilter"))
-        self.text_filter: MetricEventTextFilter = MetricEventTextFilter(raw_element=raw_element.get("textFilter"))
+        self.name_filter: MetricEventTextFilter = MetricEventTextFilter(
+            raw_element=raw_element.get("nameFilter")
+        )
+        self.text_filter: MetricEventTextFilter = MetricEventTextFilter(
+            raw_element=raw_element.get("textFilter")
+        )
 
 
 class MetricEventMonitoringStrategy(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
-        self.type: MetricEventMonitoringStrategyType = MetricEventMonitoringStrategyType(raw_element.get("type"))
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.type: MetricEventMonitoringStrategyType = (
+            MetricEventMonitoringStrategyType(raw_element.get("type"))
+        )
 
 
 class MetricEventAutoAdaptiveBaselineMonitoringStrategy(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
-        self.type: MetricEventMonitoringStrategyType = MetricEventMonitoringStrategyType(raw_element.get("type"))
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.type: MetricEventMonitoringStrategyType = (
+            MetricEventMonitoringStrategyType(raw_element.get("type"))
+        )
         self.samples: int = raw_element.get("samples")
         self.violating_samples: int = raw_element.get("violatingSamples")
         self.dealtering_samples: int = raw_element.get("dealertingSamples")
-        self.alert_condition: AlertCondition = AlertCondition(raw_element.get("alertCondition"))
-        self.alerting_on_missing_data: Optional[bool] = raw_element.get("alertingOnMissingData") if raw_element.get("alertingOnMissingData") else None
-        self.number_of_signal_fluctuations: int = raw_element.get("numberOfSignalFluctuations")
+        self.alert_condition: AlertCondition = AlertCondition(
+            raw_element.get("alertCondition")
+        )
+        self.alerting_on_missing_data: bool | None = (
+            raw_element.get("alertingOnMissingData")
+            if raw_element.get("alertingOnMissingData")
+            else None
+        )
+        self.number_of_signal_fluctuations: int = raw_element.get(
+            "numberOfSignalFluctuations"
+        )
 
 
 class MetricEventStaticThresholdMonitoringStrategy(MetricEventMonitoringStrategy):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
-        self.type: MetricEventMonitoringStrategyType = MetricEventMonitoringStrategyType(raw_element.get("type"))
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.type: MetricEventMonitoringStrategyType = (
+            MetricEventMonitoringStrategyType(raw_element.get("type"))
+        )
         self.samples: int = raw_element.get("samples")
         self.violating_samples: int = raw_element.get("violatingSamples")
         self.dealtering_samples: int = raw_element.get("dealertingSamples")
-        self.alert_condition: AlertCondition = AlertCondition(raw_element.get("alertCondition"))
-        self.alerting_on_missing_data: Optional[bool] = raw_element.get("alertingOnMissingData") if raw_element.get("alertingOnMissingData") else None
+        self.alert_condition: AlertCondition = AlertCondition(
+            raw_element.get("alertCondition")
+        )
+        self.alerting_on_missing_data: bool | None = (
+            raw_element.get("alertingOnMissingData")
+            if raw_element.get("alertingOnMissingData")
+            else None
+        )
         self.threshold: int = raw_element.get("threshold")
-        self.unit: Optional[Unit] = Unit(raw_element.get("unit")) if raw_element.get("unit") else None
+        self.unit: Unit | None = (
+            Unit(raw_element.get("unit")) if raw_element.get("unit") else None
+        )
 
 
 class MetricEvent(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
-        self.metadata: ConfigurationMetadata = ConfigurationMetadata(raw_element=raw_element.get("metadata"))
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.metadata: ConfigurationMetadata = ConfigurationMetadata(
+            raw_element=raw_element.get("metadata")
+        )
         self.id: str = raw_element.get("id")
         self.metric_id: str = raw_element.get("metricId")
         self.name: str = raw_element.get("name")
         self.description: str = raw_element.get("description")
-        self.aggregation_type: Optional[AggregationType] = AggregationType(raw_element.get("aggregationType")) if raw_element.get("aggregationType") else None
+        self.aggregation_type: AggregationType | None = (
+            AggregationType(raw_element.get("aggregationType"))
+            if raw_element.get("aggregationType")
+            else None
+        )
         self.severity: Severity = Severity(raw_element.get("severity"))
         self.enabled: bool = raw_element.get("enabled")
-        self.disabled_reason: DisabledReason = DisabledReason(raw_element.get("disabledReason"))
-        self.warning_reason: WarningReason = WarningReason(raw_element.get("warningReason"))
-        self.alerting_scope: List[MetricEventAlertingScope] = [
-            MetricEventAlertingScope(raw_element=raw_scope) for raw_scope in raw_element.get("alertingScope", [])
+        self.disabled_reason: DisabledReason = DisabledReason(
+            raw_element.get("disabledReason")
+        )
+        self.warning_reason: WarningReason = WarningReason(
+            raw_element.get("warningReason")
+        )
+        self.alerting_scope: list[MetricEventAlertingScope] = [
+            MetricEventAlertingScope(raw_element=raw_scope)
+            for raw_scope in raw_element.get("alertingScope", [])
         ]
-        self.metric_dimensions: List[MetricEventDimension] = [
-            MetricEventDimension(raw_element=raw_dimension) for raw_dimension in raw_element.get("metricDimensions", [])
+        self.metric_dimensions: list[MetricEventDimension] = [
+            MetricEventDimension(raw_element=raw_dimension)
+            for raw_dimension in raw_element.get("metricDimensions", [])
         ]
-        self.monitoring_strategy: Union[
-            MetricEventMonitoringStrategy, MetricEventStaticThresholdMonitoringStrategy, MetricEventAutoAdaptiveBaselineMonitoringStrategy
-        ] = self._create_specific_monitoring_strategy(raw_element.get("monitoringStrategy"))
+        self.monitoring_strategy: (
+            MetricEventMonitoringStrategy
+            | MetricEventStaticThresholdMonitoringStrategy
+            | MetricEventAutoAdaptiveBaselineMonitoringStrategy
+        ) = self._create_specific_monitoring_strategy(
+            raw_element.get("monitoringStrategy")
+        )
         self.primary_dimension_key: str = raw_element.get("primaryDimensionKey")
 
-    def _create_specific_monitoring_strategy(self, raw_element: Dict[str, Any]):
+    def _create_specific_monitoring_strategy(self, raw_element: dict[str, Any]):
         strategy_type = MetricEventMonitoringStrategyType(raw_element.get("type"))
         if strategy_type == MetricEventMonitoringStrategyType.AUTO_ADAPTIVE_BASELINE:
-            return MetricEventAutoAdaptiveBaselineMonitoringStrategy(raw_element=raw_element)
+            return MetricEventAutoAdaptiveBaselineMonitoringStrategy(
+                raw_element=raw_element
+            )
         elif strategy_type == MetricEventMonitoringStrategyType.STATIC_THRESHOLD:
             return MetricEventStaticThresholdMonitoringStrategy(raw_element=raw_element)
         else:
@@ -236,17 +287,23 @@ class MetricEvent(DynatraceObject):
 
 
 class MetricEventShortRepresentation(EntityShortRepresentation):
-    def delete(self) -> Response:
+    async def delete(self) -> Response:
         """
         Deletes this metric event
         """
-        return self._http_client.make_request(f"/api/config/v1/anomalyDetection/metricEvents/{self.id}", method="DELETE")
+        return await self._http_client.make_request(
+            f"/api/config/v1/anomalyDetection/metricEvents/{self.id}", method="DELETE"
+        )
 
-    def get_full_metric_event(self) -> MetricEvent:
+    async def get_full_metric_event(self) -> MetricEvent:
         """
         Gets the full metric event for this stub
         """
-        response = self._http_client.make_request(f"/api/config/v1/anomalyDetection/metricEvents/{self.id}").json()
+        response = (
+            await self._http_client.make_request(
+                f"/api/config/v1/anomalyDetection/metricEvents/{self.id}"
+            )
+        ).json()
         return MetricEvent(self._http_client, None, response)
 
 
@@ -254,8 +311,13 @@ class MetricEventService:
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
 
-    def list(self) -> PaginatedList[MetricEventShortRepresentation]:
+    async def list(self) -> PaginatedList[MetricEventShortRepresentation]:
         """
         Lists all metric events in the environment. No configurable parameters.
         """
-        return PaginatedList(MetricEventShortRepresentation, self.__http_client, f"/api/config/v1/anomalyDetection/metricEvents", list_item="values")
+        return await PaginatedList(
+            MetricEventShortRepresentation,
+            self.__http_client,
+            "/api/config/v1/anomalyDetection/metricEvents",
+            list_item="values",
+        ).initialize()

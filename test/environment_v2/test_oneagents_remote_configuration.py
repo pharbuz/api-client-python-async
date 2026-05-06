@@ -1,25 +1,23 @@
-from datetime import datetime
-from typing import List
-from dynatrace import Dynatrace
+from dynatrace import DynatraceAsync
 from dynatrace.environment_v2.remote_configuration import (
-    RemoteConfigurationManagementOperation,
-    RemoteConfigurationManagementOperationOneAgentRequest,
     AttributeType,
-    OperationType,
     EntityType,
+    OperationType,
     RemoteConfigurationManagementJobPreview,
-    RemoteConfigurationManagementJobSummary
+    RemoteConfigurationManagementJobSummary,
+    RemoteConfigurationManagementOperation,
 )
 from dynatrace.pagination import PaginatedList
 
 TEST_ENTITY_ID = "0x2b7c0b02"
 
-def test_list(dt: Dynatrace):
-    jobs = dt.oneagents_remote_configuration.list()
-    
+
+async def test_list(dt: DynatraceAsync):
+    jobs = await dt.oneagents_remote_configuration.list()
+
     assert isinstance(jobs, PaginatedList)
-    
-    for job in jobs:
+
+    async for job in jobs:
         assert isinstance(job, RemoteConfigurationManagementJobSummary)
         assert hasattr(job, "id")
         assert hasattr(job, "entity_type")
@@ -27,18 +25,18 @@ def test_list(dt: Dynatrace):
         assert isinstance(job.entity_type, EntityType)
         break
 
-def test_post(dt: Dynatrace):
+
+async def test_post(dt: DynatraceAsync):
     operation = RemoteConfigurationManagementOperation.build(
         attribute=AttributeType.NETWORK_ZONE,
         operation=OperationType.SET,
-        value="test-zone"
+        value="test-zone",
     )
-    
-    job = dt.oneagents_remote_configuration.post(
-        entities=[TEST_ENTITY_ID],
-        operations=[operation]
+
+    job = await dt.oneagents_remote_configuration.post(
+        entities=[TEST_ENTITY_ID], operations=[operation]
     )
-    
+
     assert job is not None
     assert job.id is not None
     assert job.entity_type == EntityType.ONE_AGENT
@@ -47,29 +45,30 @@ def test_post(dt: Dynatrace):
     assert job.operations[0].operation == OperationType.SET
     assert job.operations[0].value == "test-zone"
 
-def test_get_current(dt: Dynatrace):
-    current_job = dt.oneagents_remote_configuration.get_current()
-    
+
+async def test_get_current(dt: DynatraceAsync):
+    current_job = await dt.oneagents_remote_configuration.get_current()
+
     if current_job is not None:
         assert current_job.id is not None
         assert hasattr(current_job, "timeout_time")
         assert current_job.processed_entities_count <= current_job.total_entities_count
 
-def test_post_preview(dt: Dynatrace):
+
+async def test_post_preview(dt: DynatraceAsync):
     operation = RemoteConfigurationManagementOperation.build(
         attribute=AttributeType.NETWORK_ZONE,
         operation=OperationType.SET,
-        value="test-zone"
+        value="test-zone",
     )
-    
-    previews = dt.oneagents_remote_configuration.post_preview(
-        entities=[TEST_ENTITY_ID],
-        operations=[operation]
+
+    previews = await dt.oneagents_remote_configuration.post_preview(
+        entities=[TEST_ENTITY_ID], operations=[operation]
     )
-    
+
     assert isinstance(previews, PaginatedList)
-    
-    for preview in previews:
+
+    async for preview in previews:
         assert isinstance(preview, RemoteConfigurationManagementJobPreview)
         assert preview.attribute == AttributeType.NETWORK_ZONE
         assert preview.operation == OperationType.SET
@@ -78,18 +77,18 @@ def test_post_preview(dt: Dynatrace):
         assert isinstance(preview.target_entities_count, int)
         break
 
-def test_validate(dt: Dynatrace):
+
+async def test_validate(dt: DynatraceAsync):
     operation = RemoteConfigurationManagementOperation.build(
         attribute=AttributeType.NETWORK_ZONE,
         operation=OperationType.SET,
         value="test-zone",
     )
-    
-    validation_result = dt.oneagents_remote_configuration.validate(
-        entities=[TEST_ENTITY_ID],
-        operations=[operation]
+
+    validation_result = await dt.oneagents_remote_configuration.validate(
+        entities=[TEST_ENTITY_ID], operations=[operation]
     )
-    
+
     # If validation succeeds, result should be None
     # If validation fails, result should contain error details
     if validation_result is not None:
@@ -98,10 +97,11 @@ def test_validate(dt: Dynatrace):
         assert isinstance(validation_result.invalid_entities, list)
         assert isinstance(validation_result.invalid_operations, list)
 
-def test_get_job(dt: Dynatrace):
+
+async def test_get_job(dt: DynatraceAsync):
     ID = "7974003406714390819"
-    job = dt.oneagents_remote_configuration.get(ID)
-    
+    job = await dt.oneagents_remote_configuration.get(ID)
+
     assert job is not None
     assert job.id == ID
     assert job.entity_type == EntityType.ONE_AGENT

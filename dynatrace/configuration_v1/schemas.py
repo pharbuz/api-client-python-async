@@ -14,9 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-
 from enum import Enum
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.schemas import ConfigurationMetadata
@@ -25,10 +24,12 @@ from dynatrace.environment_v2.schemas import ConfigurationMetadata
 
 
 class UpdateWindowsConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
-        self.windows: List[UpdateWindow] = [UpdateWindow(raw_element=uw) for uw in raw_element.get("windows", [])]
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.windows: list[UpdateWindow] = [
+            UpdateWindow(raw_element=uw) for uw in raw_element.get("windows", [])
+        ]
 
-    def to_json(self) -> Optional[Dict[str, Any]]:
+    def to_json(self) -> dict[str, Any] | None:
         if not self.windows:
             return None
 
@@ -36,11 +37,11 @@ class UpdateWindowsConfig(DynatraceObject):
 
 
 class UpdateWindow(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.id: str = raw_element.get("id", "")
-        self.name: Optional[str] = raw_element.get("name", "")
+        self.name: str | None = raw_element.get("name", "")
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "name": self.name,
@@ -48,16 +49,22 @@ class UpdateWindow(DynatraceObject):
 
 
 class TechMonitoringList(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
-        self.technologies: List[Technology] = [Technology(raw_element=t) for t in raw_element.get("technologies", [])]
-        self.metadata: ConfigurationMetadata = ConfigurationMetadata(raw_element=raw_element.get("metadata"))
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.technologies: list[Technology] = [
+            Technology(raw_element=t) for t in raw_element.get("technologies", [])
+        ]
+        self.metadata: ConfigurationMetadata = ConfigurationMetadata(
+            raw_element=raw_element.get("metadata")
+        )
 
 
 class Technology(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.type: TechnologyType = TechnologyType(raw_element.get("type"))
         self.monitoring_enabled: bool = raw_element.get("monitoringEnabled", False)
-        self.scope: Optional[SettingScope] = SettingScope(raw_element.get("scope")) if raw_element.get("scope") else None
+        self.scope: SettingScope | None = (
+            SettingScope(raw_element.get("scope")) if raw_element.get("scope") else None
+        )
 
 
 class SettingScope(Enum):

@@ -1,5 +1,7 @@
-from typing import Optional, Dict, Any, List, Union
+from __future__ import annotations
+
 from datetime import datetime
+from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -13,29 +15,27 @@ class SettingService:
 
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
-        
 
-    def list_schemas(self) -> PaginatedList["SchemaStub"]:
+    async def list_schemas(self) -> PaginatedList[SchemaStub]:
         """Lists all settings schemas available in your environment"""
 
-        return PaginatedList(
+        return await PaginatedList(
             SchemaStub,
             self.__http_client,
             target_url=self.SCHEMAS_ENDPOINT,
-            list_item="items"
-        )
+            list_item="items",
+        ).initialize()
 
-
-    def list_objects(
+    async def list_objects(
         self,
-        schema_id: Optional[str] = None,
-        scope: Optional[str] = None,
-        external_ids: Optional[str] = None,
-        fields: Optional[str] = None,
-        filter: Optional[str] = None,
-        sort: Optional[str] = None,
-        page_size: Optional[str] = None,
-    ) -> PaginatedList["SettingsObject"]:
+        schema_id: str | None = None,
+        scope: str | None = None,
+        external_ids: str | None = None,
+        fields: str | None = None,
+        filter: str | None = None,
+        sort: str | None = None,
+        page_size: str | None = None,
+    ) -> PaginatedList[SettingsObject]:
         """Lists settings
 
         :return: a list of settings with details
@@ -49,20 +49,18 @@ class SettingService:
             "sort": sort,
             "pageSize": page_size,
         }
-        return PaginatedList(
+        return await PaginatedList(
             SettingsObject,
             self.__http_client,
             target_url=self.OBJECTS_ENDPOINT,
             list_item="items",
             target_params=params,
-        )
+        ).initialize()
 
-    def create_object(
+    async def create_object(
         self,
-        validate_only: Optional[bool] = False,
-        body: Union[
-            Optional[List["SettingsObjectCreate"]], Optional["SettingsObjectCreate"]
-        ] = [],
+        validate_only: bool | None = False,
+        body: list[SettingsObjectCreate] | SettingsObjectCreate | None = None,
     ):
         """
         Creates a new settings object or validates the provided settigns object
@@ -75,37 +73,44 @@ class SettingService:
         if isinstance(body, SettingsObjectCreate):
             body = [body]
 
-        body = [o.json() for o in body]
+        body = [] if body is None else [o.json() for o in body]
 
-        response = self.__http_client.make_request(
-            self.OBJECTS_ENDPOINT, params=body, method="POST", query_params=query_params
+        response = (
+            await self.__http_client.make_request(
+                self.OBJECTS_ENDPOINT,
+                params=body,
+                method="POST",
+                query_params=query_params,
+            )
         ).json()
         return response
 
-    def get_object(self, object_id: str):
+    async def get_object(self, object_id: str):
         """Gets parameters of specified settings object
 
         :param object_id: the ID of the object
         :return: a Settings object
         """
-        response = self.__http_client.make_request(
-            f"{self.OBJECTS_ENDPOINT}/{object_id}"
+        response = (
+            await self.__http_client.make_request(
+                f"{self.OBJECTS_ENDPOINT}/{object_id}"
+            )
         ).json()
         return SettingsObject(raw_element=response)
 
-    def update_object(
-        self, object_id: str, body: Optional["SettingsObjectUpdate"] = None
+    async def update_object(
+        self, object_id: str, body: SettingsObjectUpdate | None = None
     ):
         """Updates an existing settings object
 
         :param object_id: the ID of the object
         :param value: the JSON body of the request. Contains updated parameters of the settings object.
         """
-        return self.__http_client.make_request(
+        return await self.__http_client.make_request(
             f"{self.OBJECTS_ENDPOINT}/{object_id}", params=body.json(), method="PUT"
         )
 
-    def delete_object(self, object_id: str, update_token: Optional[str] = None):
+    async def delete_object(self, object_id: str, update_token: str | None = None):
         """Deletes the specified object
 
         :param object_id: the ID of the object
@@ -113,7 +118,7 @@ class SettingService:
         :return: HTTP response
         """
         query_params = {"updateToken": update_token}
-        return self.__http_client.make_request(
+        return await self.__http_client.make_request(
             f"{self.OBJECTS_ENDPOINT}/{object_id}",
             method="DELETE",
             query_params=query_params,
@@ -121,17 +126,17 @@ class SettingService:
 
 
 class ModificationInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.deleteable: bool = raw_element.get("deleteable")
         self.first: bool = raw_element.get("first")
         self.modifiable: bool = raw_element.get("modifiable")
-        self.modifiable_paths: List[str] = raw_element.get("modifiablePaths", [])
+        self.modifiable_paths: list[str] = raw_element.get("modifiablePaths", [])
         self.movable: bool = raw_element.get("movable")
-        self.non_modifiable_paths: List[str] = raw_element.get("nonModifiablePaths", [])
+        self.non_modifiable_paths: list[str] = raw_element.get("nonModifiablePaths", [])
 
 
 class SettingsObject(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         # Mandatory
         self.object_id: str = raw_element["objectId"]
         self.value: dict = raw_element["value"]
@@ -171,10 +176,10 @@ class SettingsObjectCreate:
         schema_id: str,
         value: dict,
         scope: str,
-        external_id: Optional[str] = None,
-        insert_after: Optional[str] = None,
-        object_id: Optional[str] = None,
-        schema_version: Optional[str] = None,
+        external_id: str | None = None,
+        insert_after: str | None = None,
+        object_id: str | None = None,
+        schema_version: str | None = None,
     ):
         self.schema_id = schema_id
         self.value = value
@@ -201,10 +206,10 @@ class SettingsObjectUpdate:
     def __init__(
         self,
         value: dict,
-        insert_after: Optional[str] = None,
-        insert_before: Optional[str] = None,
-        schema_version: Optional[str] = None,
-        update_token: Optional[str] = None,
+        insert_after: str | None = None,
+        insert_before: str | None = None,
+        schema_version: str | None = None,
+        update_token: str | None = None,
     ):
         self.value = value
         self.insert_after = insert_after
@@ -226,7 +231,7 @@ class SettingsObjectUpdate:
 
 
 class SchemaStub(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.display_name = raw_element["displayName"]
         self.latest_schema_version = raw_element["latestSchemaVersion"]
         self.schema_id = raw_element["schemaId"]

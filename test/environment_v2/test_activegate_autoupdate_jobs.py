@@ -1,9 +1,11 @@
-from dynatrace import Dynatrace
-from datetime import datetime
+from datetime import UTC, datetime
+
+from dynatrace import DynatraceAsync
+from test.async_utils import collect
 
 
-def test_list(dt: Dynatrace):
-    update_jobs = list(dt.activegates_autoupdate_jobs.list())
+async def test_list(dt: DynatraceAsync):
+    update_jobs = await collect(await dt.activegates_autoupdate_jobs.list())
     assert isinstance(update_jobs, list)
 
     first_ag = update_jobs[0]
@@ -18,15 +20,15 @@ def test_list(dt: Dynatrace):
     assert not first_job.cancelable
     assert first_job.start_version == "1.217.89.20210506-182520"
     assert first_job.target_version == "1.217.96.20210507-181038"
-    assert first_job.timestamp == datetime.utcfromtimestamp(1620419177047 / 1000)
+    assert first_job.timestamp == datetime.fromtimestamp(1620419177047 / 1000, UTC)
     assert first_job.ag_type == "ENVIRONMENT"
     assert first_job.environments == ["eaa50379"]
     assert first_job.error is None
     assert first_job.duration is None
 
 
-def test_get(dt: Dynatrace):
-    update_jobs_list = dt.activegates_autoupdate_jobs.get("-1556499193")
+async def test_get(dt: DynatraceAsync):
+    update_jobs_list = await dt.activegates_autoupdate_jobs.get("-1556499193")
 
     assert update_jobs_list.activegate_id == "-1556499193"
     assert isinstance(update_jobs_list.update_jobs, list)
@@ -39,7 +41,7 @@ def test_get(dt: Dynatrace):
     assert not first_job.cancelable
     assert first_job.start_version == "1.217.89.20210506-182520"
     assert first_job.target_version == "1.217.96.20210507-181038"
-    assert first_job.timestamp == datetime.utcfromtimestamp(1620419177047 / 1000)
+    assert first_job.timestamp == datetime.fromtimestamp(1620419177047 / 1000, UTC)
     assert first_job.ag_type == "ENVIRONMENT"
     assert first_job.environments == ["eaa50379"]
     assert first_job.error is None

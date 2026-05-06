@@ -18,17 +18,17 @@ limitations under the License.
 # NOTE: Early Adopter implemented based on 1.226. Check back for updates. #
 ###########################################################################
 
-from typing import List, Dict, Any, Optional, Union
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
-from dynatrace.http_client import HttpClient
-from dynatrace.pagination import PaginatedList
-from dynatrace.utils import int64_to_datetime, datetime_to_int64, timestamp_to_string
 from dynatrace.environment_v2.custom_tags import METag
 from dynatrace.environment_v2.monitored_entities import EntityStub
 from dynatrace.environment_v2.schemas import ManagementZone
+from dynatrace.http_client import HttpClient
+from dynatrace.pagination import PaginatedList
+from dynatrace.utils import datetime_to_int64, int64_to_datetime, timestamp_to_string
 
 
 class EventServiceV2:
@@ -39,13 +39,13 @@ class EventServiceV2:
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
 
-    def list(
+    async def list(
         self,
-        page_size: Optional[int] = None,
-        time_from: Optional[Union[datetime, str]] = None,
-        time_to: Optional[Union[datetime, str]] = None,
-        event_selector: Optional[str] = None,
-        entity_selector: Optional[str] = None,
+        page_size: int | None = None,
+        time_from: datetime | str | None = None,
+        time_to: datetime | str | None = None,
+        event_selector: str | None = None,
+        entity_selector: str | None = None,
     ) -> "PaginatedList[Event]":
         """Lists events within the specified timeframe
 
@@ -70,19 +70,29 @@ class EventServiceV2:
             "eventSelector": event_selector,
             "entitySelector": entity_selector,
         }
-        return PaginatedList(target_class=Event, http_client=self.__http_client, target_url=self.ENDPOINT_EVENTS, list_item="events", target_params=params)
+        return await PaginatedList(
+            target_class=Event,
+            http_client=self.__http_client,
+            target_url=self.ENDPOINT_EVENTS,
+            list_item="events",
+            target_params=params,
+        ).initialize()
 
-    def get(self, event_id: str) -> "Event":
+    async def get(self, event_id: str) -> "Event":
         """Gets the properties of an event referenced by ID.
 
         :param event_id: The ID of the required event.
 
         :returns Event: the requested event
         """
-        response = self.__http_client.make_request(path=f"{self.ENDPOINT_EVENTS}/{event_id}")
+        response = await self.__http_client.make_request(
+            path=f"{self.ENDPOINT_EVENTS}/{event_id}"
+        )
         return Event(raw_element=response.json(), http_client=self.__http_client)
 
-    def list_types(self, page_size: Optional[int] = None) -> "PaginatedList[EventType]":
+    async def list_types(
+        self, page_size: int | None = None
+    ) -> "PaginatedList[EventType]":
         """Lists all event types.
 
         :param page_size: The amount of event types in a single response payload. The maximal allowed page size is 500. If not set, 100 is used.
@@ -90,29 +100,35 @@ class EventServiceV2:
         :returns PaginatedList[EventType]: the list of event types
         """
         params = {"pageSize": page_size}
-        return PaginatedList(
-            target_class=EventType, http_client=self.__http_client, target_url=self.ENDPOINT_TYPES, list_item="eventTypeInfos", target_params=params
-        )
+        return await PaginatedList(
+            target_class=EventType,
+            http_client=self.__http_client,
+            target_url=self.ENDPOINT_TYPES,
+            list_item="eventTypeInfos",
+            target_params=params,
+        ).initialize()
 
-    def get_type(self, event_type: str) -> "EventType":
+    async def get_type(self, event_type: str) -> "EventType":
         """Gets the properties of a specific event type.
 
         :param event_type: The event type you're inquiring.
 
         :returns EventType: the event type requested
         """
-        response = self.__http_client.make_request(path=f"{self.ENDPOINT_TYPES}/{event_type}")
+        response = await self.__http_client.make_request(
+            path=f"{self.ENDPOINT_TYPES}/{event_type}"
+        )
         return EventType(raw_element=response.json(), http_client=self.__http_client)
 
-    def ingest(
+    async def ingest(
         self,
         event_type: str,
         title: str,
-        start_time: Optional[Union[datetime, str]] = None,
-        end_time: Optional[Union[datetime, str]] = None,
+        start_time: datetime | str | None = None,
+        end_time: datetime | str | None = None,
         timeout: int = 15,
-        entity_selector: Optional[str] = None,
-        properties: Optional[Dict[str, str]] = None
+        entity_selector: str | None = None,
+        properties: dict[str, str] | None = None,
     ):
         """
         Ingests a custom event to Dynatrace
@@ -125,7 +141,7 @@ class EventServiceV2:
         :param entity_selector: the entity selector, defining a set of Dynatrace entities to be associated with the event
         :param properties: a map of event properties
         """
-        
+
         params = {
             "eventType": event_type,
             "title": title,
@@ -133,68 +149,103 @@ class EventServiceV2:
             "endTime": datetime_to_int64(end_time),
             "timeout": timeout,
             "entitySelector": entity_selector,
-            "properties": properties
+            "properties": properties,
         }
 
-        return self.__http_client.make_request(f"{self.ENDPOINT_INGEST}", method="POST", params=params).json()
+        return (
+            await self.__http_client.make_request(
+                f"{self.ENDPOINT_INGEST}", method="POST", params=params
+            )
+        ).json()
 
 
 class Event(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         # Mandatory
         self.event_id: str = raw_element["eventId"]
         self.event_type: str = raw_element["eventType"]
         self.start_time: datetime = int64_to_datetime(int(raw_element["startTime"]))
         # Optional
-        self.entity_tags: Optional[List[METag]] = [METag(raw_element=et) for et in raw_element.get("entityTags", [])]
-        self.suppress_alert: Optional[bool] = raw_element.get("suppressAlert")
-        self.frequent_event: Optional[bool] = raw_element.get("frequentEvent")
-        self.suppress_problem: Optional[bool] = raw_element.get("suppressProblem")
-        self.under_maintenance: Optional[bool] = raw_element.get("underMaintenance")
-        self.entity_id: Optional[EntityStub] = EntityStub(raw_element=raw_element["entityId"]) if raw_element.get("entityId") else None
-        self.management_zones: Optional[List[ManagementZone]] = [ManagementZone(raw_element=mz) for mz in raw_element.get("managementZones", [])]
-        self.properties: Optional[List[EventProperty]] = [EventProperty(raw_element=p) for p in raw_element.get("properties", [])]
-        self.status: Optional[EventStatus] = EventStatus(raw_element.get("status")) if raw_element.get("status") else None
-        self.title: Optional[str] = raw_element.get("title")
-        self.correlation_id: Optional[str] = raw_element.get("correlationId")
-        self.end_time: Optional[datetime] = int64_to_datetime(raw_element["endTime"]) if raw_element["endTime"] != -1 else None
+        self.entity_tags: list[METag] | None = [
+            METag(raw_element=et) for et in raw_element.get("entityTags", [])
+        ]
+        self.suppress_alert: bool | None = raw_element.get("suppressAlert")
+        self.frequent_event: bool | None = raw_element.get("frequentEvent")
+        self.suppress_problem: bool | None = raw_element.get("suppressProblem")
+        self.under_maintenance: bool | None = raw_element.get("underMaintenance")
+        self.entity_id: EntityStub | None = (
+            EntityStub(raw_element=raw_element["entityId"])
+            if raw_element.get("entityId")
+            else None
+        )
+        self.management_zones: list[ManagementZone] | None = [
+            ManagementZone(raw_element=mz)
+            for mz in raw_element.get("managementZones", [])
+        ]
+        self.properties: list[EventProperty] | None = [
+            EventProperty(raw_element=p) for p in raw_element.get("properties", [])
+        ]
+        self.status: EventStatus | None = (
+            EventStatus(raw_element.get("status"))
+            if raw_element.get("status")
+            else None
+        )
+        self.title: str | None = raw_element.get("title")
+        self.correlation_id: str | None = raw_element.get("correlationId")
+        self.end_time: datetime | None = (
+            int64_to_datetime(raw_element["endTime"])
+            if raw_element["endTime"] != -1
+            else None
+        )
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         return {
             "eventId": self.event_id,
             "eventType": self.event_type,
             "startTime": datetime_to_int64(self.start_time),
             "endTime": datetime_to_int64(self.end_time),
-            "entityTags": [tag.to_json() for tag in self.entity_tags] if self.entity_tags else [],
+            "entityTags": (
+                [tag.to_json() for tag in self.entity_tags] if self.entity_tags else []
+            ),
             "suppressAlert": self.suppress_alert,
             "frequentEvent": self.frequent_event,
             "suppressProblem": self.suppress_problem,
             "underMaintenance": self.under_maintenance,
             "entityId": self.entity_id.to_json() if self.entity_id else None,
-            "managementZones": [mz.to_json() for mz in self.management_zones] if self.management_zones else [],
-            "properties": [p.to_json() for p in self.properties] if self.properties else [],
+            "managementZones": (
+                [mz.to_json() for mz in self.management_zones]
+                if self.management_zones
+                else []
+            ),
+            "properties": (
+                [p.to_json() for p in self.properties] if self.properties else []
+            ),
             "title": self.title,
             "correlationId": self.correlation_id,
         }
 
 
 class EventProperty(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
-        self.key: Optional[str] = raw_element.get("key")
-        self.value: Optional[str] = raw_element.get("value")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.key: str | None = raw_element.get("key")
+        self.value: str | None = raw_element.get("value")
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         return {"key": self.key, "value": self.value}
 
 
 class EventType(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.type: str = raw_element["type"]
         self.display_name: str = raw_element["displayName"]
-        self.severity_level: Optional[EventSeverity] = EventSeverity(raw_element["severityLevel"]) if raw_element.get("severityLevel") else None
-        self.description: Optional[str] = raw_element.get("description")
+        self.severity_level: EventSeverity | None = (
+            EventSeverity(raw_element["severityLevel"])
+            if raw_element.get("severityLevel")
+            else None
+        )
+        self.description: str | None = raw_element.get("description")
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         return {
             "type": self.type,
             "displayName": self.display_name,

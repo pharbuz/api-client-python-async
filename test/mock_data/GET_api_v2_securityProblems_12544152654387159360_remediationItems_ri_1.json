@@ -1,0 +1,8 @@
+{
+  "remediationItemId": "ri-1",
+  "entityId": "PROCESS_GROUP_INSTANCE-1",
+  "entityName": "checkout-service",
+  "muteState": {
+    "muted": false
+  }
+}
