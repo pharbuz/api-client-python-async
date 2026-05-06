@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import List
 from enum import Enum
-from requests import Response
 
-from dynatrace.pagination import PaginatedList
+from httpx import Response
+
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
+from dynatrace.pagination import PaginatedList
 
 
 class NotificationType(Enum):
@@ -71,9 +71,9 @@ class EmailNotificationConfig(Notification):
         self.type: NotificationType = NotificationType(raw_element.get("type"))
         self.subject: str = raw_element.get("subject")
         self.body: str = raw_element.get("body")
-        self.receivers: List[str] = raw_element.get("receivers")
-        self.cc_receivers: List[str] = raw_element.get("ccReceivers")
-        self.bcc_receivers: List[str] = raw_element.get("bccReceivers")
+        self.receivers: list[str] = raw_element.get("receivers")
+        self.cc_receivers: list[str] = raw_element.get("ccReceivers")
+        self.bcc_receivers: list[str] = raw_element.get("bccReceivers")
 
 
 class HipChatNotificationConfig(Notification):
@@ -199,8 +199,12 @@ class WebHookNotificationConfig(Notification):
         self.url: str = raw_element.get("url")
         self.accept_any_certificate: bool = raw_element.get("acceptAnyCertificate")
         self.payload: str = raw_element.get("payload")
-        self.headers: List[HttpHeader] = [HttpHeader(raw_element=header) for header in raw_element.get("headers", {})]
-        self.notify_event_merges_enabled: bool = raw_element.get("notifyEventMergesEnabled")
+        self.headers: list[HttpHeader] = [
+            HttpHeader(raw_element=header) for header in raw_element.get("headers", {})
+        ]
+        self.notify_event_merges_enabled: bool = raw_element.get(
+            "notifyEventMergesEnabled"
+        )
 
 
 class XMattersNotificationConfig(Notification):
@@ -212,18 +216,26 @@ class XMattersNotificationConfig(Notification):
         self.type: NotificationType = NotificationType(raw_element.get("type"))
         self.url: str = raw_element.get("url")
         self.accept_any_certificate: bool = raw_element.get("acceptAnyCertificate")
-        self.headers: List[HttpHeader] = [HttpHeader(raw_element=header) for header in raw_element.get("headers", {})]
+        self.headers: list[HttpHeader] = [
+            HttpHeader(raw_element=header) for header in raw_element.get("headers", {})
+        ]
         self.payload: str = raw_element.get("payload")
 
 
 class NotificationConfigStub(DynatraceObject):
-    def get_full_configuration(self) -> Notification:
+    async def get_full_configuration(self) -> Notification:
         """
         Gets the full notification configuration for this stub.
         """
-        response = self._http_client.make_request(f"/api/config/v1/notifications/{self.id}").json()
+        response = (
+            await self._http_client.make_request(
+                f"/api/config/v1/notifications/{self.id}"
+            )
+        ).json()
         if self.type == NotificationType.ANSIBLETOWER:
-            notification = AnsibleTowerNotificationConfig(self._http_client, None, response)
+            notification = AnsibleTowerNotificationConfig(
+                self._http_client, None, response
+            )
         elif self.type == NotificationType.EMAIL:
             notification = EmailNotificationConfig(self._http_client, None, response)
         elif self.type == NotificationType.HIPCHAT:
@@ -233,15 +245,21 @@ class NotificationConfigStub(DynatraceObject):
         elif self.type == NotificationType.OPS_GENIE:
             notification = OpsGenieNotificationConfig(self._http_client, None, response)
         elif self.type == NotificationType.PAGER_DUTY:
-            notification = PagerDutyNotificationConfig(self._http_client, None, response)
+            notification = PagerDutyNotificationConfig(
+                self._http_client, None, response
+            )
         elif self.type == NotificationType.SERVICE_NOW:
-            notification = ServiceNowNotificationConfig(self._http_client, None, response)
+            notification = ServiceNowNotificationConfig(
+                self._http_client, None, response
+            )
         elif self.type == NotificationType.SLACK:
             notification = SlackNotificationConfig(self._http_client, None, response)
         elif self.type == NotificationType.TRELLO:
             notification = TrelloNotificationConfig(self._http_client, None, response)
         elif self.type == NotificationType.VICTOROPS:
-            notification = VictorOpsNotificationConfig(self._http_client, None, response)
+            notification = VictorOpsNotificationConfig(
+                self._http_client, None, response
+            )
         elif self.type == NotificationType.WEBHOOK:
             notification = WebHookNotificationConfig(self._http_client, None, response)
         elif self.type == NotificationType.XMATTERS:
@@ -250,11 +268,13 @@ class NotificationConfigStub(DynatraceObject):
             notification = Notification(self._http_client, None, response)
         return notification
 
-    def delete(self) -> Response:
+    async def delete(self) -> Response:
         """
         Delete the notification for this stub.
         """
-        return self._http_client.make_request(f"/api/config/v1/notifications/{self.id}", method="DELETE")
+        return await self._http_client.make_request(
+            f"/api/config/v1/notifications/{self.id}", method="DELETE"
+        )
 
     def _create_from_raw_data(self, raw_element):
         self.id: str = raw_element.get("id")
@@ -267,14 +287,21 @@ class NotificationService:
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
 
-    def list(self) -> PaginatedList[NotificationConfigStub]:
+    async def list(self) -> PaginatedList[NotificationConfigStub]:
         """
         Lists all alerting profiles in the environmemt. No configurable parameters.
         """
-        return PaginatedList(NotificationConfigStub, self.__http_client, f"/api/config/v1/notifications", list_item="values")
+        return await PaginatedList(
+            NotificationConfigStub,
+            self.__http_client,
+            "/api/config/v1/notifications",
+            list_item="values",
+        ).initialize()
 
-    def delete(self, notification_id: str) -> Response:
+    async def delete(self, notification_id: str) -> Response:
         """
         Delete the notification with the specified id.
         """
-        return self.__http_client.make_request(f"/api/config/v1/notifications/{notification_id}", method="DELETE")
+        return await self.__http_client.make_request(
+            f"/api/config/v1/notifications/{notification_id}", method="DELETE"
+        )

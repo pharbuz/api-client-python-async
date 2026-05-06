@@ -1,0 +1,8 @@
+{
+  "remediationProgressEntities": [
+    {
+      "entityId": "PROCESS_GROUP_INSTANCE-2",
+      "entityName": "payments-service"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "securityProblemId": "12544152654387159360",
+  "displayId": "S-1234",
+  "title": "Vulnerable package in production",
+  "status": "OPEN",
+  "muted": false,
+  "technology": "PYTHON",
+  "vulnerabilityType": "CODE_LEVEL",
+  "externalVulnerabilityId": "CVE-2024-9999",
+  "packageName": "vulnerable-lib",
+  "url": "https://tenant.live.dynatrace.com/ui/security/problems/S-1234",
+  "cveIds": [
+    "CVE-2024-9999"
+  ],
+  "firstSeenTimestamp": 1717243200000,
+  "lastOpenedTimestamp": 1717246800000,
+  "lastUpdatedTimestamp": 1717250400000,
+  "lastResolvedTimestamp": 1717254000000,
+  "riskAssessment": {
+    "riskLevel": "HIGH",
+    "riskScore": 7.8,
+    "baseRiskLevel": "MEDIUM",
+    "baseRiskScore": 5.9,
+    "exposure": "PUBLIC_NETWORK",
+    "dataAssets": "REACHABLE",
+    "publicExploit": "AVAILABLE",
+    "vulnerableFunctionUsage": "IN_USE",
+    "assessmentAccuracy": "FULL",
+    "riskVector": "AV:N/AC:L",
+    "baseRiskVector": "CVSS:3.1/AV:N/AC:L"
+  },
+  "managementZones": [
+    {
+      "id": "8692695975020499402",
+      "name": "Operations Team"
+    }
+  ]
+}

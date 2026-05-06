@@ -1,17 +1,22 @@
-from dynatrace import Dynatrace
-from dynatrace.configuration_v1.notifications import NotificationConfigStub, NotificationType, ServiceNowNotificationConfig
+from dynatrace import DynatraceAsync
+from dynatrace.configuration_v1.notifications import (
+    NotificationConfigStub,
+    NotificationType,
+    ServiceNowNotificationConfig,
+)
 from dynatrace.pagination import PaginatedList
+from test.async_utils import collect
 
 ID = "0d06c889-4cea-4b45-aefa-a277790e784d"
 NAME = "Service Now Example"
 TYPE = NotificationType.SERVICE_NOW
 
 
-def test_list(dt: Dynatrace):
-    notifications = dt.notifications.list()
+async def test_list(dt: DynatraceAsync):
+    notifications = await dt.notifications.list()
     assert isinstance(notifications, PaginatedList)
 
-    list_notifications = list(notifications)
+    list_notifications = await collect(notifications)
     assert len(list_notifications) == 4
 
     first = list_notifications[0]
@@ -22,12 +27,12 @@ def test_list(dt: Dynatrace):
     assert first.type == TYPE
 
 
-def test_get_full_configuration(dt: Dynatrace):
-    notifications = dt.notifications.list()
-    list_notifications = list(notifications)
+async def test_get_full_configuration(dt: DynatraceAsync):
+    notifications = await dt.notifications.list()
+    list_notifications = await collect(notifications)
     first = list_notifications[0]
 
-    full = first.get_full_configuration()
+    full = await first.get_full_configuration()
 
     # type checks
     assert isinstance(full, ServiceNowNotificationConfig)
@@ -47,9 +52,9 @@ def test_get_full_configuration(dt: Dynatrace):
     assert full.name == NAME
     assert full.type == TYPE
     assert full.alerting_profile == "7693d108-fda9-3529-8ca3-55e9269b6097"
-    assert full.active == True
+    assert full.active
     assert full.instance_name == "dev63549"
-    assert full.url == None
+    assert full.url is None
     assert full.message == "{State} {ProblemID} {ProblemImpact} {ProblemSeverity}"
-    assert full.send_incidents == True
-    assert full.send_events == False
+    assert full.send_incidents
+    assert not full.send_events

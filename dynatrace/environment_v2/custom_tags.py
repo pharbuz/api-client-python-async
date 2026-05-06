@@ -14,9 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from enum import Enum
+import builtins
 from datetime import datetime
-from typing import List, Optional, Union, Dict, Any
+from enum import Enum
+from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -30,8 +31,11 @@ class CustomTagService:
     def __init__(self, http_client: HttpClient) -> None:
         self.__http_client = http_client
 
-    def list(
-        self, entity_selector: str, time_from: Optional[Union[datetime, str]] = None, time_to: Optional[Union[datetime, str]] = None
+    async def list(
+        self,
+        entity_selector: str,
+        time_from: datetime | str | None = None,
+        time_to: datetime | str | None = None,
     ) -> PaginatedList["METag"]:
         """
         Returns a list of custom tags
@@ -41,16 +45,26 @@ class CustomTagService:
 
         :return: A list of METag objects
         """
-        params = {"entitySelector": entity_selector, "from": timestamp_to_string(time_from), "to": timestamp_to_string(time_to)}
+        params = {
+            "entitySelector": entity_selector,
+            "from": timestamp_to_string(time_from),
+            "to": timestamp_to_string(time_to),
+        }
 
-        return PaginatedList(METag, self.__http_client, target_url=self.ENDPOINT, target_params=params, list_item="tags")
+        return await PaginatedList(
+            METag,
+            self.__http_client,
+            target_url=self.ENDPOINT,
+            target_params=params,
+            list_item="tags",
+        ).initialize()
 
-    def post(
+    async def post(
         self,
         entity_selector: str,
-        tags: List["AddEntityTags"],
-        time_from: Optional[Union[datetime, str]] = None,
-        time_to: Optional[Union[datetime, str]] = None,
+        tags: builtins.list["AddEntityTags"],
+        time_from: datetime | str | None = None,
+        time_to: datetime | str | None = None,
     ) -> "AddedEntityTags":
         """
         Adds custom tags to the specified entities
@@ -69,17 +83,21 @@ class CustomTagService:
         body = {
             "tags": [t.to_json() for t in tags],
         }
-        response = self.__http_client.make_request(self.ENDPOINT, params=body, method="POST", query_params=query_params).json()
+        response = (
+            await self.__http_client.make_request(
+                self.ENDPOINT, params=body, method="POST", query_params=query_params
+            )
+        ).json()
         return AddedEntityTags(raw_element=response)
 
-    def delete(
+    async def delete(
         self,
         key: str,
         entity_selector: str,
-        value: Optional[str] = None,
-        delete_all_with_key: Optional[bool] = None,
-        time_from: Optional[Union[datetime, str]] = None,
-        time_to: Optional[Union[datetime, str]] = None,
+        value: str | None = None,
+        delete_all_with_key: bool | None = None,
+        time_from: datetime | str | None = None,
+        time_to: datetime | str | None = None,
     ) -> "DeletedEntityTags":
         """
         Deletes the specified tag from the specified entities
@@ -92,38 +110,42 @@ class CustomTagService:
             "from": timestamp_to_string(time_from),
             "to": timestamp_to_string(time_to),
         }
-        response = self.__http_client.make_request(self.ENDPOINT, params=params, method="DELETE")
+        response = await self.__http_client.make_request(
+            self.ENDPOINT, params=params, method="DELETE"
+        )
         return DeletedEntityTags(raw_element=response.json())
 
 
 class AddedEntityTags(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.matched_entities_count: int = raw_element.get("matchedEntitiesCount", 0)
-        self.applied_tags: List[METag] = [METag(raw_element=tag) for tag in raw_element.get("appliedTags", [])]
+        self.applied_tags: list[METag] = [
+            METag(raw_element=tag) for tag in raw_element.get("appliedTags", [])
+        ]
 
 
 class DeletedEntityTags(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.matched_entities_count: int = raw_element.get("matchedEntitiesCount", 0)
 
 
 class AddEntityTags:
-    def __init__(self, key: str, value: Optional[str] = None):
+    def __init__(self, key: str, value: str | None = None):
         self.key = key
         self.value = value
 
-    def to_json(self) -> Dict[str, str]:
+    def to_json(self) -> dict[str, str]:
         return {"key": self.key, "value": self.value}
 
 
 class METag(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.context: TagContext = TagContext(raw_element["context"])
         self.key: str = raw_element["key"]
-        self.value: Optional[str] = raw_element.get("value")
-        self.string_representation: Optional[str] = raw_element.get("stringRepresentation")
+        self.value: str | None = raw_element.get("value")
+        self.string_representation: str | None = raw_element.get("stringRepresentation")
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         return {"context": str(self.context), "key": self.key, "value": self.value}
 
 

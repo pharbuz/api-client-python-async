@@ -15,9 +15,8 @@ limitations under the License.
 """
 
 from datetime import datetime
-from typing import Optional, List, Dict
 
-from requests import Response
+from httpx import Response
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -38,24 +37,24 @@ class EventService:
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
 
-    def create_event(
+    async def create_event(
         self,
         event_type: str,
         entity_id: str,
         source: str,
-        start: Optional[datetime] = None,
-        end: Optional[datetime] = None,
-        timeout_minutes: Optional[int] = None,
-        annotation_type: Optional[str] = None,
-        annotation_description: Optional[str] = None,
-        description: Optional[str] = None,
-        title: Optional[str] = None,
-        custom_properties: Optional[Dict[str, str]] = None,
-        allow_davis_merge: Optional[bool] = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        timeout_minutes: int | None = None,
+        annotation_type: str | None = None,
+        annotation_description: str | None = None,
+        description: str | None = None,
+        title: str | None = None,
+        custom_properties: dict[str, str] | None = None,
+        allow_davis_merge: bool | None = None,
     ) -> Response:
 
         attach_rules = PushEventAttachRules(entity_ids=[entity_id], tag_rule=None)
-        return EventCreation(
+        return await EventCreation(
             self.__http_client,
             event_type=event_type,
             attach_rules=attach_rules,
@@ -79,15 +78,15 @@ class EventCreation(DynatraceObject):
         event_type: str,
         attach_rules: "PushEventAttachRules",
         source: str,
-        start: Optional[datetime] = None,
-        end: Optional[datetime] = None,
-        timeout_minutes: Optional[int] = None,
-        annotation_type: Optional[str] = None,
-        annotation_description: Optional[str] = None,
-        description: Optional[str] = None,
-        title: Optional[str] = None,
-        custom_properties: Optional[str] = None,
-        allow_davis_merge: Optional[bool] = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        timeout_minutes: int | None = None,
+        annotation_type: str | None = None,
+        annotation_description: str | None = None,
+        description: str | None = None,
+        title: str | None = None,
+        custom_properties: str | None = None,
+        allow_davis_merge: bool | None = None,
     ):
 
         raw_element = {
@@ -107,12 +106,16 @@ class EventCreation(DynatraceObject):
 
         super().__init__(http_client, None, raw_element)
 
-    def post(self):
-        return self._http_client.make_request(f"/api/v1/events", params=self._raw_element, method="POST")
+    async def post(self):
+        return await self._http_client.make_request(
+            "/api/v1/events", params=self._raw_element, method="POST"
+        )
 
 
 class PushEventAttachRules:
-    def __init__(self, entity_ids: Optional[List[str]], tag_rule: Optional[List["TagMatchRule"]]):
+    def __init__(
+        self, entity_ids: list[str] | None, tag_rule: list["TagMatchRule"] | None
+    ):
 
         self._raw_element = {
             "entityIds": entity_ids,
@@ -121,7 +124,7 @@ class PushEventAttachRules:
 
 
 class TagMatchRule:
-    def __init__(self, me_types: List[str], tags: List[str]):
+    def __init__(self, me_types: list[str], tags: list[str]):
         self._raw_element = {
             "meTypes": me_types,
             "tags": tags,

@@ -13,14 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from typing import Optional, Dict, Any, List, Union
-from enum import Enum
+
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import HeaderPaginatedList
 from dynatrace.utils import datetime_to_int64
+
 
 class RelativeTime(Enum):
     MIN = "min"
@@ -55,14 +57,14 @@ class MonitoringMode(Enum):
 
 
 class TagInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.context: str = raw_element.get("context")
         self.key: str = raw_element.get("key")
         self.value: str = raw_element.get("value")
 
 
 class AgentVersion(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.major: int = raw_element.get("major")
         self.minor: int = raw_element.get("minor")
         self.revision: int = raw_element.get("revision")
@@ -71,27 +73,35 @@ class AgentVersion(DynatraceObject):
 
 
 class HostGroup(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.me_id: str = raw_element.get("meId")
         self.name: str = raw_element.get("name")
 
 
 class Host(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.entity_id: str = raw_element.get("entityId")
         self.display_name: str = raw_element.get("displayName")
         self.customized_name: str = raw_element.get("customizedName")
         self.discovered_name: str = raw_element.get("discoveredName")
         self.first_seen_timestamp: int = raw_element.get("firstSeenTimestamp")
         self.last_seen_timestamp: int = raw_element.get("lastSeenTimestamp")
-        self.tags: List[TagInfo] = [TagInfo(raw_element=tag) for tag in raw_element.get("tags")]
+        self.tags: list[TagInfo] = [
+            TagInfo(raw_element=tag) for tag in raw_element.get("tags")
+        ]
         self.os_type: str = raw_element.get("osType")
         self.consumed_host_units: float = raw_element.get("consumedHostUnits")
-        self.agent_version: AgentVersion = AgentVersion(raw_element=raw_element.get("agentVersion"))
-        self.monitoring_mode: Union[MonitoringMode, None] = MonitoringMode(raw_element.get("monitoringMode"))
+        self.agent_version: AgentVersion = AgentVersion(
+            raw_element=raw_element.get("agentVersion")
+        )
+        self.monitoring_mode: MonitoringMode | None = MonitoringMode(
+            raw_element.get("monitoringMode")
+        )
         self.network_zone_id: str = raw_element.get("networkZoneId")
         self.host_group: HostGroup = HostGroup(raw_element=raw_element.get("hostGroup"))
-        self.os_architecture: OSArchitecture = OSArchitecture(raw_element.get("osArchitecture"))
+        self.os_architecture: OSArchitecture = OSArchitecture(
+            raw_element.get("osArchitecture")
+        )
         self.cpu_cores: int = raw_element.get("cpuCores")
         self.os_version: str = raw_element.get("osVersion")
 
@@ -100,14 +110,14 @@ class SmartScapeHostsService:
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
 
-    def list(
+    async def list(
         self,
-        relative_time: Optional[Union[RelativeTime, str]] = RelativeTime.THREE_DAYS,
-        start_timestamp: Optional[Union[datetime, str]] = None,
-        end_timestamp: Optional[Union[datetime, str]] = None,
+        relative_time: RelativeTime | str | None = RelativeTime.THREE_DAYS,
+        start_timestamp: datetime | str | None = None,
+        end_timestamp: datetime | str | None = None,
         page_size: int = 200,
-        management_zone: Optional[int] = None,
-        host_group_name: Optional[str] = None,
+        management_zone: int | None = None,
+        host_group_name: str | None = None,
     ) -> HeaderPaginatedList[Host]:
         """
         List all monitored hosts
@@ -123,10 +133,14 @@ class SmartScapeHostsService:
         """
         params = {
             "pageSize": page_size,
-            "relativeTime": RelativeTime(relative_time).value if not start_timestamp else None,
+            "relativeTime": (
+                RelativeTime(relative_time).value if not start_timestamp else None
+            ),
             "startTimestamp": datetime_to_int64(start_timestamp),
             "endTimestamp": datetime_to_int64(end_timestamp),
             "managementZone": management_zone if management_zone else None,
             "hostGroupName": host_group_name if host_group_name else None,
         }
-        return HeaderPaginatedList(Host, self.__http_client, f"/api/v1/entity/infrastructure/hosts", params)
+        return await HeaderPaginatedList(
+            Host, self.__http_client, "/api/v1/entity/infrastructure/hosts", params
+        ).initialize()

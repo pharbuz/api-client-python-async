@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import Dict, Any
+from typing import Any
 
-from requests import Response
+from httpx import Response
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.schemas import ConfigurationMetadata
@@ -27,37 +27,65 @@ class ActiveGateAutoUpdateConfigurationService:
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
 
-    def get_global(self) -> "ActiveGateGlobalAutoUpdateConfig":
-        return ActiveGateGlobalAutoUpdateConfig(raw_element=self.__http_client.make_request("/api/v2/activeGates/autoUpdate").json())
+    async def get_global(self) -> "ActiveGateGlobalAutoUpdateConfig":
+        return ActiveGateGlobalAutoUpdateConfig(
+            raw_element=(
+                await self.__http_client.make_request("/api/v2/activeGates/autoUpdate")
+            ).json()
+        )
 
-    def put_global(self, setting: str) -> Response:
+    async def put_global(self, setting: str) -> Response:
         """
         Puts the global auto-update configuration of environment ActiveGates
 
         :param setting: The state of auto-updates for all ActiveGates connected to the environment or Managed cluster. ENABLED or DISABLED
         """
-        return self.__http_client.make_request("/api/v2/activeGates/autoUpdate", method="PUT", params={"globalSetting": setting})
+        return await self.__http_client.make_request(
+            "/api/v2/activeGates/autoUpdate",
+            method="PUT",
+            params={"globalSetting": setting},
+        )
 
-    def validate_global(self, setting: str) -> Response:
-        return self.__http_client.make_request("/api/v2/activeGates/autoUpdate/validator", method="POST", params={"globalSetting": setting})
+    async def validate_global(self, setting: str) -> Response:
+        return await self.__http_client.make_request(
+            "/api/v2/activeGates/autoUpdate/validator",
+            method="POST",
+            params={"globalSetting": setting},
+        )
 
-    def get(self, activegate_id: str) -> "ActiveGateAutoUpdateConfig":
-        return ActiveGateAutoUpdateConfig(raw_element=self.__http_client.make_request(f"/api/v2/activeGates/{activegate_id}/autoUpdate").json())
+    async def get(self, activegate_id: str) -> "ActiveGateAutoUpdateConfig":
+        return ActiveGateAutoUpdateConfig(
+            raw_element=(
+                await self.__http_client.make_request(
+                    f"/api/v2/activeGates/{activegate_id}/autoUpdate"
+                )
+            ).json()
+        )
 
-    def put(self, activegate_id: str, setting: str) -> Response:
-        return self.__http_client.make_request(f"/api/v2/activeGates/{activegate_id}/autoUpdate", method="PUT", params={"setting": setting})
+    async def put(self, activegate_id: str, setting: str) -> Response:
+        return await self.__http_client.make_request(
+            f"/api/v2/activeGates/{activegate_id}/autoUpdate",
+            method="PUT",
+            params={"setting": setting},
+        )
 
-    def validate(self, activegate_id: str, setting: str) -> Response:
-        return self.__http_client.make_request(f"/api/v2/activeGates/{activegate_id}/autoUpdate/validator", method="POST", params={"setting": setting})
+    async def validate(self, activegate_id: str, setting: str) -> Response:
+        return await self.__http_client.make_request(
+            f"/api/v2/activeGates/{activegate_id}/autoUpdate/validator",
+            method="POST",
+            params={"setting": setting},
+        )
 
 
 class ActiveGateGlobalAutoUpdateConfig(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
         self.global_setting: str = raw_element.get("globalSetting")
-        self.metadata: ConfigurationMetadata = ConfigurationMetadata(raw_element=raw_element.get("metadata"))
+        self.metadata: ConfigurationMetadata = ConfigurationMetadata(
+            raw_element=raw_element.get("metadata")
+        )
 
 
 class ActiveGateAutoUpdateConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.setting: str = raw_element.get("setting")
         self.effective_setting: str = raw_element.get("effectiveSetting")

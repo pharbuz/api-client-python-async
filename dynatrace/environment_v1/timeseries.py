@@ -15,7 +15,6 @@ limitations under the License.
 """
 
 from enum import Enum
-from typing import Optional, List, Union
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -86,10 +85,10 @@ class TimeSerieService:
     def create_timeseries(
         self,
         metric_id: str,
-        display_name: Optional[str],
-        unit: Optional[Union[Unit, str]] = None,
-        dimensions: Optional[List[str]] = None,
-        technologies: Optional[List[str]] = None,
+        display_name: str | None,
+        unit: Unit | str | None = None,
+        dimensions: list[str] | None = None,
+        technologies: list[str] | None = None,
     ) -> "TimeseriesRegistrationMessage":
 
         unit: Unit = Unit(unit)
@@ -108,10 +107,10 @@ class TimeseriesRegistrationMessage(DynatraceObject):
         self,
         http_client,
         metric_id: str,
-        display_name: Optional[str],
-        unit: Optional[str] = None,
-        dimensions: Optional[List[str]] = None,
-        technologies: Optional[List[str]] = None,
+        display_name: str | None,
+        unit: str | None = None,
+        dimensions: list[str] | None = None,
+        technologies: list[str] | None = None,
     ):
         self.metric_id = metric_id
 
@@ -123,5 +122,9 @@ class TimeseriesRegistrationMessage(DynatraceObject):
         }
         super().__init__(http_client, None, raw_element)
 
-    def put(self):
-        return self._http_client.make_request(f"/api/v1/timeseries/{self.metric_id}", params=self._raw_element, method="PUT")
+    async def put(self):
+        return await self._http_client.make_request(
+            f"/api/v1/timeseries/{self.metric_id}",
+            params=self._raw_element,
+            method="PUT",
+        )

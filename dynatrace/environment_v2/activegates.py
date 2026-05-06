@@ -15,12 +15,11 @@ limitations under the License.
 """
 
 from enum import Enum
-from typing import List, Optional, Union
 
 from dynatrace.dynatrace_object import DynatraceObject
+from dynatrace.environment_v2.schemas import VersionCompareType
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.environment_v2.schemas import VersionCompareType
 
 
 class OsType(Enum):
@@ -71,21 +70,21 @@ class ActiveGateService:
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
 
-    def list(
+    async def list(
         self,
-        hostname: Optional[str] = None,
-        os_type: Optional[Union[OsType, str]] = None,
-        network_address: Optional[str] = None,
-        activegate_type: Optional[Union[ActivegateType, str]] = None,
-        network_zone: Optional[str] = None,
-        update_status: Optional[Union[UpdateStatus, str]] = None,
-        version_compare_type: Optional[Union[VersionCompareType, str]] = None,
-        version: Optional[str] = None,
-        auto_update: Optional[Union[AutoUpdate, str]] = None,
-        group: Optional[str] = None,
-        online: Optional[bool] = None,
-        enabled_modules: Optional[List[Union[Module, str]]] = None,
-        disabled_modules: Optional[List[Union[Module, str]]] = None,
+        hostname: str | None = None,
+        os_type: OsType | str | None = None,
+        network_address: str | None = None,
+        activegate_type: ActivegateType | str | None = None,
+        network_zone: str | None = None,
+        update_status: UpdateStatus | str | None = None,
+        version_compare_type: VersionCompareType | str | None = None,
+        version: str | None = None,
+        auto_update: AutoUpdate | str | None = None,
+        group: str | None = None,
+        online: bool | None = None,
+        enabled_modules: list[Module | str] | None = None,
+        disabled_modules: list[Module | str] | None = None,
     ) -> PaginatedList["ActiveGate"]:
         """
         Lists all available ActiveGates
@@ -106,10 +105,22 @@ class ActiveGateService:
             "enabledModule": enabled_modules,
             "disabledModule": disabled_modules,
         }
-        return PaginatedList(ActiveGate, self.__http_client, "/api/v2/activeGates", params, list_item="activeGates")
+        return await PaginatedList(
+            ActiveGate,
+            self.__http_client,
+            "/api/v2/activeGates",
+            params,
+            list_item="activeGates",
+        ).initialize()
 
-    def get(self, activegate_id: str) -> "ActiveGate":
-        return ActiveGate(raw_element=self.__http_client.make_request(f"/api/v2/activeGates/{activegate_id}").json())
+    async def get(self, activegate_id: str) -> "ActiveGate":
+        return ActiveGate(
+            raw_element=(
+                await self.__http_client.make_request(
+                    f"/api/v2/activeGates/{activegate_id}"
+                )
+            ).json()
+        )
 
 
 class ActiveGate(DynatraceObject):
@@ -126,7 +137,10 @@ class ActiveGate(DynatraceObject):
         self.environments: str = raw_element.get("environments", [])
         self.network_zone: str = raw_element.get("networkZone")
         self.group: str = raw_element.get("group")
-        self.modules: List["ActiveGateModule"] = [ActiveGateModule(raw_element=module) for module in raw_element.get("modules")]
+        self.modules: list[ActiveGateModule] = [
+            ActiveGateModule(raw_element=module)
+            for module in raw_element.get("modules")
+        ]
 
 
 class ActiveGateModule(DynatraceObject):
