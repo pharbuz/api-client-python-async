@@ -13,15 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Dict, Any, Union, List
+from typing import Any
 
-from requests import Response
-from datetime import datetime
-from typing import Optional, Union, Dict, Any, List
+from httpx import Response
 
-from dynatrace.http_client import HttpClient
 from dynatrace.dynatrace_object import DynatraceObject
+from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
 from dynatrace.utils import timestamp_to_string
 
@@ -33,13 +33,13 @@ class LogService:
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
 
-    def export(
+    async def export(
         self,
-        query: Optional[str] = None,
-        time_from: Optional[Union[datetime, str]] = None,
-        time_to: Optional[Union[datetime, str]] = None,
-        sort: Optional[str] = None,
-        page_size: Optional[int] = None,
+        query: str | None = None,
+        time_from: datetime | str | None = None,
+        time_to: datetime | str | None = None,
+        sort: str | None = None,
+        page_size: int | None = None,
     ) -> PaginatedList["LogRecord"]:
         """
         Gets the log records matching the provided criteria. Retrieves all records using pagination.
@@ -57,29 +57,43 @@ class LogService:
             "to": timestamp_to_string(time_to),
             "sort": sort,
         }
-        return PaginatedList(LogRecord, self.__http_client, "/api/v2/logs/export", params, list_item="results")
+        return await PaginatedList(
+            LogRecord,
+            self.__http_client,
+            "/api/v2/logs/export",
+            params,
+            list_item="results",
+        ).initialize()
 
-    def ingest(self, payload: Union[Dict[str, Any], List[Dict[str, Any]]]) -> Response:
+    async def ingest(self, payload: dict[str, Any] | list[dict[str, Any]]) -> Response:
         """
         Ingests logs into the Dynatrace log store.
         :param payload: A list of log entries or a single log entry, which are JSON objects (dictionaries)
         :return: The HTTP Response
         """
         headers = {"Content-Type": "application/json; charset=utf-8"}
-        return self.__http_client.make_request(f"{self.ENDPOINT}/ingest", params=payload, method="POST", headers=headers)
-    
+        return await self.__http_client.make_request(
+            f"{self.ENDPOINT}/ingest", params=payload, method="POST", headers=headers
+        )
+
+
 class LogRecord(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.additional_columns: dict = raw_element.get("additionalColumns")
         self.event_type: EventType = EventType(raw_element.get("eventType"))
-        self.timestamp: datetime = datetime.utcfromtimestamp(raw_element.get("timestamp") / 1000)
+        self.timestamp: datetime = datetime.fromtimestamp(
+            raw_element.get("timestamp") / 1000,
+            UTC,
+        )
         self.content: str = raw_element.get("content")
         self.status: LogRecordStatus = LogRecordStatus(raw_element.get("status"))
+
 
 class EventType(Enum):
     K8S = "K8S"
     LOG = "LOG"
     SFM = "SFM"
+
 
 class LogRecordStatus(Enum):
     ERROR = "ERROR"

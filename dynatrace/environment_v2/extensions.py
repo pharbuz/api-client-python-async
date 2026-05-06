@@ -14,8 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import builtins
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -29,40 +30,50 @@ class ExtensionsServiceV2:
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
 
-    def list(self, name: Optional[str] = None) -> PaginatedList["MinimalExtension"]:
+    async def list(self, name: str | None = None) -> PaginatedList["MinimalExtension"]:
         """Lists all the extensions 2.0 available in your environment"""
         params = {"name": name}
-        return PaginatedList(MinimalExtension,
-                             self.__http_client,
-                             target_url=self.ENDPOINT,
-                             list_item="extensions",
-                             target_params=params)
+        return await PaginatedList(
+            MinimalExtension,
+            self.__http_client,
+            target_url=self.ENDPOINT,
+            list_item="extensions",
+            target_params=params,
+        ).initialize()
 
-    def list_versions(self, extension_name: str) -> PaginatedList["MinimalExtension"]:
+    async def list_versions(
+        self, extension_name: str
+    ) -> PaginatedList["MinimalExtension"]:
         """Lists all the extensions 2.0 by specified name in your environment
 
         :param extension_name: the name of the extension 2.0
         """
-        return PaginatedList(MinimalExtension,
-                             self.__http_client,
-                             target_url=f"{self.ENDPOINT}/{extension_name}",
-                             list_item="extensions")
+        return await PaginatedList(
+            MinimalExtension,
+            self.__http_client,
+            target_url=f"{self.ENDPOINT}/{extension_name}",
+            list_item="extensions",
+        ).initialize()
 
-    def list_environment_config_events(self, extension_name: str) -> PaginatedList["ExtensionEventDTO"]:
+    async def list_environment_config_events(
+        self, extension_name: str
+    ) -> PaginatedList["ExtensionEventDTO"]:
         """List of the latest extension environment configuration events
 
         :param extension_name: the name of the extension 2.0
 
         :return: a list of ExtensionEventDTO object
         """
-        return PaginatedList(
+        return await PaginatedList(
             ExtensionEventDTO,
             self.__http_client,
             target_url=f"{self.ENDPOINT}/{extension_name}/environmentConfiguration/events",
-            list_item="extensionEvents"
-        )
+            list_item="extensionEvents",
+        ).initialize()
 
-    def list_monitoring_config_events(self, extension_name: str, config_id: str) -> PaginatedList["ExtensionEventDTO"]:
+    async def list_monitoring_config_events(
+        self, extension_name: str, config_id: str
+    ) -> PaginatedList["ExtensionEventDTO"]:
         """Gets the list of the events linked to specific monitoring configuration
 
         :param extension_name: the name of the extension 2.0
@@ -70,14 +81,14 @@ class ExtensionsServiceV2:
 
         :return: a list of ExtensionEventDTO object
         """
-        return PaginatedList(
+        return await PaginatedList(
             ExtensionEventDTO,
             self.__http_client,
             target_url=f"{self.ENDPOINT}/{extension_name}/monitoringConfigurations/{config_id}/events",
             list_item="extensionEvents",
-        )
+        ).initialize()
 
-    def get(self, extension_name: str, extension_version: str) -> "Extension":
+    async def get(self, extension_name: str, extension_version: str) -> "Extension":
         """Gets details of specified version of the extension 2.0
 
         :param extension_name: the name of the requested extension 2.0
@@ -85,10 +96,14 @@ class ExtensionsServiceV2:
 
         :return: a Extension class object
         """
-        response = self.__http_client.make_request(f"{self.ENDPOINT}/{extension_name}/{extension_version}").json()
+        response = (
+            await self.__http_client.make_request(
+                f"{self.ENDPOINT}/{extension_name}/{extension_version}"
+            )
+        ).json()
         return Extension(raw_element=response)
 
-    def post(self, zip_file_path: Union[str, Path], validate_only: Optional[bool] = False):
+    async def post(self, zip_file_path: str | Path, validate_only: bool | None = False):
         """Post the specified version of the extension 2.0
 
         :param zip_file_path: path to zipped extension 2.0
@@ -99,14 +114,18 @@ class ExtensionsServiceV2:
         params = {"validateOnly": validate_only}
         file = Path(zip_file_path)
         with open(file, "rb") as f:
-            response = self.__http_client.make_request(f"{self.ENDPOINT}",
-                                                       query_params=params,
-                                                       headers={"Content-Type": "application/octet-stream"},
-                                                       method="POST",
-                                                       files={"file": f}).json()
+            response = (
+                await self.__http_client.make_request(
+                    f"{self.ENDPOINT}",
+                    query_params=params,
+                    headers={"Content-Type": "application/octet-stream"},
+                    method="POST",
+                    files={"file": f},
+                )
+            ).json()
             return Extension(raw_element=response)
 
-    def delete(self, extension_name: str, extension_version: str):
+    async def delete(self, extension_name: str, extension_version: str):
         """Deletes the specified version of the extension 2.0
 
         :param extension_name: the name of the requested extension 2.0
@@ -114,19 +133,27 @@ class ExtensionsServiceV2:
 
         :return: HTTP response
         """
-        return self.__http_client.make_request(f"{self.ENDPOINT}/{extension_name}/{extension_version}", method="DELETE")
+        return await self.__http_client.make_request(
+            f"{self.ENDPOINT}/{extension_name}/{extension_version}", method="DELETE"
+        )
 
-    def get_environment_config(self, extension_name: str) -> "ExtensionEnvironmentConfigurationVersion":
+    async def get_environment_config(
+        self, extension_name: str
+    ) -> "ExtensionEnvironmentConfigurationVersion":
         """Gets the active environment configuration version of the specified extension 2.0
 
         :param extension_name: the name of the requested extension 2.0
 
         :return: ExtensionEnvironmentConfigurationVersion object
         """
-        response = self.__http_client.make_request(f"{self.ENDPOINT}/{extension_name}/environmentConfiguration").json()
+        response = (
+            await self.__http_client.make_request(
+                f"{self.ENDPOINT}/{extension_name}/environmentConfiguration"
+            )
+        ).json()
         return ExtensionEnvironmentConfigurationVersion(raw_element=response)
 
-    def put_environment_config(self, extension_name: str, extension_version: str):
+    async def put_environment_config(self, extension_name: str, extension_version: str):
         """Updates an existing active environment configuration version of the extension 2.0
 
         :param extension_name: the name of the requested extension 2.0
@@ -135,120 +162,141 @@ class ExtensionsServiceV2:
         :return: HTTP response
         """
         params = {"version": extension_version}
-        return self.__http_client.make_request(f"{self.ENDPOINT}/{extension_name}/environmentConfiguration",
-                                               method="PUT",
-                                               params=params)
+        return await self.__http_client.make_request(
+            f"{self.ENDPOINT}/{extension_name}/environmentConfiguration",
+            method="PUT",
+            params=params,
+        )
 
-    def delete_environment_config(self, extension_name: str):
+    async def delete_environment_config(self, extension_name: str):
         """Deactivates the environment configuration of the specified extension 2.0
 
         :param extension_name: the name of the requested extension 2.0 to deactivate
 
         :return: HTTP response
         """
-        return self.__http_client.make_request(f"{self.ENDPOINT}/{extension_name}/environmentConfiguration",
-                                               method="DELETE")
+        return await self.__http_client.make_request(
+            f"{self.ENDPOINT}/{extension_name}/environmentConfiguration",
+            method="DELETE",
+        )
 
-    def list_schemas_versions(self) -> List[str]:
-        response = self.__http_client.make_request(f"{self.SCHEMA_ENDPOINT}").json()
+    async def list_schemas_versions(self) -> builtins.list[str]:
+        response = (
+            await self.__http_client.make_request(f"{self.SCHEMA_ENDPOINT}")
+        ).json()
         return response.get("versions", [])
 
-    def list_schemas(self, schema_version: str) -> "SchemaFiles":
-        response = self.__http_client.make_request(f"{self.SCHEMA_ENDPOINT}/{schema_version}")
+    async def list_schemas(self, schema_version: str) -> "SchemaFiles":
+        response = await self.__http_client.make_request(
+            f"{self.SCHEMA_ENDPOINT}/{schema_version}"
+        )
         return SchemaFiles(raw_element=response.json())
 
-    def get_schema_file(self, schema_version: str, file_name: str) -> Dict[str, Any]:
-        return self.__http_client.make_request(f"{self.SCHEMA_ENDPOINT}/{schema_version}/{file_name}").json()
+    async def get_schema_file(
+        self, schema_version: str, file_name: str
+    ) -> dict[str, Any]:
+        return (
+            await self.__http_client.make_request(
+                f"{self.SCHEMA_ENDPOINT}/{schema_version}/{file_name}"
+            )
+        ).json()
 
-    def post_monitoring_configurations(self,
-                                       extension_name: str,
-                                       configurations: List["MonitoringConfigurationDto"]) -> List:
+    async def post_monitoring_configurations(
+        self,
+        extension_name: str,
+        configurations: builtins.list["MonitoringConfigurationDto"],
+    ) -> builtins.list:
         params = [c.to_json() for c in configurations]
-        response = self.__http_client.make_request(f"{self.ENDPOINT}/{extension_name}/monitoringConfigurations",
-                                                   params=params,
-                                                   method="POST")
+        response = await self.__http_client.make_request(
+            f"{self.ENDPOINT}/{extension_name}/monitoringConfigurations",
+            params=params,
+            method="POST",
+        )
         return response.json()
 
-    def list_monitoring_configurations(self,
-                                       extension_name: str,
-                                       version: Optional[str] = None,
-                                       active: Optional[bool] = None) -> PaginatedList[
-        "ExtensionMonitoringConfiguration"]:
-        params = {"extensionName": extension_name,
-                  "version": version,
-                  "active": active}
-        return PaginatedList(
+    async def list_monitoring_configurations(
+        self,
+        extension_name: str,
+        version: str | None = None,
+        active: bool | None = None,
+    ) -> PaginatedList["ExtensionMonitoringConfiguration"]:
+        params = {"extensionName": extension_name, "version": version, "active": active}
+        return await PaginatedList(
             ExtensionMonitoringConfiguration,
             self.__http_client,
             target_url=f"{self.ENDPOINT}/{extension_name}/monitoringConfigurations",
             target_params=params,
             list_item="items",
-        )
+        ).initialize()
 
-    def put_monitoring_configuration(self,
-                                     extension_name: str,
-                                     config_id: str,
-                                     value: Dict[str, Any]) -> "MonitoringConfigurationResponse":
+    async def put_monitoring_configuration(
+        self, extension_name: str, config_id: str, value: dict[str, Any]
+    ) -> "MonitoringConfigurationResponse":
         url = f"{self.ENDPOINT}/{extension_name}/monitoringConfigurations/{config_id}"
         params = {"value": value}
-        response = self.__http_client.make_request(url, method="PUT", params=params)
+        response = await self.__http_client.make_request(
+            url, method="PUT", params=params
+        )
         return MonitoringConfigurationResponse(raw_element=response.json())
 
-    def delete_monitoring_configuration(self,
-                                        extension_name:str,
-                                        config_id: str):
+    async def delete_monitoring_configuration(
+        self, extension_name: str, config_id: str
+    ):
         url = f"{self.ENDPOINT}/{extension_name}/monitoringConfigurations/{config_id}"
-        return self.__http_client.make_request(url, method="DELETE")
+        return await self.__http_client.make_request(url, method="DELETE")
+
 
 class SchemaFiles(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
-        self.files: List[str] = raw_element.get("files", [])
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.files: list[str] = raw_element.get("files", [])
 
 
 class Extension(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.version: str = raw_element.get("version")
         self.extension_name: str = raw_element.get("extensionName")
         self.min_dynatrace_version: str = raw_element.get("minDynatraceVersion")
         self.file_hash: str = raw_element.get("fileHash")
         self.author: AuthorDTO = AuthorDTO(raw_element=raw_element.get("author"))
-        self.data_sources: List[str] = raw_element.get("dataSources")
-        self.variables: List[str] = raw_element.get("variables")
-        self.feature_sets: List[str] = raw_element.get("featureSets")
+        self.data_sources: list[str] = raw_element.get("dataSources")
+        self.variables: list[str] = raw_element.get("variables")
+        self.feature_sets: list[str] = raw_element.get("featureSets")
 
 
 class AuthorDTO(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.name: str = raw_element.get("name")
 
 
 class ExtensionEventDTO(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.timestamp: str = raw_element.get("timestamp")
         self.severity: str = raw_element.get("severity")
         self.message: str = raw_element.get("message")
 
 
 class ExtensionEnvironmentConfigurationVersion(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.version: str = raw_element.get("version")
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         """Translates an ExtensionEnvironmentConfigurationVersion to a JSON dict."""
         return {"version": self.version}
 
-    def put(self, extension_name: str):
+    async def put(self, extension_name: str):
         """Updates an existing extension environment config's version in Dynatrace
 
         :param extension_name: the name of the extension required for making the API call
         """
-        return self._http_client.make_request(f"{ExtensionsServiceV2.ENDPOINT}/{extension_name}/environmentConfiguration",
-                                              params=self.to_json(),
-                                              method="PUT")
+        return await self._http_client.make_request(
+            f"{ExtensionsServiceV2.ENDPOINT}/{extension_name}/environmentConfiguration",
+            params=self.to_json(),
+            method="PUT",
+        )
 
 
 class MinimalExtension(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.version: str = raw_element.get("version")
         self.extension_name: str = raw_element.get("extensionName")
 
@@ -256,43 +304,53 @@ class MinimalExtension(DynatraceObject):
         """Class method for obtaining extension2.0 version"""
         return self.version
 
-    def get_environment_config(self) -> "ExtensionEnvironmentConfigurationVersion":
+    async def get_environment_config(
+        self,
+    ) -> "ExtensionEnvironmentConfigurationVersion":
         """Gets the active environment configuration version of the specified extension 2.0
 
         :return: ExtensionEnvironmentConfigurationVersion object
         """
-        response = self._http_client.make_request(f"{ExtensionsServiceV2.ENDPOINT}/{self.extension_name}/environmentConfiguration").json()
+        response = (
+            await self._http_client.make_request(
+                f"{ExtensionsServiceV2.ENDPOINT}/{self.extension_name}/environmentConfiguration"
+            )
+        ).json()
         return ExtensionEnvironmentConfigurationVersion(raw_element=response)
 
-    def list_environment_config_events(self) -> PaginatedList["ExtensionEventDTO"]:
+    async def list_environment_config_events(
+        self,
+    ) -> PaginatedList["ExtensionEventDTO"]:
         """List of the latest extension environment configuration events
 
         :return: a list of ExtensionEventDTO object
         """
-        return PaginatedList(
+        return await PaginatedList(
             ExtensionEventDTO,
             self._http_client,
             target_url=f"{ExtensionsServiceV2.ENDPOINT}/{self.extension_name}/environmentConfiguration/events",
             list_item="extensionEvents",
-        )
+        ).initialize()
 
-    def list_monitoring_config_events(self, config_id) -> PaginatedList["ExtensionEventDTO"]:
+    async def list_monitoring_config_events(
+        self, config_id
+    ) -> PaginatedList["ExtensionEventDTO"]:
         """Gets the list of the events linked to specific monitoring configuration
 
         :param config_id: The ID of the requested monitoring configuration.
 
         :return: a list of ExtensionEventDTO object
         """
-        return PaginatedList(
+        return await PaginatedList(
             ExtensionEventDTO,
             self._http_client,
             target_url=f"{ExtensionsServiceV2.ENDPOINT}/{self.extension_name}/monitoringConfigurations/{config_id}/events",
             list_item="extensionEvents",
-        )
+        ).initialize()
 
 
 class MonitoringConfigurationDto:
-    def __init__(self, scope: str, configuration: Dict[str, Any]):
+    def __init__(self, scope: str, configuration: dict[str, Any]):
         self.scope = scope
         self.configuration = configuration
 
@@ -301,13 +359,13 @@ class MonitoringConfigurationDto:
 
 
 class ExtensionMonitoringConfiguration(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.objectId: str = raw_element.get("objectId")
         self.scope: str = raw_element.get("scope")
-        self.configuration: Dict[str, Any] = raw_element.get("value")
+        self.configuration: dict[str, Any] = raw_element.get("value")
 
 
 class MonitoringConfigurationResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.objectId: str = raw_element.get("objectId")
         self.code: int = raw_element.get("code")

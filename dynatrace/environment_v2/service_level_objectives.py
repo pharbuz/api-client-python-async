@@ -14,15 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from enum import Enum
 from datetime import datetime
-from requests import Response
-from typing import Dict, Any, Optional, Union
+from enum import Enum
+from typing import Any
 
-from dynatrace.utils import timestamp_to_string
-from dynatrace.http_client import HttpClient
+from httpx import Response
+
 from dynatrace.dynatrace_object import DynatraceObject
+from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import timestamp_to_string
 
 
 class SloService:
@@ -31,18 +32,19 @@ class SloService:
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
 
-    def list(
+    async def list(
         self,
-        page_size: Optional[int] = 10,
-        time_from: Optional[Union[datetime, str]] = "now-2w",
-        time_to: Optional[Union[datetime, str]] = None,
-        slo_selector: Optional[str] = None,
-        sort: Optional[str] = "name",
-        time_frame: Optional[str] = "CURRENT",
-        page_idx: Optional[int] = 1,
-        demo: Optional[bool] = False,
-        evaluate: Optional[str] = "false",
-        enabled_slos: Optional[str] = "all"
+        page_size: int | None = 10,
+        time_from: datetime | str | None = "now-2w",
+        time_to: datetime | str | None = None,
+        slo_selector: str | None = None,
+        sort: str | None = "name",
+        time_frame: str | None = "CURRENT",
+        page_idx: int | None = 1,
+        demo: bool | None = False,
+        evaluate: bool | None = False,
+        enabled_slos: str | None = "all",
+        show_global_slos: bool | None = None,
     ) -> PaginatedList["Slo"]:
         """Lists all available SLOs along with calculated values
 
@@ -54,8 +56,9 @@ class SloService:
         :param time_frame: The timeframe to calculate the SLO values. CURRENT: SLO's own timeframe. GTF: timeframe specified by from and to parameters.
         :param page_idx: Only SLOs on the given page are included in the response. The first page has the index '1'.
         :param demo: Get your SLOs (false) or a set of demo SLOs (true)
-        :param evaluate: Get your SLOs without them being evaluated ("false") or with evaluations ("true"). This value must be a lowercase string.
+        :param evaluate: Get your SLOs without them being evaluated (`False`) or with evaluations (`True`).
         :param enabled_slos: Get your enabled SLOs ("true"), disabled ones ("false") or both enabled and disabled ones ("all"). This value must be a lowercase string.
+        :param show_global_slos: Include global SLOs regardless of selected filter.
 
         :returns PaginatedList[Slo]: the list of SLOs matching criteria
         """
@@ -69,16 +72,23 @@ class SloService:
             "pageIdx": page_idx,
             "demo": demo,
             "evaluate": evaluate,
-            "enabledSlos": enabled_slos
+            "enabledSlos": enabled_slos,
+            "showGlobalSlos": show_global_slos,
         }
-        return PaginatedList(target_class=Slo, http_client=self.__http_client, target_params=params, target_url=f"{self.ENDPOINT}", list_item="slo")
+        return await PaginatedList(
+            target_class=Slo,
+            http_client=self.__http_client,
+            target_params=params,
+            target_url=f"{self.ENDPOINT}",
+            list_item="slo",
+        ).initialize()
 
-    def get(
-        self, 
-        slo_id: str, 
-        time_from: Optional[Union[datetime, str]] = "now-2w", 
-        time_to: Optional[Union[datetime, str]] = None, 
-        time_frame: Optional[str] = "CURRENT"
+    async def get(
+        self,
+        slo_id: str,
+        time_from: datetime | str | None = "now-2w",
+        time_to: datetime | str | None = None,
+        time_frame: str | None = "CURRENT",
     ) -> "Slo":
         """Gets parameters and the calculated value of an SLO
 
@@ -94,35 +104,41 @@ class SloService:
             "to": timestamp_to_string(time_to),
             "timeFrame": time_frame,
         }
-        response = self.__http_client.make_request(f"{self.ENDPOINT}/{slo_id}", params=params).json()
+        response = (
+            await self.__http_client.make_request(
+                f"{self.ENDPOINT}/{slo_id}", params=params
+            )
+        ).json()
         return Slo(raw_element=response)
 
-    def post(self, slo: "Slo") -> "Response":
+    async def post(self, slo: "Slo") -> "Response":
         """Creates a new SLO in Dynatrace.
 
         :param slo: the Slo that should be created.
 
         :returns Response: HTTP response for the request
         """
-        return slo.post()
+        return await slo.post()
 
-    def put(self, slo: "Slo") -> "Response":
+    async def put(self, slo: "Slo") -> "Response":
         """Updates an existing SLO in Dynatrace.
 
         :param slo: the Slo with udpated details
 
         :returns Response: HTTP response for the request
         """
-        return slo.put()
+        return await slo.put()
 
-    def delete(self, slo_id: str) -> "Response":
+    async def delete(self, slo_id: str) -> "Response":
         """Deletes an SLO
 
         :param slo_id: The ID of the existing SLO.
 
         :returns Response: HTTP response for the request
         """
-        return self.__http_client.make_request(path=f"{self.ENDPOINT}/{slo_id}", method="DELETE")
+        return await self.__http_client.make_request(
+            path=f"{self.ENDPOINT}/{slo_id}", method="DELETE"
+        )
 
     def create(
         self,
@@ -130,16 +146,16 @@ class SloService:
         target: float,
         warning: float,
         timeframe: str,
-        use_rate_metric: Optional[bool] = None,
-        metric_rate: Optional[str] = None,
-        metric_numerator: Optional[str] = None,
-        metric_denominator: Optional[str] = None,
-        metric_expression: Optional[str] = None,
-        metric_name: Optional[str] = None,
-        filter: Optional[str] = None,
-        evaluation_type: Optional[str] = "AGGREGATE",
-        custom_description: Optional[str] = None,
-        enabled: Optional[bool] = False,
+        use_rate_metric: bool | None = None,
+        metric_rate: str | None = None,
+        metric_numerator: str | None = None,
+        metric_denominator: str | None = None,
+        metric_expression: str | None = None,
+        metric_name: str | None = None,
+        filter: str | None = None,
+        evaluation_type: str | None = "AGGREGATE",
+        custom_description: str | None = None,
+        enabled: bool | None = False,
     ) -> "Slo":
         """Creates an Slo object from scratch.
 
@@ -179,34 +195,48 @@ class SloService:
 
 
 class Slo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         # required
         self.name: str = raw_element.get("name")
         self.id: str = raw_element.get("id", "")
         self.target: float = raw_element.get("target")
         self.warning: float = raw_element.get("warning")
         self.timeframe: str = raw_element.get("timeframe")
-        self.evaluation_type: SloEvaluationType = SloEvaluationType(raw_element.get("evaluationType"))
+        self.evaluation_type: SloEvaluationType = SloEvaluationType(
+            raw_element.get("evaluationType")
+        )
 
         # optional
-        self.status: Optional[SloStatus] = SloStatus(raw_element.get("status")) if raw_element.get("status") else None
-        self.metric_rate: Optional[str] = raw_element.get("metricRate")
-        self.metric_numerator: Optional[str] = raw_element.get("metricNumerator")
-        self.metric_denominator: Optional[str] = raw_element.get("metricDenominator")
-        self.metric_expression: Optional[str] = raw_element.get("metricExpression")
-        self.metric_name: Optional[str] = raw_element.get("metricName")
-        self.error_budget: Optional[float] = raw_element.get("errorBudget", 0)
-        self.numerator_value: Optional[float] = raw_element.get("numeratorValue", 0)
-        self.denominator_value: Optional[float] = raw_element.get("denominatorValue", 0)
-        self.related_open_problems: Optional[int] = raw_element.get("relatedOpenProblems", 0)
-        self.evaluated_percentage: Optional[float] = raw_element.get("evaluatedPercentage", 0)
-        self.filter: Optional[str] = raw_element.get("filter")
-        self.enabled: Optional[bool] = raw_element.get("enabled", False)
-        self.custom_description: Optional[str] = raw_element.get("description")
-        self.error: Optional[SloError] = SloError(raw_element.get("error", SloError.NONE))
-        self.use_rate_metric: Optional[bool] = raw_element.get("useRateMetric")
+        self.status: SloStatus | None = (
+            SloStatus(raw_element.get("status")) if raw_element.get("status") else None
+        )
+        self.metric_rate: str | None = raw_element.get("metricRate")
+        self.metric_numerator: str | None = raw_element.get("metricNumerator")
+        self.metric_denominator: str | None = raw_element.get("metricDenominator")
+        self.metric_expression: str | None = raw_element.get("metricExpression")
+        self.metric_name: str | None = raw_element.get("metricName")
+        self.error_budget: float | None = raw_element.get("errorBudget", 0)
+        self.numerator_value: float | None = raw_element.get("numeratorValue", 0)
+        self.denominator_value: float | None = raw_element.get("denominatorValue", 0)
+        self.related_open_problems: int | None = raw_element.get(
+            "relatedOpenProblems", 0
+        )
+        self.related_total_problems: int | None = raw_element.get(
+            "relatedTotalProblems", 0
+        )
+        self.evaluated_percentage: float | None = raw_element.get(
+            "evaluatedPercentage", 0
+        )
+        self.filter: str | None = raw_element.get("filter")
+        self.enabled: bool | None = raw_element.get("enabled", False)
+        self.custom_description: str | None = raw_element.get("description")
+        self.error: str | None = raw_element.get("error", "NONE")
+        self.error_budget_burn_rate: dict[str, Any] | None = raw_element.get(
+            "errorBudgetBurnRate"
+        )
+        self.use_rate_metric: bool | None = raw_element.get("useRateMetric")
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         """Translates an Slo to a JSON dict."""
         return {
             "name": self.name,
@@ -222,21 +252,26 @@ class Slo(DynatraceObject):
             "metricExpression": self.metric_expression,
             "metricName": self.metric_name,
             "filter": self.filter,
-            "customDescription": self.custom_description,
+            "description": self.custom_description,
+            "errorBudgetBurnRate": self.error_budget_burn_rate,
         }
 
-    def post(self) -> "Response":
+    async def post(self) -> "Response":
         """Creates this object as a new SLO in Dynatrace"""
-        response = self._http_client.make_request(path=SloService.ENDPOINT, method="POST", params=self.to_json())
+        response = await self._http_client.make_request(
+            path=SloService.ENDPOINT, method="POST", params=self.to_json()
+        )
         if response.status_code == 201:
             location = response.headers.get("location")
             self.id = location[location.rfind("/") + 1 :].strip()
 
         return response
 
-    def put(self) -> "Response":
+    async def put(self) -> "Response":
         """Updates an existing SLO in Dynatrace based on this object's details"""
-        return self._http_client.make_request(path=f"{SloService.ENDPOINT}/{self.id}", method="PUT", params=self.to_json())
+        return await self._http_client.make_request(
+            path=f"{SloService.ENDPOINT}/{self.id}", method="PUT", params=self.to_json()
+        )
 
 
 class SloEvaluationType(Enum):
@@ -250,39 +285,6 @@ class SloStatus(Enum):
     FAILURE = "FAILURE"
     SUCCESS = "SUCCESS"
     WARNING = "WARNING"
-
-    def __str__(self):
-        return self.value
-
-
-class SloError(Enum):
-    DIFFERENT_ENTITY_TYPE_IN_METRICS = "DIFFERENT_ENTITY_TYPE_IN_METRICS"
-    EVALUATION_TIMEFRAME_OUT_OF_BOUNDS = "EVALUATION_TIMEFRAME_OUT_OF_BOUNDS"
-    FILTER_MATCHES_IN_CONDITION_LIMIT_EXCEEDED = "FILTER_MATCHES_IN_CONDITION_LIMIT_EXCEEDED"
-    INTERNAL_ERROR = "INTERNAL_ERROR"
-    INVALID_ENTITY_SELECTOR = "INVALID_ENTITY_SELECTOR"
-    INVALID_METRIC_DENOMINATOR = "INVALID_METRIC_DENOMINATOR"
-    INVALID_METRIC_NUMERATOR = "INVALID_METRIC_NUMERATOR"
-    INVALID_METRIC_SELECTOR = "INVALID_METRIC_SELECTOR"
-    INVALID_TIMEFRAME = "INVALID_TIMEFRAME"
-    METRICS_NOT_RESOLVED = "METRICS_NOT_RESOLVED"
-    METRICS_NO_DATA = "METRICS_NO_DATA"
-    METRIC_DENOMINATOR_NOT_RESOLVED = "METRIC_DENOMINATOR_NOT_RESOLVED"
-    METRIC_DENOMINATOR_NO_DATA = "METRIC_DENOMINATOR_NO_DATA"
-    METRIC_DENOMINATOR_NO_DATA_POINTS = "METRIC_DENOMINATOR_NO_DATA_POINTS"
-    METRIC_DENOMINATOR_ZERO = "METRIC_DENOMINATOR_ZERO"
-    METRIC_EXPRESSION_NOT_RESOLVED = "METRIC_EXPRESSION_NOT_RESOLVED"
-    METRIC_EXPRESSION_NO_DATA = "METRIC_EXPRESSION_NO_DATA"
-    METRIC_EXPRESSION_NO_DATA_POINTS = "METRIC_EXPRESSION_NO_DATA_POINTS"
-    METRIC_GENERIC_TSM_FAULT = "METRIC_GENERIC_TSM_FAULT"
-    METRIC_NUMERATOR_NOT_RESOLVED = "METRIC_NUMERATOR_NOT_RESOLVED"
-    METRIC_NUMERATOR_NO_DATA = "METRIC_NUMERATOR_NO_DATA"
-    METRIC_NUMERATOR_NO_DATA_POINTS = "METRIC_NUMERATOR_NO_DATA_POINTS"
-    METRIC_RATE_NOT_RESOLVED = "METRIC_RATE_NOT_RESOLVED"
-    METRIC_RATE_NO_DATA = "METRIC_RATE_NO_DATA"
-    METRIC_RATE_NO_DATA_POINTS = "METRIC_RATE_NO_DATA_POINTS"
-    METRIC_TOO_MANY_RESULTS = "METRIC_TOO_MANY_RESULTS"
-    NONE = "NONE"
 
     def __str__(self):
         return self.value

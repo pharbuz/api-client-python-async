@@ -1,0 +1,10 @@
+{
+  "vulnerableFunctions": [
+    {
+      "functionId": "fn-1",
+      "functionName": "pickle.loads",
+      "inUse": true
+    }
+  ],
+  "vulnerableFunctionsByProcessGroup": []
+}

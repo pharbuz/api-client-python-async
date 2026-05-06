@@ -1,12 +1,11 @@
-from dynatrace import Dynatrace
-from dynatrace.environment_v2.extensions import MinimalExtension
-from dynatrace.pagination import PaginatedList
-
 import dynatrace.environment_v2.extensions as extensions_v2
+from dynatrace import DynatraceAsync
+from dynatrace.environment_v2.extensions import MinimalExtension
+from test.async_utils import collect
 
 
-def test_list(dt: Dynatrace):
-    extensions = list(dt.extensions_v2.list())
+async def test_list(dt: DynatraceAsync):
+    extensions = await collect(await dt.extensions_v2.list())
 
     assert len(extensions) == 2
 
@@ -17,8 +16,8 @@ def test_list(dt: Dynatrace):
         break
 
 
-def test_list_name(dt: Dynatrace):
-    extensions = list(dt.extensions_v2.list(name="custom"))
+async def test_list_name(dt: DynatraceAsync):
+    extensions = await collect(await dt.extensions_v2.list(name="custom"))
 
     assert len(extensions) == 1
 
@@ -29,8 +28,10 @@ def test_list_name(dt: Dynatrace):
         break
 
 
-def test_list_versions(dt: Dynatrace):
-    extensions = list(dt.extensions_v2.list_versions("com.dynatrace.extension.snmp-generic"))
+async def test_list_versions(dt: DynatraceAsync):
+    extensions = await collect(
+        await dt.extensions_v2.list_versions("com.dynatrace.extension.snmp-generic")
+    )
 
     assert len(extensions) == 1
 
@@ -41,8 +42,10 @@ def test_list_versions(dt: Dynatrace):
         break
 
 
-def test_get(dt: Dynatrace):
-    extension = dt.extensions_v2.get("com.dynatrace.extension.snmp-generic", "0.2.5")
+async def test_get(dt: DynatraceAsync):
+    extension = await dt.extensions_v2.get(
+        "com.dynatrace.extension.snmp-generic", "0.2.5"
+    )
 
     # type checks
     assert isinstance(extension, extensions_v2.Extension)
@@ -58,11 +61,13 @@ def test_get(dt: Dynatrace):
     assert extension.variables[0] == "ext.activationtag"
 
 
-def test_get_active_extension_version(dt: Dynatrace):
-    environemnt_config = dt.extensions_v2.get_environment_config("ibmmq")
+async def test_get_active_extension_version(dt: DynatraceAsync):
+    environemnt_config = await dt.extensions_v2.get_environment_config("ibmmq")
 
     # type checks
-    assert isinstance(environemnt_config, extensions_v2.ExtensionEnvironmentConfigurationVersion)
+    assert isinstance(
+        environemnt_config, extensions_v2.ExtensionEnvironmentConfigurationVersion
+    )
 
     # value checks
     assert environemnt_config.version == "1.2.3"

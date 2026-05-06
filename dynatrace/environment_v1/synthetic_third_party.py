@@ -14,9 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from collections import defaultdict
 from datetime import datetime
-from typing import List, Optional, Dict
+from typing import Optional
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -29,7 +28,7 @@ class ThirdPartySyntheticTestsService:
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
 
-    def report_simple_thirdparty_synthetic_test(
+    async def report_simple_thirdparty_synthetic_test(
         self,
         engine_name: str,
         timestamp: datetime,
@@ -42,12 +41,14 @@ class ThirdPartySyntheticTestsService:
         response_time: int,
         icon_url: str = None,
         edit_link: str = None,
-        step_title: Optional[str] = None,
-        detailed_steps: Optional[List["SyntheticTestStep"]] = None,
-        detailed_step_results: Optional[List["SyntheticMonitorStepResult"]] = None,
+        step_title: str | None = None,
+        detailed_steps: list["SyntheticTestStep"] | None = None,
+        detailed_step_results: list["SyntheticMonitorStepResult"] | None = None,
     ):
 
-        location = ThirdPartySyntheticLocation(self.__http_client, location_id, location_name)
+        location = ThirdPartySyntheticLocation(
+            self.__http_client, location_id, location_name
+        )
         synthetic_location = SyntheticTestLocation(self.__http_client, location_id)
         if detailed_steps is None:
             detailed_steps = [SyntheticTestStep(self.__http_client, 1, step_title)]
@@ -62,19 +63,45 @@ class ThirdPartySyntheticTestsService:
             edit_link=edit_link,
         )
         if detailed_step_results is None:
-            detailed_step_results = [SyntheticMonitorStepResult(self.__http_client, 1, timestamp, response_time_millis=response_time)]
-        location_result = ThirdPartySyntheticLocationTestResult(self.__http_client, location_id, timestamp, success, step_results=detailed_step_results)
-        test_result = ThirdPartySyntheticResult(self.__http_client, test_id, len(detailed_steps), [location_result])
-        tests = ThirdPartySyntheticTests(self.__http_client, engine_name, timestamp, [location], [monitor], [test_result], synthetic_engine_icon_url=icon_url)
-        return tests.post()
+            detailed_step_results = [
+                SyntheticMonitorStepResult(
+                    self.__http_client, 1, timestamp, response_time_millis=response_time
+                )
+            ]
+        location_result = ThirdPartySyntheticLocationTestResult(
+            self.__http_client,
+            location_id,
+            timestamp,
+            success,
+            step_results=detailed_step_results,
+        )
+        test_result = ThirdPartySyntheticResult(
+            self.__http_client, test_id, len(detailed_steps), [location_result]
+        )
+        tests = ThirdPartySyntheticTests(
+            self.__http_client,
+            engine_name,
+            timestamp,
+            [location],
+            [monitor],
+            [test_result],
+            synthetic_engine_icon_url=icon_url,
+        )
+        return await tests.post()
 
-    def create_synthetic_test_step_result(self, step_id: int, timestamp: datetime, response_time: int) -> "SyntheticMonitorStepResult":
-        return SyntheticMonitorStepResult(self.__http_client, step_id, timestamp, response_time_millis=response_time)
+    def create_synthetic_test_step_result(
+        self, step_id: int, timestamp: datetime, response_time: int
+    ) -> "SyntheticMonitorStepResult":
+        return SyntheticMonitorStepResult(
+            self.__http_client, step_id, timestamp, response_time_millis=response_time
+        )
 
-    def create_synthetic_test_step(self, step_id: int, step_title: str) -> "SyntheticTestStep":
+    def create_synthetic_test_step(
+        self, step_id: int, step_title: str
+    ) -> "SyntheticTestStep":
         return SyntheticTestStep(self.__http_client, step_id, step_title)
 
-    def report_simple_thirdparty_synthetic_test_event(
+    async def report_simple_thirdparty_synthetic_test_event(
         self,
         test_id: str,
         name: str,
@@ -85,17 +112,34 @@ class ThirdPartySyntheticTestsService:
         reason: str,
         engine_name: str,
     ):
-        opened_events: List[ThirdPartyEventOpenNotification] = []
+        opened_events: list[ThirdPartyEventOpenNotification] = []
         resolved_events = []
         event_id = f"{test_id}_event"
         if state == "open":
-            opened_events.append(ThirdPartyEventOpenNotification(self.__http_client, test_id, event_id, name, event_type, reason, timestamp, [location_id]))
+            opened_events.append(
+                ThirdPartyEventOpenNotification(
+                    self.__http_client,
+                    test_id,
+                    event_id,
+                    name,
+                    event_type,
+                    reason,
+                    timestamp,
+                    [location_id],
+                )
+            )
         else:
-            resolved_events.append(ThirdPartyEventResolvedNotification(self.__http_client, test_id, event_id, timestamp))
+            resolved_events.append(
+                ThirdPartyEventResolvedNotification(
+                    self.__http_client, test_id, event_id, timestamp
+                )
+            )
 
         if opened_events or resolved_events:
-            events = ThirdPartySyntheticEvents(self.__http_client, engine_name, opened_events, resolved_events)
-            return events.post()
+            events = ThirdPartySyntheticEvents(
+                self.__http_client, engine_name, opened_events, resolved_events
+            )
+            return await events.post()
 
 
 class ThirdPartySyntheticTests(DynatraceObject):
@@ -104,10 +148,10 @@ class ThirdPartySyntheticTests(DynatraceObject):
         http_client,
         synthetic_engine_name: str,
         message_timestamp: datetime,
-        locations: List["ThirdPartySyntheticLocation"],
-        tests: List["ThirdPartySyntheticMonitor"],
-        test_results: Optional[List["ThirdPartySyntheticResult"]] = None,
-        synthetic_engine_icon_url: Optional[str] = None,
+        locations: list["ThirdPartySyntheticLocation"],
+        tests: list["ThirdPartySyntheticMonitor"],
+        test_results: list["ThirdPartySyntheticResult"] | None = None,
+        synthetic_engine_icon_url: str | None = None,
     ):
 
         raw_element = {
@@ -116,16 +160,22 @@ class ThirdPartySyntheticTests(DynatraceObject):
             "messageTimestamp": int(message_timestamp.timestamp() * 1000),
             "locations": [location._raw_element for location in locations],
             "tests": [test._raw_element for test in tests],
-            "testResults": [test_result._raw_element for test_result in test_results] if test_results else None,
+            "testResults": (
+                [test_result._raw_element for test_result in test_results]
+                if test_results
+                else None
+            ),
         }
         super().__init__(http_client, None, raw_element)
 
-    def post(self):
-        return self._http_client.make_request(f"/api/v1/synthetic/ext/tests", params=self._raw_element, method="POST")
+    async def post(self):
+        return await self._http_client.make_request(
+            "/api/v1/synthetic/ext/tests", params=self._raw_element, method="POST"
+        )
 
 
 class ThirdPartySyntheticLocation(DynatraceObject):
-    def __init__(self, http_client, location_id: str, name: str, ip: Optional[str] = None):
+    def __init__(self, http_client, location_id: str, name: str, ip: str | None = None):
 
         raw_element = {"id": location_id, "name": name, "ip": ip}
         super().__init__(http_client, None, raw_element)
@@ -137,16 +187,16 @@ class ThirdPartySyntheticMonitor(DynatraceObject):
         http_client,
         test_id: str,
         title: str,
-        locations: List["SyntheticTestLocation"],
+        locations: list["SyntheticTestLocation"],
         schedule_interval_in_seconds: int,
-        description: Optional[str] = None,
-        test_setup: Optional[str] = None,
-        expiration_timestamp: Optional[int] = None,
-        drilldown_link: Optional[str] = None,
-        edit_link: Optional[str] = None,
-        deleted: Optional[bool] = None,
-        steps: Optional[List["SyntheticTestStep"]] = None,
-        no_data_timeout: Optional[int] = None,
+        description: str | None = None,
+        test_setup: str | None = None,
+        expiration_timestamp: int | None = None,
+        drilldown_link: str | None = None,
+        edit_link: str | None = None,
+        deleted: bool | None = None,
+        steps: list["SyntheticTestStep"] | None = None,
+        no_data_timeout: int | None = None,
     ):
 
         raw_element = {
@@ -167,7 +217,7 @@ class ThirdPartySyntheticMonitor(DynatraceObject):
 
 
 class SyntheticTestLocation(DynatraceObject):
-    def __init__(self, http_client, location_id: str, enabled: Optional[bool] = None):
+    def __init__(self, http_client, location_id: str, enabled: bool | None = None):
 
         raw_element = {"id": location_id, "enabled": enabled}
         super().__init__(http_client, None, raw_element)
@@ -188,15 +238,17 @@ class ThirdPartySyntheticResult(DynatraceObject):
         http_client,
         test_id: str,
         total_step_count: int,
-        location_results: List["ThirdPartySyntheticLocationTestResult"],
-        schedule_interval_in_seconds: Optional[int] = None,
+        location_results: list["ThirdPartySyntheticLocationTestResult"],
+        schedule_interval_in_seconds: int | None = None,
     ):
 
         raw_element = {
             "id": test_id,
             "scheduleIntervalInSeconds": schedule_interval_in_seconds,
             "totalStepCount": total_step_count,
-            "locationResults": [location_result._raw_element for location_result in location_results],
+            "locationResults": [
+                location_result._raw_element for location_result in location_results
+            ],
         }
         super().__init__(http_client, None, raw_element)
 
@@ -208,9 +260,9 @@ class ThirdPartySyntheticLocationTestResult(DynatraceObject):
         location_id: str,
         start_timestamp: datetime,
         success: bool,
-        success_rate: Optional[float] = None,
-        response_time_millis: Optional[int] = None,
-        step_results: Optional[List["SyntheticMonitorStepResult"]] = None,
+        success_rate: float | None = None,
+        response_time_millis: int | None = None,
+        step_results: list["SyntheticMonitorStepResult"] | None = None,
     ):
 
         raw_element = {
@@ -219,7 +271,11 @@ class ThirdPartySyntheticLocationTestResult(DynatraceObject):
             "successRate": success_rate,
             "success": success,
             "responseTimeMillis": response_time_millis,
-            "stepResults": [step_result._raw_element for step_result in step_results] if step_results else None,
+            "stepResults": (
+                [step_result._raw_element for step_result in step_results]
+                if step_results
+                else None
+            ),
         }
         super().__init__(http_client, None, raw_element)
 
@@ -230,7 +286,7 @@ class SyntheticMonitorStepResult(DynatraceObject):
         http_client,
         step_id: int,
         start_timestamp: datetime,
-        response_time_millis: Optional[int] = None,
+        response_time_millis: int | None = None,
         error: Optional["SyntheticMonitorError"] = None,
     ):
 
@@ -255,19 +311,29 @@ class ThirdPartySyntheticEvents(DynatraceObject):
         self,
         http_client,
         synthetic_engine_name: str,
-        open_events: Optional[List["ThirdPartyEventOpenNotification"]],
-        resolved_events: Optional[List["ThirdPartyEventResolvedNotification"]],
+        open_events: list["ThirdPartyEventOpenNotification"] | None,
+        resolved_events: list["ThirdPartyEventResolvedNotification"] | None,
     ):
 
         raw_element = {
             "syntheticEngineName": synthetic_engine_name,
-            "open": [open_event._raw_element for open_event in open_events] if open_events else None,
-            "resolved": [resolved_event._raw_element for resolved_event in resolved_events] if resolved_events else None,
+            "open": (
+                [open_event._raw_element for open_event in open_events]
+                if open_events
+                else None
+            ),
+            "resolved": (
+                [resolved_event._raw_element for resolved_event in resolved_events]
+                if resolved_events
+                else None
+            ),
         }
         super().__init__(http_client, None, raw_element)
 
-    def post(self):
-        return self._http_client.make_request(f"/api/v1/synthetic/ext/events", params=self._raw_element, method="POST")
+    async def post(self):
+        return await self._http_client.make_request(
+            "/api/v1/synthetic/ext/events", params=self._raw_element, method="POST"
+        )
 
 
 class ThirdPartyEventOpenNotification(DynatraceObject):
@@ -280,7 +346,7 @@ class ThirdPartyEventOpenNotification(DynatraceObject):
         event_type: str,
         reason: str,
         start_timestamp: datetime,
-        location_ids: List[str],
+        location_ids: list[str],
     ):
 
         raw_element = {
@@ -296,7 +362,13 @@ class ThirdPartyEventOpenNotification(DynatraceObject):
 
 
 class ThirdPartyEventResolvedNotification(DynatraceObject):
-    def __init__(self, http_client, test_id: str, event_id: str, end_timestamp: datetime):
+    def __init__(
+        self, http_client, test_id: str, event_id: str, end_timestamp: datetime
+    ):
 
-        raw_element = {"testId": test_id, "eventId": event_id, "endTimestamp": int(end_timestamp.timestamp() * 1000)}
+        raw_element = {
+            "testId": test_id,
+            "eventId": event_id,
+            "endTimestamp": int(end_timestamp.timestamp() * 1000),
+        }
         super().__init__(http_client, None, raw_element)

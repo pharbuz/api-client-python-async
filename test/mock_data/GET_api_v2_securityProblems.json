@@ -1,0 +1,34 @@
+{
+  "totalCount": 2,
+  "pageSize": 2,
+  "securityProblems": [
+    {
+      "securityProblemId": "12544152654387159360",
+      "displayId": "S-1234",
+      "title": "Vulnerable package in production",
+      "status": "OPEN",
+      "muted": false,
+      "technology": "PYTHON",
+      "vulnerabilityType": "CODE_LEVEL",
+      "externalVulnerabilityId": "CVE-2024-9999",
+      "firstSeenTimestamp": 1717243200000,
+      "lastOpenedTimestamp": 1717246800000,
+      "lastUpdatedTimestamp": 1717250400000,
+      "lastResolvedTimestamp": 1717254000000
+    },
+    {
+      "securityProblemId": "5904857564184044850",
+      "displayId": "S-5678",
+      "title": "Runtime vulnerable function in use",
+      "status": "RESOLVED",
+      "muted": true,
+      "technology": "JAVA",
+      "vulnerabilityType": "RUNTIME",
+      "externalVulnerabilityId": "CVE-2023-1234",
+      "firstSeenTimestamp": 1717160400000,
+      "lastOpenedTimestamp": 1717164000000,
+      "lastUpdatedTimestamp": 1717167600000,
+      "lastResolvedTimestamp": 1717171200000
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-from typing import List, Optional
+import builtins
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -10,34 +10,35 @@ class GeoRegionsIpAddressMappingsService:
     def __init__(self, http_client: HttpClient):
         self._http_client = http_client
 
-    def list(self) -> "IPAddressMapping":
+    async def list(self) -> "IPAddressMapping":
         """
         Lists all IP address mappings of the environment
         """
-        response = self._http_client.make_request(self.ENDPOINT).json()
+        response = (await self._http_client.make_request(self.ENDPOINT)).json()
         return IPAddressMapping(self._http_client, None, response)
 
-    def put(self, mappings: List["IPAddressMapping"]):
+    async def put(self, mappings: builtins.list["IPAddressMapping"]):
         """
         Updates the IP address mappings of the environment
         """
         data = [mapping.json() for mapping in mappings]
-        body = {
-            "ipAddressMappingRules": data
-        }
-        self._http_client.make_request(self.ENDPOINT, method="PUT", params=body)
+        body = {"ipAddressMappingRules": data}
+        (await self._http_client.make_request(self.ENDPOINT, method="PUT", params=body))
 
 
 class IPAddressMapping(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
-        self.rules: List["IPAddressMappingRule"] = [
-            IPAddressMappingRule(raw_element=e) for e in raw_element.get("ipAddressMappingRules")
+        self.rules: list[IPAddressMappingRule] = [
+            IPAddressMappingRule(raw_element=e)
+            for e in raw_element.get("ipAddressMappingRules")
         ]
 
 
 class IPAddressMappingRule(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
-        self.location = IPAddressMappingLocation(raw_element=raw_element.get("location"))
+        self.location = IPAddressMappingLocation(
+            raw_element=raw_element.get("location")
+        )
         self.ip_range = IPAddressRange(raw_element=raw_element.get("ipRange"))
 
     @staticmethod
@@ -45,26 +46,30 @@ class IPAddressMappingRule(DynatraceObject):
         """
         Creates a new IP address mapping rule
         """
-        return IPAddressMappingRule(raw_element={
-            "ipAddressMappingLocation": location.json(),
-            "ipAddressRange": ip_range.json(),
-        })
+        return IPAddressMappingRule(
+            raw_element={
+                "ipAddressMappingLocation": location.json(),
+                "ipAddressRange": ip_range.json(),
+            }
+        )
 
 
 class IPAddressMappingLocation(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
         self.country_code: str = raw_element.get("countryCode")
-        self.city: Optional[str] = raw_element.get("city")
-        self.region_code: Optional[str] = raw_element.get("regionCode")
-        self.latitude: Optional[float] = raw_element.get("latitude")
-        self.longitude: Optional[float] = raw_element.get("longitude")
+        self.city: str | None = raw_element.get("city")
+        self.region_code: str | None = raw_element.get("regionCode")
+        self.latitude: float | None = raw_element.get("latitude")
+        self.longitude: float | None = raw_element.get("longitude")
 
     @staticmethod
-    def create(country_code: str,
-               city: Optional[str] = None,
-               region_code: Optional[str] = None,
-               latitude: Optional[float] = None,
-               longitude: Optional[float] = None):
+    def create(
+        country_code: str,
+        city: str | None = None,
+        region_code: str | None = None,
+        latitude: float | None = None,
+        longitude: float | None = None,
+    ):
         return IPAddressMappingLocation(
             raw_element={
                 "countryCode": country_code,
@@ -79,13 +84,17 @@ class IPAddressMappingLocation(DynatraceObject):
 class IPAddressRange(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
         self.address: str = raw_element.get("address")
-        self.subnet_mask: Optional[int] = raw_element.get("subnetMask")
-        self.address_to: Optional[str] = raw_element.get("addressTo")
+        self.subnet_mask: int | None = raw_element.get("subnetMask")
+        self.address_to: str | None = raw_element.get("addressTo")
 
     @staticmethod
-    def create(address: str, subnet_mask: Optional[int] = None, address_to: Optional[str] = None) -> "IPAddressRange":
-        return IPAddressRange(raw_element={
-            "address": address,
-            "subnetMask": subnet_mask,
-            "addressTo": address_to
-        })
+    def create(
+        address: str, subnet_mask: int | None = None, address_to: str | None = None
+    ) -> "IPAddressRange":
+        return IPAddressRange(
+            raw_element={
+                "address": address,
+                "subnetMask": subnet_mask,
+                "addressTo": address_to,
+            }
+        )
