@@ -341,6 +341,6 @@ asyncio.run(main())
  Dynatrace Platform Subscription - Rate cards               | :heavy_check_mark: | `dt.account.sub_v1_rate_cards`       |
  Dynatrace Platform Subscription - Cost allocation          | :heavy_check_mark: | `dt.account.sub_v1_cost_allocation`  |
  Account Settings                                           |        :x:         |                                      |
- Account Audits                                             |        :x:         |                                      |
+ Account Audits                                             | :heavy_check_mark: | `dt.account.audits`                  |
  Reference data                                             |        :x:         |                                      |
- Notifications                                              |        :x:         |                                      |
+ Notifications                                              | :heavy_check_mark: | `dt.account.notifications`           |
