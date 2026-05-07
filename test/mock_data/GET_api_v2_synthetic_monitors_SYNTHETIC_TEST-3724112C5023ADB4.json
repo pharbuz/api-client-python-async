@@ -1,0 +1,39 @@
+{
+    "automaticallyAssignedEntities": [],
+    "configuration": {
+        "device": {
+            "deviceName": "Desktop",
+            "orientation": "LANDSCAPE"
+        }
+    },
+    "description": "My browser monitor description",
+    "enabled": true,
+    "entityId": "SYNTHETIC_TEST-3724112C5023ADB4",
+    "frequencyMin": 15,
+    "keyPerformanceMetrics": {
+        "loadActionKpm": "VISUALLY_COMPLETE",
+        "xhrActionKpm": "VISUALLY_COMPLETE"
+    },
+    "locations": ["SYNTHETIC_LOCATION-D3A5BFD8676A4F19"],
+    "manuallyAssignedEntities": [],
+    "name": "My browser monitor",
+    "performanceThresholds": {
+        "enabled": false,
+        "thresholds": []
+    },
+    "primaryGrailTags": [],
+    "steps": [
+        {
+            "entityId": "SYNTHETIC_TEST_STEP-43EF14E26B1A462A",
+            "name": "Navigate to site",
+            "type": "NAVIGATE",
+            "url": "https://example.com"
+        }
+    ],
+    "syntheticMonitorOutageHandlingSettings": {
+        "globalOutages": true,
+        "localOutages": true
+    },
+    "tags": [],
+    "type": "BROWSER"
+}

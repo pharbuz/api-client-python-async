@@ -64,6 +64,7 @@ from dynatrace.environment_v2.custom_tags import CustomTagService
 from dynatrace.environment_v2.events import EventServiceV2
 from dynatrace.environment_v2.extensions import ExtensionsServiceV2
 from dynatrace.environment_v2.logs import LogService
+from dynatrace.environment_v2.management_zones import ManagementZoneServiceV2
 from dynatrace.environment_v2.metrics import MetricService
 from dynatrace.environment_v2.monitored_entities import EntityService
 from dynatrace.environment_v2.networkzones import NetworkZoneService
@@ -75,6 +76,7 @@ from dynatrace.environment_v2.remote_configuration import (
 from dynatrace.environment_v2.security_problems import SecurityProblemService
 from dynatrace.environment_v2.service_level_objectives import SloService
 from dynatrace.environment_v2.settings import SettingService
+from dynatrace.environment_v2.synthetic_monitors import SyntheticMonitorService
 from dynatrace.environment_v2.tokens_api import TokenService
 from dynatrace.environment_v2.tokens_tenant import TenantTokenService
 from dynatrace.http_client import HttpClient
@@ -179,6 +181,9 @@ class DynatraceAsync:
         )
         self.logs: LogService = LogService(self.__http_client)
         self.metrics: MetricService = MetricService(self.__http_client)
+        self.management_zones_v2: ManagementZoneServiceV2 = ManagementZoneServiceV2(
+            self.__http_client
+        )
         self.network_zones: NetworkZoneService = NetworkZoneService(self.__http_client)
         self.oneagents_remote_configuration: OneAgentsRemoteConfigurationService = (
             OneAgentsRemoteConfigurationService(self.__http_client)
@@ -189,6 +194,9 @@ class DynatraceAsync:
             self.__http_client
         )
         self.slos: SloService = SloService(self.__http_client)
+        self.synthetic_monitors_v2: SyntheticMonitorService = SyntheticMonitorService(
+            self.__http_client
+        )
         self.tenant_tokens = TenantTokenService(self.__http_client)
         self.tokens: TokenService = TokenService(self.__http_client)
         self.credentials = CredentialVaultService(self.__http_client)
