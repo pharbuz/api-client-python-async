@@ -1,0 +1,38 @@
+{
+    "description": "My network availability monitor description",
+    "enabled": true,
+    "entityId": "MULTIPROTOCOL_MONITOR-63653CB579F573D1",
+    "frequencyMin": 60,
+    "locations": ["SYNTHETIC_LOCATION-D3A5BFD8676A4F19"],
+    "name": "My network availability monitor",
+    "performanceThresholds": {
+        "enabled": true,
+        "thresholds": [
+            {
+                "aggregation": "AVG",
+                "dealertingSamples": 5,
+                "samples": 5,
+                "stepIndex": 0,
+                "threshold": 200,
+                "violatingSamples": 3
+            }
+        ]
+    },
+    "primaryGrailTags": [],
+    "steps": [
+        {
+            "name": "Step 1",
+            "requestType": "ICMP",
+            "targetList": ["127.0.0.1"]
+        }
+    ],
+    "syntheticMonitorOutageHandlingSettings": {
+        "globalConsecutiveOutageCountThreshold": 1,
+        "globalOutages": true,
+        "localConsecutiveOutageCountThreshold": 3,
+        "localLocationOutageCountThreshold": 3,
+        "localOutages": true
+    },
+    "tags": [],
+    "type": "MULTI_PROTOCOL"
+}
