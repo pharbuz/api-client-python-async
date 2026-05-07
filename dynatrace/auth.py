@@ -1,6 +1,22 @@
+from dataclasses import dataclass
+
 from authlib.integrations.base_client import InvalidTokenError, TokenExpiredError
 from authlib.integrations.httpx_client import AsyncOAuth2Client
 from authlib.integrations.httpx_client.oauth2_client import USE_CLIENT_DEFAULT
+
+
+@dataclass(frozen=True)
+class DynatraceOAuthCredentials:
+    client_id: str
+    client_secret: str
+    account_uuid: str
+    scope: str = "account-uac-read"
+    sso_base_url: str = "https://sso.dynatrace.com"
+
+
+@dataclass(frozen=True)
+class DynatraceAccessToken:
+    token: str
 
 
 class AutoRefreshingOAuth2Client(AsyncOAuth2Client):

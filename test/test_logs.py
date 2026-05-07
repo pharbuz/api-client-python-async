@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from dynatrace import DynatraceAsync
 from dynatrace.environment_v2.logs import EventType, LogRecord, LogRecordStatus
@@ -19,4 +19,4 @@ async def test_export(dt: DynatraceAsync):
     assert first.content.startswith("Failed to assign")
     assert first.event_type == EventType.SFM
     assert first.status == LogRecordStatus.ERROR
-    assert first.timestamp == datetime.fromtimestamp(1683574915193 / 1000, UTC)
+    assert first.timestamp == datetime.fromtimestamp(1683574915193 / 1000, timezone.utc)

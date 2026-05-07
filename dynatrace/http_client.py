@@ -21,7 +21,11 @@ from typing import Any
 
 import httpx
 
-from dynatrace.auth import build_dynatrace_oauth_client
+from dynatrace.auth import (
+    DynatraceAccessToken,
+    DynatraceOAuthCredentials,
+    build_dynatrace_oauth_client,
+)
 
 TOO_MANY_REQUESTS_WAIT = "wait"
 
@@ -30,9 +34,7 @@ class HttpClient:
     def __init__(
         self,
         base_url: str,
-        client_id: str,
-        client_secret: str,
-        account_uuid: str,
+        credentials: DynatraceOAuthCredentials | DynatraceAccessToken,
         log: logging.Logger = None,
         proxies: dict[str, str] | None = None,
         too_many_requests_strategy=None,
@@ -44,8 +46,6 @@ class HttpClient:
         print_bodies: bool = False,
         timeout: int | None = None,
         headers: dict[str, str] | None = None,
-        scope: str = "account-uac-read",
-        sso_base_url: str = "https://sso.dynatrace.com",
         verify_ssl: bool = False,
         token_timeout: int = 30,
         follow_redirects: bool = True,
@@ -54,6 +54,7 @@ class HttpClient:
             base_url = base_url[:-1]
         self.base_url = base_url
 
+        self.credentials = credentials
         self.headers = headers.copy() if headers else {}
         self.proxies = proxies or {}
         self.auth_header: dict[str, str] = {}
@@ -64,12 +65,7 @@ class HttpClient:
         self.retry_delay_s = retry_delay_ms / 1000
         self.verify = verify_ssl
         self.follow_redirects = follow_redirects
-        self.scope = scope
-        self.sso_base_url = sso_base_url
         self.token_timeout = token_timeout
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.account_uuid = account_uuid
 
         self.log = log
         if self.log is None:
@@ -151,12 +147,24 @@ class HttpClient:
 
     def _create_client(self):
         mounts = self._build_mounts()
+        if isinstance(self.credentials, DynatraceAccessToken):
+            self.auth_header = {"Authorization": f"Api-Token {self.credentials.token}"}
+            return httpx.AsyncClient(
+                verify=self.verify,
+                timeout=self.timeout,
+                follow_redirects=self.follow_redirects,
+                mounts=mounts or None,
+                transport=httpx.AsyncHTTPTransport(
+                    verify=self.verify,
+                    retries=0,
+                ),
+            )
         return build_dynatrace_oauth_client(
-            sso_base_url=self.sso_base_url,
-            client_id=self.client_id,
-            client_secret=self.client_secret,
-            account_uuid=self.account_uuid,
-            scope=self.scope,
+            sso_base_url=self.credentials.sso_base_url,
+            client_id=self.credentials.client_id,
+            client_secret=self.credentials.client_secret,
+            account_uuid=self.credentials.account_uuid,
+            scope=self.credentials.scope,
             verify_ssl=self.verify,
             token_timeout=self.token_timeout,
             timeout=self.timeout,

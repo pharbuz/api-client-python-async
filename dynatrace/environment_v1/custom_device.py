@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 from collections.abc import MutableSequence
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -168,9 +168,13 @@ class CustomDevicePushMessage(DynatraceObject):
                         .split('"')[0]
                         .strip()
                     )
-                    max_timestamp = datetime.fromtimestamp(max_timestamp / 1000, tz=UTC)
+                    max_timestamp = datetime.fromtimestamp(
+                        max_timestamp / 1000, tz=timezone.utc
+                    )
                 else:
-                    max_timestamp = datetime.now(tz=UTC) - timedelta(minutes=59)
+                    max_timestamp = datetime.now(tz=timezone.utc) - timedelta(
+                        minutes=59
+                    )
                 self._http_client.log.warning(
                     f"Some data points were invalid, removing data points older than {max_timestamp}"
                 )
