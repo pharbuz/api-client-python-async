@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from dynatrace import DynatraceAsync
 from dynatrace.configuration_v1.extensions import (
@@ -73,7 +73,7 @@ async def test_get_state(dt: DynatraceAsync):
     assert first.endpoint_id == "5649014104314746667"
     assert first.state == ExtensionStateEnum.ERROR_CONFIG
     assert first.state_description == "Extension doesn't exist on given host"
-    assert first.timestamp == datetime.fromtimestamp(1620943873929 / 1000, UTC)
+    assert first.timestamp == datetime.fromtimestamp(1620943873929 / 1000, timezone.utc)
     assert first.host_id is None
     assert first.process_id is None
 

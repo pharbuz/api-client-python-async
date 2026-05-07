@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from dynatrace import DynatraceAsync
 from dynatrace.environment_v2.custom_tags import METag
@@ -36,8 +36,8 @@ async def test_list(dt: DynatraceAsync):
 async def test_get(dt: DynatraceAsync):
     entity = await dt.entities.get(
         "HOST-82F576674F19AC16",
-        time_from=datetime.fromtimestamp(1618585701, UTC),
-        time_to=datetime.fromtimestamp(1621177701, UTC),
+        time_from=datetime.fromtimestamp(1618585701, timezone.utc),
+        time_to=datetime.fromtimestamp(1621177701, timezone.utc),
         fields="+fromRelationships,+toRelationships,+icon,+properties,+tags,+managementZones,+firstSeenTms,+lastSeenTms",
     )
 

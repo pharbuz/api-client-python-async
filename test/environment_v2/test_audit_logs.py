@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from dynatrace import DynatraceAsync
 from dynatrace.environment_v2.audit_logs import AuditLogEntry, EventType, UserType
@@ -26,7 +26,7 @@ async def test_list(dt: DynatraceAsync):
     assert first.user == "Dynatrace support user #649982176"
     assert first.user_type == UserType("USER_NAME")
     assert first.user_origin == "webui (xxx.xxx.xxx.xxx)"
-    assert first.timestamp == datetime.fromtimestamp(1621003148800 / 1000, UTC)
+    assert first.timestamp == datetime.fromtimestamp(1621003148800 / 1000, timezone.utc)
     assert first.success
 
 
@@ -44,5 +44,7 @@ async def test_get(dt: DynatraceAsync):
     assert audit_log.user == "Dynatrace support user #649982176"
     assert audit_log.user_type == UserType("USER_NAME")
     assert audit_log.user_origin == "webui (xxx.xxx.xxx.xxx)"
-    assert audit_log.timestamp == datetime.fromtimestamp(1621003148800 / 1000, UTC)
+    assert audit_log.timestamp == datetime.fromtimestamp(
+        1621003148800 / 1000, timezone.utc
+    )
     assert audit_log.success

@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from dynatrace import DynatraceAsync
 from test.async_utils import collect
@@ -20,7 +20,9 @@ async def test_list(dt: DynatraceAsync):
     assert not first_job.cancelable
     assert first_job.start_version == "1.217.89.20210506-182520"
     assert first_job.target_version == "1.217.96.20210507-181038"
-    assert first_job.timestamp == datetime.fromtimestamp(1620419177047 / 1000, UTC)
+    assert first_job.timestamp == datetime.fromtimestamp(
+        1620419177047 / 1000, timezone.utc
+    )
     assert first_job.ag_type == "ENVIRONMENT"
     assert first_job.environments == ["eaa50379"]
     assert first_job.error is None
@@ -41,7 +43,9 @@ async def test_get(dt: DynatraceAsync):
     assert not first_job.cancelable
     assert first_job.start_version == "1.217.89.20210506-182520"
     assert first_job.target_version == "1.217.96.20210507-181038"
-    assert first_job.timestamp == datetime.fromtimestamp(1620419177047 / 1000, UTC)
+    assert first_job.timestamp == datetime.fromtimestamp(
+        1620419177047 / 1000, timezone.utc
+    )
     assert first_job.ag_type == "ENVIRONMENT"
     assert first_job.environments == ["eaa50379"]
     assert first_job.error is None
