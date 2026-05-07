@@ -1,5 +1,5 @@
 import json
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from unittest import mock
 
 from dynatrace import DynatraceAsync
@@ -32,8 +32,8 @@ async def test_notifications_service_is_exposed(dt: DynatraceAsync):
 
 async def test_notifications_list_returns_models(dt: DynatraceAsync):
     account_uuid = "account-123"
-    start_date_time = datetime(2025, 12, 1, 10, 0, tzinfo=UTC)
-    end_date_time = datetime(2025, 12, 31, 23, 59, tzinfo=UTC)
+    start_date_time = datetime(2025, 12, 1, 10, 0, tzinfo=timezone.utc)
+    end_date_time = datetime(2025, 12, 31, 23, 59, tzinfo=timezone.utc)
 
     async def fake_make_request(
         self,

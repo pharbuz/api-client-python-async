@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from dynatrace.http_client import HttpClient
 
@@ -26,5 +26,5 @@ class ClusterTimeService:
     async def time(self) -> datetime:
         return datetime.fromtimestamp(
             float((await self.__http_client.make_request("/api/v1/time")).text) / 1000,
-            UTC,
+            timezone.utc,
         )
