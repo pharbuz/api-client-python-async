@@ -82,6 +82,34 @@ from dynatrace.platform.schemas import PlatformAPI
 
 
 class DynatraceAsync:
+    _OAUTH_RESTRICTED = {
+        "cluster_time",
+        "custom_devices",
+        "deployment",
+        "events",
+        "oneagents",
+        "smartscape_hosts",
+        "synthetic_monitors",
+        "third_part_synthetic_tests",
+        "timeseries",
+        "alerting_profiles",
+        "anomaly_detection_metric_events",
+        "anomaly_detection_process_groups",
+        "auto_tags",
+        "dashboards",
+        "extensions",
+        "maintenance_windows",
+        "management_zones",
+        "notifications",
+        "oneagents_config_environment",
+        "oneagents_config_host",
+        "oneagents_config_hostgroup",
+        "plugins",
+        "config_v1",
+    }
+
+    _TOKEN_RESTRICTED = {"account", "platform"}
+
     def __init__(
         self,
         base_url: str,
@@ -130,6 +158,7 @@ class DynatraceAsync:
             verify_ssl,
             token_timeout,
         )
+        self.__credentials = credentials
 
         self.activegates: ActiveGateService = ActiveGateService(self.__http_client)
         self.activegates_autoupdate_configuration: (
@@ -141,79 +170,101 @@ class DynatraceAsync:
         self.activegates_remote_configuration: ActiveGatesRemoteConfigurationService = (
             ActiveGatesRemoteConfigurationService(self.__http_client)
         )
-        self.alerting_profiles: AlertingProfileService = AlertingProfileService(
-            self.__http_client
-        )
-        self.anomaly_detection_metric_events = MetricEventService(self.__http_client)
-        self.anomaly_detection_process_groups = AnomalyDetectionPGService(
-            self.__http_client
-        )
         self.audit_logs: AuditLogsService = AuditLogsService(self.__http_client)
-        self.auto_tags: AutoTagService = AutoTagService(self.__http_client)
-        self.cluster_time: ClusterTimeService = ClusterTimeService(self.__http_client)
-        self.custom_devices: CustomDeviceService = CustomDeviceService(
-            self.__http_client
-        )
         self.custom_tags: CustomTagService = CustomTagService(self.__http_client)
-        self.dashboards: DashboardService = DashboardService(self.__http_client)
-        self.deployment: DeploymentService = DeploymentService(self.__http_client)
         self.entities: EntityService = EntityService(self.__http_client)
-        self.events: EventService = EventService(self.__http_client)
         self.events_v2: EventServiceV2 = EventServiceV2(self.__http_client)
-        self.extensions: ExtensionService = ExtensionService(self.__http_client)
         self.extensions_v2: ExtensionsServiceV2 = ExtensionsServiceV2(
             self.__http_client
         )
         self.logs: LogService = LogService(self.__http_client)
-        self.maintenance_windows = MaintenanceWindowService(self.__http_client)
-        self.management_zones: ManagementZoneService = ManagementZoneService(
-            self.__http_client
-        )
         self.metrics: MetricService = MetricService(self.__http_client)
         self.network_zones: NetworkZoneService = NetworkZoneService(self.__http_client)
-        self.notifications: NotificationService = NotificationService(
-            self.__http_client
-        )
-        self.oneagents: OneAgentOnAHostService = OneAgentOnAHostService(
-            self.__http_client
-        )
-        self.oneagents_config_environment: OneAgentEnvironmentWideConfigService = (
-            OneAgentEnvironmentWideConfigService(self.__http_client)
-        )
-        self.oneagents_config_host: OneAgentOnAHostConfigService = (
-            OneAgentOnAHostConfigService(self.__http_client)
-        )
-        self.oneagents_config_hostgroup: OneAgentInAHostGroupService = (
-            OneAgentInAHostGroupService(self.__http_client)
-        )
         self.oneagents_remote_configuration: OneAgentsRemoteConfigurationService = (
             OneAgentsRemoteConfigurationService(self.__http_client)
         )
         self.settings: SettingService = SettingService(self.__http_client)
-        self.plugins: PluginService = PluginService(self.__http_client)
         self.problems: ProblemService = ProblemService(self.__http_client)
         self.security_problems: SecurityProblemService = SecurityProblemService(
             self.__http_client
         )
         self.slos: SloService = SloService(self.__http_client)
-        self.smartscape_hosts: SmartScapeHostsService = SmartScapeHostsService(
-            self.__http_client
-        )
-        self.synthetic_monitors: SyntheticMonitorsService = SyntheticMonitorsService(
-            self.__http_client
-        )
         self.tenant_tokens = TenantTokenService(self.__http_client)
-        self.third_part_synthetic_tests: ThirdPartySyntheticTestsService = (
-            ThirdPartySyntheticTestsService(self.__http_client)
-        )
-        self.timeseries: TimeSerieService = TimeSerieService(self.__http_client)
         self.tokens: TokenService = TokenService(self.__http_client)
         self.credentials = CredentialVaultService(self.__http_client)
-        self.platform: PlatformAPI = PlatformAPI(self.__http_client)
-        self.account: AccountAPI = AccountAPI(self.__http_client)
 
-        # New implementations should be done here, above is deprecated
-        self.config_v1: ConfigurationV1 = ConfigurationV1(self.__http_client)
+        if isinstance(credentials, DynatraceAccessToken):
+            self.cluster_time: ClusterTimeService = ClusterTimeService(
+                self.__http_client
+            )
+            self.custom_devices: CustomDeviceService = CustomDeviceService(
+                self.__http_client
+            )
+            self.deployment: DeploymentService = DeploymentService(self.__http_client)
+            self.events: EventService = EventService(self.__http_client)
+            self.oneagents: OneAgentOnAHostService = OneAgentOnAHostService(
+                self.__http_client
+            )
+            self.smartscape_hosts: SmartScapeHostsService = SmartScapeHostsService(
+                self.__http_client
+            )
+            self.synthetic_monitors: SyntheticMonitorsService = (
+                SyntheticMonitorsService(self.__http_client)
+            )
+            self.third_part_synthetic_tests: ThirdPartySyntheticTestsService = (
+                ThirdPartySyntheticTestsService(self.__http_client)
+            )
+            self.timeseries: TimeSerieService = TimeSerieService(self.__http_client)
+
+            self.alerting_profiles: AlertingProfileService = AlertingProfileService(
+                self.__http_client
+            )
+            self.anomaly_detection_metric_events = MetricEventService(
+                self.__http_client
+            )
+            self.anomaly_detection_process_groups = AnomalyDetectionPGService(
+                self.__http_client
+            )
+            self.auto_tags: AutoTagService = AutoTagService(self.__http_client)
+            self.dashboards: DashboardService = DashboardService(self.__http_client)
+            self.extensions: ExtensionService = ExtensionService(self.__http_client)
+            self.maintenance_windows = MaintenanceWindowService(self.__http_client)
+            self.management_zones: ManagementZoneService = ManagementZoneService(
+                self.__http_client
+            )
+            self.notifications: NotificationService = NotificationService(
+                self.__http_client
+            )
+            self.oneagents_config_environment: OneAgentEnvironmentWideConfigService = (
+                OneAgentEnvironmentWideConfigService(self.__http_client)
+            )
+            self.oneagents_config_host: OneAgentOnAHostConfigService = (
+                OneAgentOnAHostConfigService(self.__http_client)
+            )
+            self.oneagents_config_hostgroup: OneAgentInAHostGroupService = (
+                OneAgentInAHostGroupService(self.__http_client)
+            )
+            self.plugins: PluginService = PluginService(self.__http_client)
+            self.config_v1: ConfigurationV1 = ConfigurationV1(self.__http_client)
+
+        elif isinstance(credentials, DynatraceOAuthCredentials):
+            self.platform: PlatformAPI = PlatformAPI(self.__http_client)
+            self.account: AccountAPI = AccountAPI(self.__http_client)
+
+    def __getattr__(self, name):
+        if isinstance(self.__credentials, DynatraceOAuthCredentials):
+            if name in self._OAUTH_RESTRICTED:
+                raise AttributeError(
+                    f"'{name}' is not available with OAuth credentials. "
+                    "Use DynatraceAccessToken instead."
+                )
+        elif isinstance(self.__credentials, DynatraceAccessToken):
+            if name in self._TOKEN_RESTRICTED:
+                raise AttributeError(
+                    f"'{name}' is not available with token credentials. "
+                    "Use DynatraceOAuthCredentials instead."
+                )
+        raise AttributeError(f"'DynatraceAsync' object has no attribute '{name}'")
 
     async def aclose(self) -> None:
         await self.__http_client.aclose()
