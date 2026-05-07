@@ -12,7 +12,7 @@ from pathlib import Path
 
 import wrapt
 
-from dynatrace import DynatraceAsync
+from dynatrace import DynatraceAsync, DynatraceOAuthCredentials
 from dynatrace.utils import slugify
 
 
@@ -55,12 +55,14 @@ def setup_log():
 
 async def main():
     async with DynatraceAsync(
-        client_id=os.getenv("DYNATRACE_OAUTH_CLIENT_ID"),
-        client_secret=os.getenv("DYNATRACE_OAUTH_CLIENT_SECRET"),
-        account_uuid=os.getenv("DYNATRACE_ACCOUNT_UUID"),
         base_url=os.getenv("DYNATRACE_TENANT_URL"),
+        credentials=DynatraceOAuthCredentials(
+            client_id=os.getenv("DYNATRACE_OAUTH_CLIENT_ID"),
+            client_secret=os.getenv("DYNATRACE_OAUTH_CLIENT_SECRET"),
+            account_uuid=os.getenv("DYNATRACE_ACCOUNT_UUID"),
+            scope="environment-api:metrics:read environment-api:entities:read",
+        ),
         log=setup_log(),
-        scope="environment-api:metrics:read environment-api:entities:read",
     ) as dt:
         # TODO - Code here as you add new endpoints, during development
         # Any requests are going to be recorded in the `test/mock` folder and can later be used to write tests.

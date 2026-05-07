@@ -17,6 +17,7 @@ limitations under the License.
 import logging
 
 from dynatrace.account.schemas import AccountAPI
+from dynatrace.auth import DynatraceAccessToken, DynatraceOAuthCredentials
 from dynatrace.configuration_v1.alerting_profiles import AlertingProfileService
 from dynatrace.configuration_v1.anomaly_detection_process_groups import (
     AnomalyDetectionPGService,
@@ -83,12 +84,8 @@ from dynatrace.platform.schemas import PlatformAPI
 class DynatraceAsync:
     def __init__(
         self,
-        client_id: str,
-        client_secret: str,
-        account_uuid: str,
-        scope: str = "account-uac-read",
-        sso_base_url: str = "https://sso.dynatrace.com",
-        base_url: str = "https://api.dynatrace.com",
+        base_url: str,
+        credentials: DynatraceOAuthCredentials | DynatraceAccessToken,
         log: logging.Logger = None,
         proxies: dict = None,
         too_many_requests_strategy=None,
@@ -105,18 +102,20 @@ class DynatraceAsync:
     ):
         if not base_url:
             raise ValueError("base_url is required")
-        if not client_id:
-            raise ValueError("client_id is required")
-        if not client_secret:
-            raise ValueError("client_secret is required")
-        if not account_uuid:
-            raise ValueError("account_uuid is required")
+        if isinstance(credentials, DynatraceOAuthCredentials):
+            if not credentials.client_id:
+                raise ValueError("client_id is required")
+            if not credentials.client_secret:
+                raise ValueError("client_secret is required")
+            if not credentials.account_uuid:
+                raise ValueError("account_uuid is required")
+        elif isinstance(credentials, DynatraceAccessToken):
+            if not credentials.token:
+                raise ValueError("token is required")
 
         self.__http_client = HttpClient(
             base_url,
-            client_id,
-            client_secret,
-            account_uuid,
+            credentials,
             log,
             proxies,
             too_many_requests_strategy,
@@ -128,8 +127,6 @@ class DynatraceAsync:
             print_bodies,
             timeout,
             headers,
-            scope,
-            sso_base_url,
             verify_ssl,
             token_timeout,
         )
