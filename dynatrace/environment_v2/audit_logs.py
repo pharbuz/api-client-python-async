@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
@@ -94,7 +94,7 @@ class AuditLogEntry(DynatraceObject):
         self.success: bool = raw_element.get("success")
         self.timestamp: datetime = datetime.fromtimestamp(
             raw_element.get("timestamp") / 1000,
-            UTC,
+            timezone.utc,
         )
         self.user: str = raw_element.get("user")
         self.user_type: UserType = UserType(raw_element.get("userType"))

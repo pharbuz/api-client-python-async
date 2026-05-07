@@ -18,7 +18,7 @@ import functools
 import re
 import unicodedata
 import warnings
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 ISO_8601 = "%Y-%m-%dT%H:%M:%S.%fZ"
 ISO_8601_NO_MS = "%Y-%m-%dT%H:%M:%SZ"
@@ -52,7 +52,7 @@ def timestamp_to_string(timestamp: datetime | str | None) -> str | None:
     if not isinstance(timestamp, datetime):
         return timestamp
     return (
-        timestamp.astimezone(UTC)
+        timestamp.astimezone(timezone.utc)
         .replace(tzinfo=None)
         .isoformat(timespec="milliseconds")
     )
@@ -71,13 +71,13 @@ def iso8601_to_datetime(timestamp: str | None) -> datetime | None:
 def int64_to_datetime(timestamp: int | None) -> datetime | None:
     if timestamp is None or not timestamp:
         return None
-    return datetime.fromtimestamp(timestamp / 1000, UTC)
+    return datetime.fromtimestamp(timestamp / 1000, timezone.utc)
 
 
 def datetime_to_int64(timestamp: datetime | None) -> int | None:
     if not isinstance(timestamp, datetime):
         return timestamp
-    return int(timestamp.replace(tzinfo=UTC).timestamp() * 1000)
+    return int(timestamp.replace(tzinfo=timezone.utc).timestamp() * 1000)
 
 
 def bool_header_value(value: bool | None) -> str | None:

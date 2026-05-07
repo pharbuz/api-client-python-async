@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from dynatrace import DynatraceAsync
 from dynatrace.environment_v2.custom_tags import METag
@@ -22,7 +22,7 @@ EVENT_TYPE = "APPLICATION_OVERLOAD_PREVENTION"
 async def test_list(dt: DynatraceAsync):
     events = await dt.events_v2.list(
         page_size=100,
-        time_from=datetime.fromtimestamp(1599913748, UTC),
+        time_from=datetime.fromtimestamp(1599913748, timezone.utc),
         time_to="1631258989895",
     )
 

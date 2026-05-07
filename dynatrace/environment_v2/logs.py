@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
@@ -83,7 +83,7 @@ class LogRecord(DynatraceObject):
         self.event_type: EventType = EventType(raw_element.get("eventType"))
         self.timestamp: datetime = datetime.fromtimestamp(
             raw_element.get("timestamp") / 1000,
-            UTC,
+            timezone.utc,
         )
         self.content: str = raw_element.get("content")
         self.status: LogRecordStatus = LogRecordStatus(raw_element.get("status"))

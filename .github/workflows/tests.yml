@@ -6,9 +6,9 @@ jobs:
   build:
     runs-on: ${{ matrix.platform }}
     env:
-      GIT_CONFIG_COUNT: '1'
+      GIT_CONFIG_COUNT: "1"
       GIT_CONFIG_KEY_0: core.longpaths
-      GIT_CONFIG_VALUE_0: 'true'
+      GIT_CONFIG_VALUE_0: "true"
     strategy:
       max-parallel: 4
       matrix:
@@ -18,7 +18,7 @@ jobs:
           - macos-latest
           - windows-latest
         # https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json
-        python-version: [ '3.12', '3.13', '3.14' ]
+        python-version: [ "3.10", "3.11", "3.12", "3.13", "3.14" ]
 
     steps:
       - uses: actions/checkout@v4
@@ -34,4 +34,3 @@ jobs:
           pip install .
       - name: Test with pytest
         run: pytest -rp
-
