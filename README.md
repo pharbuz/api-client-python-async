@@ -15,15 +15,40 @@ $ pip install dt-async
 
 ## Authentication
 
-This library uses OAuth 2.0 client credentials flow for authentication.
+This library supports two authentication methods:
 
-When creating `DynatraceAsync(...)`, you must provide:
-- `client_id`
-- `client_secret`
-- `account_uuid`
-- `scope`
+### OAuth 2.0 (client credentials)
 
-The `scope` value must include the permissions required by the APIs you want to call. For example, if you want to read entities and metrics, pass the corresponding OAuth scopes in the constructor, for example `scope="environment-api:entities:read environment-api:metrics:read"`.
+Use `DynatraceOAuthCredentials` for the OAuth 2.0 client credentials flow.
+
+```python
+from dynatrace import DynatraceAsync, DynatraceOAuthCredentials
+
+dt = DynatraceAsync(
+    base_url="environment_url",
+    credentials=DynatraceOAuthCredentials(
+        client_id="oauth_client_id",
+        client_secret="oauth_client_secret",
+        account_uuid="your-account-uuid",
+        scope="environment-api:entities:read environment-api:metrics:read",
+    ),
+)
+```
+
+The `scope` value must include the permissions required by the APIs you want to call.
+
+### API Token
+
+Use `DynatraceAccessToken` for token-based authentication. The client will send an `Api-Token` header with every request.
+
+```python
+from dynatrace import DynatraceAsync, DynatraceAccessToken
+
+dt = DynatraceAsync(
+    base_url="environment_url",
+    credentials=DynatraceAccessToken(token="dt0c01..."),
+)
+```
 
 ## Simple Demo
 
@@ -31,7 +56,7 @@ The `scope` value must include the permissions required by the APIs you want to 
 import asyncio
 from datetime import datetime, timedelta
 
-from dynatrace import DynatraceAsync
+from dynatrace import DynatraceAsync, DynatraceOAuthCredentials
 from dynatrace import TOO_MANY_REQUESTS_WAIT
 from dynatrace.environment_v2.credential_vault import PublicCertificateCredentials
 from dynatrace.environment_v2.settings import SettingsObjectCreate
@@ -41,20 +66,46 @@ from dynatrace.environment_v2.tokens_api import (
 )
 
 async def main():
-    # Create a Dynatrace client
+    # Create a Dynatrace client with OAuth credentials
     async with DynatraceAsync(
-        client_id="oauth_client_id",
-        client_secret="oauth_client_secret",
-        account_uuid="your-account-uuid",
         base_url="environment_url",
+        credentials=DynatraceOAuthCredentials(
+            client_id="oauth_client_id",
+            client_secret="oauth_client_secret",
+            account_uuid="your-account-uuid",
+        ),
     ) as dt:
         # Create a client that handles too many requests (429)
         # dt = DynatraceAsync(
-        #     client_id="oauth_client_id",
-        #     client_secret="oauth_client_secret",
-        #     account_uuid="your-account-uuid",
         #     base_url="environment_url",
+        #     credentials=DynatraceOAuthCredentials(
+        #         client_id="oauth_client_id",
+        #         client_secret="oauth_client_secret",
+        #         account_uuid="your-account-uuid",
+        #     ),
         #     too_many_requests_strategy=TOO_MANY_REQUESTS_WAIT,
+        # )
+        # Create a client that automatically retries on errors, up to 5 times, with a 1 second delay between retries
+        # dt = DynatraceAsync(
+        #     base_url="environment_url",
+        #     credentials=DynatraceOAuthCredentials(
+        #         client_id="oauth_client_id",
+        #         client_secret="oauth_client_secret",
+        #         account_uuid="your-account-uuid",
+        #     ),
+        #     retries=5,
+        #     retry_delay_ms=1000,
+        # )
+
+        # Create a client with a custom HTTP timeout of 10 seconds
+        # dt = DynatraceAsync(
+        #     base_url="environment_url",
+        #     credentials=DynatraceOAuthCredentials(
+        #         client_id="oauth_client_id",
+        #         client_secret="oauth_client_secret",
+        #         account_uuid="your-account-uuid",
+        #     ),
+        #     timeout=10,
         # )
 
         # Create a client that automatically retries on errors, up to 5 times, with a 1 second delay between retries
