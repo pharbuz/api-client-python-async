@@ -1,0 +1,16 @@
+{
+    "monitors": [
+        {
+            "enabled": true,
+            "entityId": "MULTIPROTOCOL_MONITOR-63653CB579F573D1",
+            "name": "My network availability monitor",
+            "type": "MULTI_PROTOCOL"
+        },
+        {
+            "enabled": false,
+            "entityId": "SYNTHETIC_TEST-3724112C5023ADB4",
+            "name": "My browser monitor",
+            "type": "BROWSER"
+        }
+    ]
+}
