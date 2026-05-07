@@ -270,7 +270,9 @@ asyncio.run(main())
  Problems                                | :heavy_check_mark: | `dt.problems`                             |
  Security problems                       | :heavy_check_mark: | `dt.security_problems`                    |
  Service-level objectives                | :heavy_check_mark: | `dt.slos`                                 |
- Settings                                |     :warning:      | `dt.settings`                             | 
+ Settings                                |     :warning:      | `dt.settings`                             |
+ Settings - Management zones             | :heavy_check_mark: | `dt.management_zones_v2`                  |
+ Synthetic - Monitors                    | :heavy_check_mark: | `dt.synthetic_monitors_v2`                |
  Credential vault                        | :heavy_check_mark: | `dt.credentials`                          |
 
 ### Environment API V1
