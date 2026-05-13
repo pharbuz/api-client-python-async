@@ -1,11 +1,13 @@
 from dynatrace import DynatraceAsync
 from dynatrace.environment_v2.settings import (
+    EffectiveSettingsValue,
     SchemaStub,
     SettingsObject,
     SettingsObjectCreate,
 )
+from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from test.async_utils import collect
+from test.async_utils import MockResponse, collect
 
 settings_dict = {
     "enabled": True,
@@ -60,6 +62,54 @@ async def test_list_objects(dt: DynatraceAsync):
     settings_list = await collect(settings)
     assert len(settings_list) == 2
     assert all(isinstance(s, SettingsObject) for s in settings_list)
+
+
+async def test_list_effective_values(dt: DynatraceAsync, monkeypatch):
+    async def make_request(
+        self,
+        path: str,
+        params: dict | None = None,
+        headers: dict | None = None,
+        method="GET",
+        data=None,
+        query_params=None,
+        **kwargs,
+    ):
+        assert path == "/api/v2/settings/effectiveValues"
+        return MockResponse(
+            {
+                "items": [
+                    {
+                        "author": "Alice",
+                        "created": 1710000000000,
+                        "createdBy": "user-1",
+                        "externalId": "external-1",
+                        "modified": 1710001000000,
+                        "modifiedBy": "user-2",
+                        "origin": "USER",
+                        "schemaId": "builtin:anomaly-detection.metric-events",
+                        "schemaVersion": "1.0.0",
+                        "searchSummary": "summary",
+                        "summary": "effective value",
+                        "value": {"enabled": True},
+                    }
+                ],
+                "totalCount": 1,
+            }
+        )
+
+    monkeypatch.setattr(HttpClient, "make_request", make_request)
+
+    effective_values = await dt.settings.list_effective_values(scope="environment")
+
+    assert isinstance(effective_values, PaginatedList)
+    effective_values_list = await collect(effective_values)
+    assert len(effective_values_list) == 1
+    assert all(isinstance(v, EffectiveSettingsValue) for v in effective_values_list)
+    assert (
+        effective_values_list[0].schema_id == "builtin:anomaly-detection.metric-events"
+    )
+    assert effective_values_list[0].value == {"enabled": True}
 
 
 async def test_get_object(dt: DynatraceAsync):

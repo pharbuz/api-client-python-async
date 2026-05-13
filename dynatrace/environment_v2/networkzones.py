@@ -25,6 +25,7 @@ from dynatrace.pagination import PaginatedList
 class NetworkZoneService:
     ENDPOINT = "/api/v2/networkZones"
     ENDPOINT_GLOBALSETTINGS = "/api/v2/networkZoneSettings"
+    ENDPOINT_HOST_CONNECTION_STATISTICS = "/api/v2/networkZones"
 
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
@@ -51,6 +52,19 @@ class NetworkZoneService:
             await self.__http_client.make_request(f"{self.ENDPOINT}/{networkzone_id}")
         ).json()
         return NetworkZone(raw_element=response)
+
+    async def get_host_statistics(
+        self, networkzone_id: str, filter: str | None = None
+    ) -> "NetworkZoneConnectionStatistics":
+        """Gets the statistics about hosts using the network zone."""
+        params = {"filter": filter}
+        response = (
+            await self.__http_client.make_request(
+                f"{self.ENDPOINT}/{networkzone_id}/hostConnectionStatistics",
+                params=params,
+            )
+        ).json()
+        return NetworkZoneConnectionStatistics(raw_element=response)
 
     async def update(
         self,
@@ -80,7 +94,7 @@ class NetworkZoneService:
             path=f"{self.ENDPOINT}/{networkzone_id}", method="DELETE"
         )
 
-    async def getGlobalConfig(self):
+    async def get_global_config(self) -> "NetworkZoneSettings":
         """Gets the global configuration of network zones. No params
         :return: Network Zone Global Settings object
         """
@@ -89,7 +103,7 @@ class NetworkZoneService:
         ).json()
         return NetworkZoneSettings(raw_element=response)
 
-    async def updateGlobalConfig(self, configuration: bool):
+    async def update_global_config(self, configuration: bool):
         """Updates the global configuration of network zones.
 
         :param configuration: boolean setting to enable/disable NZs
@@ -99,6 +113,12 @@ class NetworkZoneService:
         return await self.__http_client.make_request(
             path=self.ENDPOINT_GLOBALSETTINGS, method="PUT", params=params
         )
+
+    async def getGlobalConfig(self):
+        return await self.get_global_config()
+
+    async def updateGlobalConfig(self, configuration: bool):
+        return await self.update_global_config(configuration)
 
 
 class NetworkZone(DynatraceObject):
@@ -119,3 +139,27 @@ class NetworkZone(DynatraceObject):
 class NetworkZoneSettings(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, bool]):
         self.network_zones_enabled: bool = raw_element.get("networkZonesEnabled")
+
+
+class NetworkZoneConnectionStatistics(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.hosts_configured_but_not_connected: list[str] = raw_element.get(
+            "hostsConfiguredButNotConnected", []
+        )
+        self.hosts_connected_as_alternative: list[str] = raw_element.get(
+            "hostsConnectedAsAlternative", []
+        )
+        self.hosts_connected_as_failover: list[str] = raw_element.get(
+            "hostsConnectedAsFailover", []
+        )
+        self.hosts_connected_as_failover_without_active_gates: list[str] = (
+            raw_element.get("hostsConnectedAsFailoverWithoutActiveGates", [])
+        )
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "hostsConfiguredButNotConnected": self.hosts_configured_but_not_connected,
+            "hostsConnectedAsAlternative": self.hosts_connected_as_alternative,
+            "hostsConnectedAsFailover": self.hosts_connected_as_failover,
+            "hostsConnectedAsFailoverWithoutActiveGates": self.hosts_connected_as_failover_without_active_gates,
+        }

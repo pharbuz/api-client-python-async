@@ -1,0 +1,7 @@
+{
+    "key": "dt.event.description",
+    "displayName": "Custom description",
+    "filterable": true,
+    "description": "A short description of the event property.",
+    "writable": true
+}

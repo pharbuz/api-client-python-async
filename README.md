@@ -259,18 +259,18 @@ asyncio.run(main())
  ActiveGates - Auto-update jobs          | :heavy_check_mark: | `dt.activegates_autoupdate_jobs`          |
  ActiveGates - Remote configuration      | :heavy_check_mark: | `dt.activegates_remote_configuration`     |
  Audit Logs                              | :heavy_check_mark: | `dt.audit_logs`                           |
- Events                                  |     :warning:      | `dt.events_v2`                            |
+ Events                                  | :heavy_check_mark: | `dt.events_v2`                            |
  Extensions 2.0                          | :heavy_check_mark: | `dt.extensions_v2`                        |
- Logs                                    |     :warning:      | `dt.logs`                                 |
+ Logs                                    | :heavy_check_mark: | `dt.logs`                                 |
  Metrics                                 | :heavy_check_mark: | `dt.metrics`                              |
- Monitored entities                      |     :warning:      | `dt.entities`                             |
+ Monitored entities                      | :heavy_check_mark: | `dt.entities`                             |
  Monitored entities - Custom tags        | :heavy_check_mark: | `dt.custom_tags`                          |
- Network zones                           |     :warning:      | `dt.network_zones`                        |
+ Network zones                           | :heavy_check_mark: | `dt.network_zones`                        |
  OneAgents - Remote configuration        | :heavy_check_mark: | `dt.oneagents_remote_configuration`       |
  Problems                                | :heavy_check_mark: | `dt.problems`                             |
  Security problems                       | :heavy_check_mark: | `dt.security_problems`                    |
  Service-level objectives                | :heavy_check_mark: | `dt.slos`                                 |
- Settings                                |     :warning:      | `dt.settings`                             |
+ Settings                                | :heavy_check_mark: | `dt.settings`                             |
  Settings - Management zones             | :heavy_check_mark: | `dt.management_zones_v2`                  |
  Synthetic - Monitors                    | :heavy_check_mark: | `dt.synthetic_monitors_v2`                |
  Credential vault                        | :heavy_check_mark: | `dt.credentials`                          |
