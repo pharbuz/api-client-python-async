@@ -34,6 +34,7 @@ from dynatrace.utils import datetime_to_int64, int64_to_datetime, timestamp_to_s
 class EventServiceV2:
     ENDPOINT_EVENTS = "/api/v2/events"
     ENDPOINT_INGEST = "/api/v2/events/ingest"
+    ENDPOINT_PROPERTIES = "/api/v2/eventProperties"
     ENDPOINT_TYPES = "/api/v2/eventTypes"
 
     def __init__(self, http_client: HttpClient):
@@ -89,6 +90,38 @@ class EventServiceV2:
             path=f"{self.ENDPOINT_EVENTS}/{event_id}"
         )
         return Event(raw_element=response.json(), http_client=self.__http_client)
+
+    async def list_properties(
+        self, page_size: int | None = None
+    ) -> "PaginatedList[EventPropertyDetails]":
+        """Lists all event properties.
+
+        :param page_size: The amount of event properties in a single response payload. The maximal allowed page size is 500. If not set, 100 is used.
+
+        :returns PaginatedList[EventPropertyDetails]: the list of event properties
+        """
+        params = {"pageSize": page_size}
+        return await PaginatedList(
+            target_class=EventPropertyDetails,
+            http_client=self.__http_client,
+            target_url=self.ENDPOINT_PROPERTIES,
+            list_item="eventProperties",
+            target_params=params,
+        ).initialize()
+
+    async def get_property(self, property_key: str) -> "EventPropertyDetails":
+        """Gets the details of an event property.
+
+        :param property_key: The event property key you're inquiring.
+
+        :returns EventPropertyDetails: the event property requested
+        """
+        response = await self.__http_client.make_request(
+            path=f"{self.ENDPOINT_PROPERTIES}/{property_key}"
+        )
+        return EventPropertyDetails(
+            raw_element=response.json(), http_client=self.__http_client
+        )
 
     async def list_types(
         self, page_size: int | None = None
@@ -232,6 +265,24 @@ class EventProperty(DynatraceObject):
 
     def to_json(self) -> dict[str, Any]:
         return {"key": self.key, "value": self.value}
+
+
+class EventPropertyDetails(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.key: str = raw_element["key"]
+        self.display_name: str | None = raw_element.get("displayName")
+        self.filterable: bool | None = raw_element.get("filterable")
+        self.description: str | None = raw_element.get("description")
+        self.writable: bool | None = raw_element.get("writable")
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "key": self.key,
+            "displayName": self.display_name,
+            "filterable": self.filterable,
+            "description": self.description,
+            "writable": self.writable,
+        }
 
 
 class EventType(DynatraceObject):

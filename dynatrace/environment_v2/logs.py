@@ -27,8 +27,10 @@ from dynatrace.utils import timestamp_to_string
 
 
 class LogService:
-    # TODO - Add search and aggregate
     ENDPOINT = "/api/v2/logs"
+    ENDPOINT_EXPORT = "/api/v2/logs/export"
+    ENDPOINT_SEARCH = "/api/v2/logs/search"
+    ENDPOINT_AGGREGATE = "/api/v2/logs/aggregate"
 
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
@@ -60,10 +62,75 @@ class LogService:
         return await PaginatedList(
             LogRecord,
             self.__http_client,
-            "/api/v2/logs/export",
+            self.ENDPOINT_EXPORT,
             params,
             list_item="results",
         ).initialize()
+
+    async def search(
+        self,
+        query: str | None = None,
+        time_from: datetime | str | None = None,
+        time_to: datetime | str | None = None,
+        sort: str | None = None,
+        limit: int | None = None,
+    ) -> list["LogRecord"]:
+        """Reads log records using the deprecated search endpoint and fetches all slices."""
+        params = {
+            "from": timestamp_to_string(time_from),
+            "to": timestamp_to_string(time_to),
+            "query": query,
+            "sort": sort,
+            "limit": limit,
+        }
+        records: list[LogRecord] = []
+        request_params = {
+            key: value for key, value in params.items() if value is not None
+        }
+
+        while True:
+            response = await self.__http_client.make_request(
+                self.ENDPOINT_SEARCH, params=request_params
+            )
+            payload = response.json()
+            records.extend(
+                LogRecord(raw_element=record, http_client=self.__http_client)
+                for record in payload.get("results", [])
+            )
+            next_slice_key = payload.get("nextSliceKey")
+            if not next_slice_key:
+                break
+            request_params = {"nextSliceKey": next_slice_key}
+
+        return records
+
+    async def aggregate(
+        self,
+        query: str | None = None,
+        time_from: datetime | str | None = None,
+        time_to: datetime | str | None = None,
+        time_buckets: int | None = None,
+        max_group_values: int | None = None,
+        group_by: list[str] | None = None,
+    ) -> "AggregatedLog":
+        """Gets aggregated log records from the deprecated aggregate endpoint."""
+        params = {
+            "from": timestamp_to_string(time_from),
+            "to": timestamp_to_string(time_to),
+            "query": query,
+            "timeBuckets": time_buckets,
+            "maxGroupValues": max_group_values,
+            "groupBy": group_by,
+        }
+        request_params = {
+            key: value for key, value in params.items() if value is not None
+        }
+        response = await self.__http_client.make_request(
+            self.ENDPOINT_AGGREGATE, params=request_params
+        )
+        return AggregatedLog(
+            raw_element=response.json(), http_client=self.__http_client
+        )
 
     async def ingest(self, payload: dict[str, Any] | list[dict[str, Any]]) -> Response:
         """
@@ -87,6 +154,20 @@ class LogRecord(DynatraceObject):
         )
         self.content: str = raw_element.get("content")
         self.status: LogRecordStatus = LogRecordStatus(raw_element.get("status"))
+
+
+class AggregatedLog(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.aggregation_result: dict[str, Any] | None = raw_element.get(
+            "aggregationResult"
+        )
+        self.warnings: str | None = raw_element.get("warnings")
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "aggregationResult": self.aggregation_result,
+            "warnings": self.warnings,
+        }
 
 
 class EventType(Enum):
