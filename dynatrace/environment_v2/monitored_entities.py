@@ -32,6 +32,7 @@ from dynatrace.utils import int64_to_datetime, timestamp_to_string
 class EntityService:
     ENDPOINT_ENTITIES = "/api/v2/entities"
     ENDPOINT_TYPES = "/api/v2/entityTypes"
+    ENDPOINT_SECURITY_CONTEXT = "/api/v2/entities/securityContext"
 
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
@@ -118,6 +119,50 @@ class EntityService:
         :returns Response: HTTP Response for the request
         """
         return await device.post()
+
+    async def set_security_context(
+        self,
+        entity_selector: str,
+        security_context: builtins.list[str],
+        time_from: datetime | str | None = None,
+        time_to: datetime | str | None = None,
+    ) -> "SecurityContextResult":
+        """Sets the given security context for all entities matching the entity selector."""
+        params = {
+            "entitySelector": entity_selector,
+            "from": timestamp_to_string(time_from),
+            "to": timestamp_to_string(time_to),
+        }
+        response = await self.__http_client.make_request(
+            self.ENDPOINT_SECURITY_CONTEXT,
+            method="POST",
+            params={"securityContext": security_context},
+            query_params=params,
+        )
+        return SecurityContextResult(
+            raw_element=response.json(), http_client=self.__http_client
+        )
+
+    async def delete_security_context(
+        self,
+        entity_selector: str,
+        time_from: datetime | str | None = None,
+        time_to: datetime | str | None = None,
+    ) -> "SecurityContextResult":
+        """Deletes the security context for all entities matching the entity selector."""
+        params = {
+            "entitySelector": entity_selector,
+            "from": timestamp_to_string(time_from),
+            "to": timestamp_to_string(time_to),
+        }
+        response = await self.__http_client.make_request(
+            self.ENDPOINT_SECURITY_CONTEXT,
+            method="DELETE",
+            params=params,
+        )
+        return SecurityContextResult(
+            raw_element=response.json(), http_client=self.__http_client
+        )
 
     def create_custom_device(
         self,
@@ -312,11 +357,12 @@ class CustomDeviceCreation(DynatraceObject):
             body["messageType"] = str(self.message_type)
         return body
 
-    async def post(self) -> "Response":
+    async def post(self, ui_based: bool | None = None) -> "Response":
         return await self._http_client.make_request(
             path=f"{EntityService.ENDPOINT_ENTITIES}/custom",
             method="POST",
             params=self.to_json(),
+            query_params={"uiBased": ui_based},
         )
 
 
@@ -339,6 +385,20 @@ class EntityType(DynatraceObject):
         self.dimension_key: str | None = raw_element.get("dimensionKey")
         self.management_zones: str | None = raw_element.get("managementZones")
         self.tags: str | None = raw_element.get("tags")
+
+
+class SecurityContextResult(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.entity_ids: list[str] | None = raw_element.get("entityIds", [])
+        self.management_zone_ids: list[int] | None = raw_element.get(
+            "managementZoneIds"
+        )
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "entityIds": self.entity_ids,
+            "managementZoneIds": self.management_zone_ids,
+        }
 
 
 class EntityTypePropertyDto(DynatraceObject):

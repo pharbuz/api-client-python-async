@@ -10,12 +10,13 @@ from dynatrace.environment_v2.monitored_entities import (
     EntityTypePropertyDto,
     FromPosition,
     MessageType,
+    SecurityContextResult,
     ToPosition,
 )
 from dynatrace.environment_v2.schemas import ManagementZone
 from dynatrace.pagination import PaginatedList
 from dynatrace.utils import int64_to_datetime
-from test.async_utils import collect
+from test.async_utils import MockResponse, collect
 
 
 async def test_list(dt: DynatraceAsync):
@@ -175,3 +176,51 @@ async def test_create_custom_device(dt: DynatraceAsync):
     assert device.dns_names[0] == "testdevice.testnet.net"
     assert device.properties["this"] == "that"
     assert device.message_type == MessageType.CUSTOM_DEVICE
+
+
+async def test_security_context(dt: DynatraceAsync, monkeypatch):
+    calls = []
+
+    async def fake_make_request(
+        path,
+        params=None,
+        headers=None,
+        method="GET",
+        data=None,
+        files=None,
+        query_params=None,
+        **kwargs,
+    ):
+        calls.append(
+            {
+                "path": path,
+                "params": params,
+                "method": method,
+                "query_params": query_params,
+            }
+        )
+        if method == "POST":
+            return MockResponse({"entityIds": ["HOST-1"], "managementZoneIds": [7]})
+        return MockResponse({"entityIds": ["HOST-2"], "managementZoneIds": []})
+
+    monkeypatch.setattr(
+        dt._DynatraceAsync__http_client, "make_request", fake_make_request
+    )
+
+    set_result = await dt.entities.set_security_context(
+        'type("HOST")', ["Production"], time_from="now-1h"
+    )
+    delete_result = await dt.entities.delete_security_context('type("HOST")')
+
+    assert isinstance(set_result, SecurityContextResult)
+    assert set_result.entity_ids == ["HOST-1"]
+    assert set_result.management_zone_ids == [7]
+    assert isinstance(delete_result, SecurityContextResult)
+    assert delete_result.entity_ids == ["HOST-2"]
+
+    assert calls[0]["path"] == "/api/v2/entities/securityContext"
+    assert calls[0]["method"] == "POST"
+    assert calls[0]["params"] == {"securityContext": ["Production"]}
+    assert calls[0]["query_params"]["entitySelector"] == 'type("HOST")'
+    assert calls[1]["path"] == "/api/v2/entities/securityContext"
+    assert calls[1]["method"] == "DELETE"
