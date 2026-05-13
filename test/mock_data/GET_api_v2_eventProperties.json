@@ -1,0 +1,19 @@
+{
+    "totalCount": 2,
+    "eventProperties": [
+        {
+            "key": "dt.event.description",
+            "displayName": "Custom description",
+            "filterable": true,
+            "description": "A short description of the event property.",
+            "writable": true
+        },
+        {
+            "key": "dt.event.source",
+            "displayName": "Custom source",
+            "filterable": true,
+            "description": "The source of the event.",
+            "writable": true
+        }
+    ]
+}

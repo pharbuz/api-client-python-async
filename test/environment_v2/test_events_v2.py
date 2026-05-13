@@ -5,6 +5,7 @@ from dynatrace.environment_v2.custom_tags import METag
 from dynatrace.environment_v2.events import (
     Event,
     EventProperty,
+    EventPropertyDetails,
     EventSeverity,
     EventStatus,
     EventType,
@@ -70,6 +71,39 @@ async def test_get(dt: DynatraceAsync):
     assert not event.suppress_alert
     assert not event.suppress_problem
     assert not event.frequent_event
+
+
+async def test_list_properties(dt: DynatraceAsync):
+    event_properties = await dt.events_v2.list_properties()
+
+    # type checks
+    assert isinstance(event_properties, PaginatedList)
+    property_list = await collect(event_properties)
+    assert all(
+        isinstance(event_property, EventPropertyDetails)
+        for event_property in property_list
+    )
+
+    # value checks
+    assert len(property_list) == 2
+    assert property_list[0].key == "dt.event.description"
+
+
+async def test_get_property(dt: DynatraceAsync):
+    property_details = await dt.events_v2.get_property("dt.event.description")
+
+    # type checks
+    assert isinstance(property_details, EventPropertyDetails)
+    assert isinstance(property_details.key, str)
+    assert isinstance(property_details.display_name, str)
+    assert isinstance(property_details.filterable, bool)
+    assert isinstance(property_details.writable, bool)
+
+    # value checks
+    assert property_details.key == "dt.event.description"
+    assert property_details.display_name == "Custom description"
+    assert property_details.filterable is True
+    assert property_details.writable is True
 
 
 async def test_list_types(dt: DynatraceAsync):
