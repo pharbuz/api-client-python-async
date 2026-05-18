@@ -153,20 +153,28 @@ class AggregationType(Enum):
 
 
 class Transformation(Enum):
+    ASGAUGE = "asGauge"
     DEFAULT = "default"
+    DELTA = "delta"
+    EVALUATEMODEL = "evaluateModel"
     FILTER = "filter"
     FOLD = "fold"
+    HISTOGRAM = "histogram"
     LAST = "last"
     LIMIT = "limit"
     MERGE = "merge"
     NAMES = "names"
     PARENTS = "parents"
+    PARTITION = "partition"
     RATE = "rate"
+    ROLLUP = "rollup"
     SORT = "sort"
+    SMOOTH = "smooth"
     SPLITBY = "splitBy"
     TIMESHIFT = "timeshift"
     LASTREAL = "lastReal"
     SETUNIT = "setUnit"
+    TOUNIT = "toUnit"
 
 
 class MetricDescriptor(DynatraceObject):
