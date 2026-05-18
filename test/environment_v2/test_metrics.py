@@ -92,6 +92,44 @@ async def test_get(dt: DynatraceAsync):
     assert metric.metric_value_type.type == ValueType.SCORE
 
 
+def test_metric_descriptor_accepts_openapi_transformations():
+    transformations = [
+        "asGauge",
+        "default",
+        "delta",
+        "evaluateModel",
+        "filter",
+        "fold",
+        "histogram",
+        "last",
+        "lastReal",
+        "limit",
+        "merge",
+        "names",
+        "parents",
+        "partition",
+        "rate",
+        "rollup",
+        "setUnit",
+        "smooth",
+        "sort",
+        "splitBy",
+        "timeshift",
+        "toUnit",
+    ]
+
+    metric = MetricDescriptor(
+        raw_element={
+            "metricId": "custom:transformed.metric",
+            "transformations": transformations,
+        }
+    )
+
+    assert metric.transformations == [
+        Transformation(transformation) for transformation in transformations
+    ]
+
+
 async def test_query(dt: DynatraceAsync):
     time_from = int64_to_datetime(1621020000000)
     time_to = int64_to_datetime(1621025000000)
