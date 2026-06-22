@@ -67,6 +67,7 @@ from dynatrace.environment_v2.logs import LogService
 from dynatrace.environment_v2.management_zones import ManagementZoneServiceV2
 from dynatrace.environment_v2.metrics import MetricService
 from dynatrace.environment_v2.monitored_entities import EntityService
+from dynatrace.environment_v2.monitoring_state import MonitoringStateService
 from dynatrace.environment_v2.networkzones import NetworkZoneService
 from dynatrace.environment_v2.problems import ProblemService
 from dynatrace.environment_v2.remote_configuration import (
@@ -181,6 +182,9 @@ class DynatraceAsync:
         )
         self.logs: LogService = LogService(self.__http_client)
         self.metrics: MetricService = MetricService(self.__http_client)
+        self.monitoring_state: MonitoringStateService = MonitoringStateService(
+            self.__http_client
+        )
         self.management_zones_v2: ManagementZoneServiceV2 = ManagementZoneServiceV2(
             self.__http_client
         )
