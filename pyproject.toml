@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dt-async"
-version = "1.0.14"
+version = "1.0.15"
 description = "Dynatrace async API Python client"
 readme = "README.md"
 authors = ["David Lopes <davidribeirolopes@gmail.com>"]
@@ -35,7 +35,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.10"
-authlib = ">=1.7.1"
+authlib = ">=1.7.2"
 httpx = ">=0.28.1"
 
 [tool.poetry.group.dev.dependencies]
@@ -49,7 +49,7 @@ wrapt = "*"
 asyncio_mode = "auto"
 
 [tool.optional-dependencies]
-dev = ["ruff==0.15.12", "black==26.3.1"]
+dev = ["ruff==0.15.19", "black==26.5.1"]
 
 [build-system]
 requires = ["poetry-core"]
