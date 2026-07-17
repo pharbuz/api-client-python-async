@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dt-async"
-version = "1.0.15"
+version = "1.0.16"
 description = "Dynatrace async API Python client"
 readme = "README.md"
 authors = ["David Lopes <davidribeirolopes@gmail.com>"]
@@ -14,6 +14,7 @@ homepage = "https://github.com/pharbuz/api-client-python-async"
 repository = "https://github.com/pharbuz/api-client-python-async"
 documentation = "https://github.com/pharbuz/api-client-python-async"
 packages = [{ include = "dynatrace*" }]
+include = [{ path = "dynatrace/py.typed", format = ["sdist", "wheel"] }]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
