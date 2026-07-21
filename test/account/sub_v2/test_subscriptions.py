@@ -4,6 +4,8 @@ from unittest import mock
 from dynatrace import DynatraceAsync
 from dynatrace.account.sub_v2.subscriptions import (
     SubscriptionDetail,
+    SubscriptionEnvironmentCostResponse,
+    SubscriptionEnvironmentUsageResponse,
     SubscriptionForecast,
     SubscriptionService,
     SubscriptionSummary,
@@ -111,3 +113,110 @@ async def test_subscriptions_service_returns_expected_models(dt: DynatraceAsync)
     assert subscription.uuid == subscription_uuid
     assert isinstance(forecast, SubscriptionForecast)
     assert forecast.budget == 100.0
+
+
+async def test_subscription_environment_v2_returns_expected_models(
+    dt: DynatraceAsync,
+):
+    account_uuid = "account-123"
+    subscription_uuid = "subscription-789"
+
+    async def fake_make_request(
+        self,
+        path,
+        params=None,
+        headers=None,
+        method="GET",
+        data=None,
+        files=None,
+        query_params=None,
+        **kwargs,
+    ):
+        expected_params = {
+            "startTime": "2026-04-01",
+            "endTime": "2026-04-02",
+            "environmentIds": "environment-1,environment-2",
+            "capabilityKeys": "metric,log",
+        }
+
+        if (method, path) == (
+            "GET",
+            f"/sub/v2/accounts/{account_uuid}/subscriptions/{subscription_uuid}/environments/usage",
+        ):
+            assert params == expected_params
+            return MockResponse(
+                {
+                    "data": [
+                        {
+                            "environmentId": "environment-1",
+                            "usage": [
+                                {
+                                    "capabilityKey": "metric",
+                                    "capabilityName": "Metrics",
+                                    "startTime": "2026-04-01",
+                                    "endTime": "2026-04-02",
+                                    "value": 1.5,
+                                    "unitMeasure": "GiB",
+                                }
+                            ],
+                        }
+                    ],
+                    "lastModifiedTime": "2026-04-02T00:00:00Z",
+                }
+            )
+
+        if (method, path) == (
+            "GET",
+            f"/sub/v2/accounts/{account_uuid}/subscriptions/{subscription_uuid}/environments/cost",
+        ):
+            assert params == expected_params
+            return MockResponse(
+                {
+                    "data": [
+                        {
+                            "environmentId": "environment-1",
+                            "cost": [
+                                {
+                                    "capabilityKey": "metric",
+                                    "capabilityName": "Metrics",
+                                    "startTime": "2026-04-01",
+                                    "endTime": "2026-04-02",
+                                    "value": 3.14,
+                                    "currencyCode": "USD",
+                                }
+                            ],
+                        }
+                    ],
+                    "lastModifiedTime": "2026-04-02T00:00:00Z",
+                }
+            )
+
+        raise AssertionError(f"Unexpected request: {method} {path}")
+
+    with mock.patch.object(HttpClient, "make_request", new=fake_make_request):
+        usage = await dt.account.sub_v2.environment_usage(
+            account_uuid,
+            subscription_uuid,
+            "2026-04-01",
+            "2026-04-02",
+            environment_ids=["environment-1", "environment-2"],
+            capability_keys=["metric", "log"],
+        )
+        cost = await dt.account.sub_v2.environment_cost(
+            account_uuid,
+            subscription_uuid,
+            "2026-04-01",
+            "2026-04-02",
+            environment_ids=["environment-1", "environment-2"],
+            capability_keys=["metric", "log"],
+        )
+
+    assert isinstance(usage, SubscriptionEnvironmentUsageResponse)
+    assert usage.data[0].environment_id == "environment-1"
+    assert usage.data[0].usage[0].capability_key == "metric"
+    assert usage.data[0].usage[0].value == 1.5
+    assert usage.last_modified_time == "2026-04-02T00:00:00Z"
+    assert isinstance(cost, SubscriptionEnvironmentCostResponse)
+    assert cost.data[0].environment_id == "environment-1"
+    assert cost.data[0].cost[0].currency_code == "USD"
+    assert cost.data[0].cost[0].capability_name == "Metrics"
