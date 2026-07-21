@@ -36,7 +36,6 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.10"
-authlib = ">=1.7.2"
 httpx = ">=0.28.1"
 
 [tool.poetry.group.dev.dependencies]
