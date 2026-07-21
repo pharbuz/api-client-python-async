@@ -379,7 +379,7 @@ asyncio.run(main())
 
  API                                                        |       Level        | Access                               |
 :-----------------------------------------------------------|:------------------:|:-------------------------------------|
- Account Management - Account limits                        |        :x:         |                                      |
+ Account Management - Account limits                        | :heavy_check_mark: | `dt.account.limits`                  |
  Account Management - User management                       | :heavy_check_mark: | `dt.account.iam_users`               |
  Account Management - Group management                      | :heavy_check_mark: | `dt.account.iam_groups`              |
  Account Management - Permission management                 | :heavy_check_mark: | `dt.account.iam_policies`            |
@@ -389,11 +389,11 @@ asyncio.run(main())
  Environment management API v1                              | :heavy_check_mark: | `dt.account.env_v1`                  |
  Environment management API v2                              | :heavy_check_mark: | `dt.account.env_v2`                  |
  Dynatrace Platform Subscription - Subscription management  | :heavy_check_mark: | `dt.account.sub_v2`                  |
- Dynatrace Platform Subscription - Subscription environments v2 |        :x:         |                                      |
+ Dynatrace Platform Subscription - Subscription environments v2 | :heavy_check_mark: | `dt.account.sub_v2`                  |
  Dynatrace Platform Subscription - Subscription environments v3 | :heavy_check_mark: | `dt.account.sub_v3`                  |
  Dynatrace Platform Subscription - Rate cards               | :heavy_check_mark: | `dt.account.sub_v1_rate_cards`       |
  Dynatrace Platform Subscription - Cost allocation          | :heavy_check_mark: | `dt.account.sub_v1_cost_allocation`  |
- Account Settings                                           |        :x:         |                                      |
+ Account Settings                                           | :heavy_check_mark: | `dt.account.settings`                |
  Account Audits                                             | :heavy_check_mark: | `dt.account.audits`                  |
- Reference data                                             |        :x:         |                                      |
+ Reference data                                             | :heavy_check_mark: | `dt.account.reference_data`          |
  Notifications                                              | :heavy_check_mark: | `dt.account.notifications`           |
