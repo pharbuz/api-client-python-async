@@ -115,6 +115,8 @@ async def test_notifications_list_returns_models(dt: DynatraceAsync):
     assert isinstance(notifications.records[0], Notification)
     assert isinstance(notifications.records[0].details, NotificationDetails)
     assert notifications.records[0].details.capabilities == ["cap1"]
-    assert notifications.records[1].details.key_name == "key-name"
+    second_details = notifications.records[1].details
+    assert isinstance(second_details, NotificationDetails)
+    assert second_details.key_name == "key-name"
     assert notifications.total_record_count == 2
     assert notifications.has_next_page is False
