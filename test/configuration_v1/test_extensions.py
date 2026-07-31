@@ -54,6 +54,7 @@ async def test_get_global_configuration(dt: DynatraceAsync):
     assert global_config.extension_id == "custom.python.citrixAgent"
     assert global_config.enabled
     assert not global_config.infraOnlyEnabled
+    assert global_config.properties is not None
     assert global_config.properties["log_level"] == "INFO"
 
 

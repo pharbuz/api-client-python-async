@@ -103,6 +103,8 @@ async def test_audits_list_returns_models(dt: DynatraceAsync):
     assert len(audits.audits) == 1
     assert isinstance(audits.audits[0], Audit)
     assert audits.audits[0].resource_name == "Standard User"
-    assert audits.audits[0].details["json_after"] == '{"enabled": true}'
+    details = audits.audits[0].details
+    assert details is not None
+    assert details["json_after"] == '{"enabled": true}'
     assert len(audits.warnings) == 1
     assert audits.warnings[0].message == "Your result has been limited to 1."

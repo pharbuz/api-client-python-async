@@ -15,11 +15,12 @@ async def test_export(dt: DynatraceAsync):
     logs = await dt.logs.export(time_from="now-10m")
     assert isinstance(logs, PaginatedList)
 
-    logs = await collect(logs)
-    assert len(logs) == 18
+    logs_list = await collect(logs)
+    assert len(logs_list) == 18
 
-    first = logs[0]
+    first = logs_list[0]
     assert isinstance(first, LogRecord)
+    assert first.additional_columns is not None
     assert first.additional_columns["dt.extension.ds"][0] == "python"
     assert first.content.startswith("Failed to assign")
     assert first.event_type == EventType.SFM
@@ -116,4 +117,5 @@ async def test_aggregate(dt: DynatraceAsync, monkeypatch):
     aggregate = await dt.logs.aggregate(query='content:"slice"', time_buckets=1)
 
     assert isinstance(aggregate, AggregatedLog)
+    assert aggregate.aggregation_result is not None
     assert aggregate.aggregation_result["logLevel"]["1683574915"]["ERROR"] == 3
