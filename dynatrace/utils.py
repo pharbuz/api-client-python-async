@@ -22,6 +22,7 @@ import unicodedata
 import warnings
 from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
+from enum import Enum
 from typing import Any, ParamSpec, Protocol, TypeAlias, TypeVar, cast, runtime_checkable
 
 ISO_8601 = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -33,6 +34,7 @@ JSONMapping: TypeAlias = Mapping[str, JSONValue]
 P = ParamSpec("P")
 R = TypeVar("R")
 T = TypeVar("T")
+TEnum = TypeVar("TEnum", bound=Enum)
 
 
 @runtime_checkable
@@ -111,6 +113,21 @@ def raw_optional_str_list(raw_element: JSONMapping, key: str) -> list[str]:
     if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
         raise TypeError(f"expected raw field {key!r} to be list[str]")
     return cast(list[str], value)
+
+
+def raw_optional_enum_or_str(
+    enum_type: type[TEnum], raw_value: Any
+) -> TEnum | str | None:
+    if raw_value is None:
+        return None
+    if not isinstance(raw_value, str):
+        raise TypeError(
+            f"expected enum value to be str, got {type(raw_value).__name__}"
+        )
+    try:
+        return enum_type(raw_value)
+    except ValueError:
+        return raw_value
 
 
 def raw_optional_str_or_float(raw_element: JSONMapping, key: str) -> str | float | None:
