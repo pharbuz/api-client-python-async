@@ -21,7 +21,7 @@ class CopilotService:
         """Return all skills available to the current token."""
         response = await self.__http_client.make_request(f"{self.BASE_PATH}/skills")
         return AvailableSkillsResponse(
-            self.__http_client, response.headers, response.json()
+            self.__http_client, dict(response.headers), response.json()
         )
 
     async def send_conversation_message(
@@ -49,7 +49,7 @@ class CopilotService:
             return response
 
         return RecommenderResponse(
-            self.__http_client, response.headers, response.json()
+            self.__http_client, dict(response.headers), response.json()
         )
 
     async def submit_conversation_feedback(
@@ -74,7 +74,7 @@ class CopilotService:
             method="POST",
         )
         return DocumentSearchResponse(
-            self.__http_client, response.headers, response.json()
+            self.__http_client, dict(response.headers), response.json()
         )
 
     async def explain_dql_query(
@@ -87,7 +87,9 @@ class CopilotService:
             params=body,
             method="POST",
         )
-        return Dql2NlResponse(self.__http_client, response.headers, response.json())
+        return Dql2NlResponse(
+            self.__http_client, dict(response.headers), response.json()
+        )
 
     async def submit_dql2nl_feedback(
         self, payload: dict[str, Any] | DynatraceObject
@@ -110,7 +112,9 @@ class CopilotService:
             params=body,
             method="POST",
         )
-        return Nl2DqlResponse(self.__http_client, response.headers, response.json())
+        return Nl2DqlResponse(
+            self.__http_client, dict(response.headers), response.json()
+        )
 
     async def submit_nl2dql_feedback(
         self, payload: dict[str, Any] | DynatraceObject

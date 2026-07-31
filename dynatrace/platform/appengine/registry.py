@@ -38,7 +38,7 @@ class AppEngineRegistryService:
         response = await self.__http_client.make_request(
             self.ENDPOINT_APPS, params=params
         )
-        return AppInfoList(self.__http_client, response.headers, response.json())
+        return AppInfoList(self.__http_client, dict(response.headers), response.json())
 
     async def install_app(
         self, app_bundle: str | Path | bytes | bytearray
@@ -51,7 +51,7 @@ class AppEngineRegistryService:
             headers={"Content-Type": "application/zip"},
             data=bundle_data,
         )
-        return AppStub(self.__http_client, response.headers, response.json())
+        return AppStub(self.__http_client, dict(response.headers), response.json())
 
     async def search_actions(self, query: str | None = None) -> "SearchAppActionList":
         """Search actions of installed apps."""
@@ -60,7 +60,7 @@ class AppEngineRegistryService:
             self.ENDPOINT_SEARCH_ACTIONS, params=params
         )
         return SearchAppActionList(
-            self.__http_client, response.headers, response.json()
+            self.__http_client, dict(response.headers), response.json()
         )
 
     async def get_app(
@@ -77,7 +77,7 @@ class AppEngineRegistryService:
         response = await self.__http_client.make_request(
             f"{self.ENDPOINT_APPS}/{app_id}", params=params
         )
-        return AppInfo(self.__http_client, response.headers, response.json())
+        return AppInfo(self.__http_client, dict(response.headers), response.json())
 
     async def uninstall_app(self, app_id: str) -> Response:
         """Uninstall an app."""
@@ -95,7 +95,9 @@ class AppEngineRegistryService:
     async def get_default_csp_properties(self) -> "AppDefaultCsp":
         """Get default CSP rules for apps."""
         response = await self.__http_client.make_request(self.ENDPOINT_APP_DEFAULT_CSP)
-        return AppDefaultCsp(self.__http_client, response.headers, response.json())
+        return AppDefaultCsp(
+            self.__http_client, dict(response.headers), response.json()
+        )
 
     @staticmethod
     def __load_bundle_data(app_bundle: str | Path | bytes | bytearray) -> bytes:

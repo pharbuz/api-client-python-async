@@ -72,7 +72,9 @@ class QueryExecutionService:
             method="POST",
             query_params=query_params,
         )
-        return QueryStartResponse(self.__http_client, response.headers, response.json())
+        return QueryStartResponse(
+            self.__http_client, dict(response.headers), response.json()
+        )
 
     async def poll(
         self,
@@ -91,7 +93,9 @@ class QueryExecutionService:
         response = await self.__http_client.make_request(
             self.ENDPOINT_POLL, params=params, headers=headers
         )
-        return QueryPollResponse(self.__http_client, response.headers, response.json())
+        return QueryPollResponse(
+            self.__http_client, dict(response.headers), response.json()
+        )
 
     async def cancel(
         self,
@@ -115,7 +119,7 @@ class QueryExecutionService:
             payload = response.json()
         except ValueError:
             return response
-        return QueryPollResponse(self.__http_client, response.headers, payload)
+        return QueryPollResponse(self.__http_client, dict(response.headers), payload)
 
 
 # Shared DQL response primitives.
