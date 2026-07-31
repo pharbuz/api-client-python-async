@@ -22,9 +22,23 @@ from dynatrace.environment_v2.schemas import ConfigurationMetadata
 
 # Schemas that don't belong to a specific API tag.
 
+__all__ = [
+    "AutoUpdateSetting",
+    "ConfigurationMetadata",
+    "EffectiveSetting",
+    "SettingScope",
+    "StringComparisonOperator",
+    "TagContext",
+    "TechMonitoringList",
+    "Technology",
+    "TechnologyType",
+    "UpdateWindow",
+    "UpdateWindowsConfig",
+]
+
 
 class UpdateWindowsConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.windows: list[UpdateWindow] = [
             UpdateWindow(raw_element=uw) for uw in raw_element.get("windows", [])
         ]
@@ -37,7 +51,7 @@ class UpdateWindowsConfig(DynatraceObject):
 
 
 class UpdateWindow(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str = raw_element.get("id", "")
         self.name: str | None = raw_element.get("name", "")
 
@@ -49,7 +63,7 @@ class UpdateWindow(DynatraceObject):
 
 
 class TechMonitoringList(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.technologies: list[Technology] = [
             Technology(raw_element=t) for t in raw_element.get("technologies", [])
         ]
@@ -59,7 +73,7 @@ class TechMonitoringList(DynatraceObject):
 
 
 class Technology(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.type: TechnologyType = TechnologyType(raw_element.get("type"))
         self.monitoring_enabled: bool = raw_element.get("monitoringEnabled", False)
         self.scope: SettingScope | None = (
@@ -71,7 +85,7 @@ class SettingScope(Enum):
     ENVIRONMENT = "ENVIRONMENT"
     HOST = "HOST"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
 
 
@@ -109,7 +123,7 @@ class TechnologyType(Enum):
     VARNISH = "VARNISH"
     Z_OS = "Z_OS"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
 
 
@@ -118,7 +132,7 @@ class AutoUpdateSetting(Enum):
     DISABLED = "DISABLED"
     INHERITED = "INHERITED"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
 
 
@@ -126,7 +140,7 @@ class EffectiveSetting(Enum):
     ENABLED = "ENABLED"
     DISABLED = "DISABLED"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
 
 
