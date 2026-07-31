@@ -74,29 +74,24 @@ async def test_get(dt: DynatraceAsync):
     assert isinstance(ap.event_type_filters, list)
     first_event = ap.event_type_filters[0]
     assert isinstance(first_event, AlertingEventTypeFilter)
-    assert isinstance(first_event.custom_event_filter, AlertingCustomEventFilter)
+    custom_event_filter = first_event.custom_event_filter
+    assert isinstance(custom_event_filter, AlertingCustomEventFilter)
+    custom_title_filter = custom_event_filter.custom_title_filter
+    assert isinstance(custom_title_filter, AlertingCustomTextFilter)
+    assert isinstance(custom_title_filter.enabled, bool)
+    assert isinstance(custom_title_filter.value, str)
     assert isinstance(
-        first_event.custom_event_filter.custom_title_filter, AlertingCustomTextFilter
-    )
-    assert isinstance(first_event.custom_event_filter.custom_title_filter.enabled, bool)
-    assert isinstance(first_event.custom_event_filter.custom_title_filter.value, str)
-    assert isinstance(
-        first_event.custom_event_filter.custom_title_filter.operator,
+        custom_title_filter.operator,
         StringComparisonOperator,
     )
-    assert isinstance(first_event.custom_event_filter.custom_title_filter.negate, bool)
-    assert isinstance(
-        first_event.custom_event_filter.custom_title_filter.case_insensitive, bool
-    )
+    assert isinstance(custom_title_filter.negate, bool)
+    assert isinstance(custom_title_filter.case_insensitive, bool)
     second_event = ap.event_type_filters[1]
     assert isinstance(second_event, AlertingEventTypeFilter)
-    assert isinstance(
-        second_event.predefined_event_filter, AlertingPredefinedEventFilter
-    )
-    assert isinstance(
-        second_event.predefined_event_filter.event_type, AlertingPredefinedEvent
-    )
-    assert isinstance(second_event.predefined_event_filter.negate, bool)
+    predefined_event_filter = second_event.predefined_event_filter
+    assert isinstance(predefined_event_filter, AlertingPredefinedEventFilter)
+    assert isinstance(predefined_event_filter.event_type, AlertingPredefinedEvent)
+    assert isinstance(predefined_event_filter.negate, bool)
 
     # value checks
     assert ap.id == ID
@@ -106,17 +101,13 @@ async def test_get(dt: DynatraceAsync):
     assert rule.tag_filter.include_mode == TagFilterIncludeMode.INCLUDE_ANY
     assert rule.delay_in_minutes == 25
     assert ap.management_zone_id == "-6238974133282121422"
-    custom_event_filter = ap.event_type_filters[
-        0
-    ].custom_event_filter.custom_title_filter
-    predef_event_filter = ap.event_type_filters[1].predefined_event_filter
-    assert custom_event_filter.enabled
-    assert custom_event_filter.value == "ERROR"
-    assert custom_event_filter.operator == StringComparisonOperator.CONTAINS
-    assert not custom_event_filter.negate
-    assert not custom_event_filter.case_insensitive
-    assert predef_event_filter.event_type == AlertingPredefinedEvent.OSI_HIGH_CPU
-    assert not predef_event_filter.negate
+    assert custom_title_filter.enabled
+    assert custom_title_filter.value == "ERROR"
+    assert custom_title_filter.operator == StringComparisonOperator.CONTAINS
+    assert not custom_title_filter.negate
+    assert not custom_title_filter.case_insensitive
+    assert predefined_event_filter.event_type == AlertingPredefinedEvent.OSI_HIGH_CPU
+    assert not predefined_event_filter.negate
 
 
 async def test_post(dt: DynatraceAsync):
