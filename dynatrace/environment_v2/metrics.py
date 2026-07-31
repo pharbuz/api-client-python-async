@@ -24,7 +24,7 @@ from httpx import Response
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import int64_to_datetime, timestamp_to_string
+from dynatrace.utils import int64_to_datetime, raw_required_str, timestamp_to_string
 
 
 class MetricService:
@@ -94,12 +94,12 @@ class MetricService:
         )
 
     async def ingest(self, lines: builtins.list[str]):
-        lines = "\n".join(lines).encode("utf-8")
+        payload = "\n".join(lines).encode("utf-8")
         return (
             await self.__http_client.make_request(
                 "/api/v2/metrics/ingest",
                 method="POST",
-                data=lines,
+                data=payload,
                 headers={"Content-Type": "text/plain; charset=utf-8"},
             )
         ).json()
@@ -108,8 +108,12 @@ class MetricService:
 class MetricSeries(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
         self.timestamps: list[datetime] = [
-            int64_to_datetime(timestamp)
-            for timestamp in raw_element.get("timestamps", [])
+            converted
+            for converted in (
+                int64_to_datetime(timestamp)
+                for timestamp in raw_element.get("timestamps", [])
+            )
+            if converted is not None
         ]
         self.dimensions: list[str] = raw_element.get("dimensions", [])
         self.values: list[float] = raw_element.get("values", [])
@@ -118,7 +122,7 @@ class MetricSeries(DynatraceObject):
 
 class MetricSeriesCollection(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict):
-        self.metric_id: str = raw_element.get("metricId")
+        self.metric_id: str = raw_required_str(raw_element, "metricId")
         self.data: list[MetricSeries] = [
             MetricSeries(self._http_client, self._headers, metric_serie)
             for metric_serie in raw_element.get("data", [])

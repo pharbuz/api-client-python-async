@@ -134,7 +134,7 @@ class AddEntityTags:
         self.key = key
         self.value = value
 
-    def to_json(self) -> dict[str, str]:
+    def to_json(self) -> dict[str, str | None]:
         return {"key": self.key, "value": self.value}
 
 

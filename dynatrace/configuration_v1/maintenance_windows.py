@@ -27,8 +27,6 @@ from dynatrace.pagination import PaginatedList
 from dynatrace.utils import (
     raw_optional_object,
     raw_optional_str,
-    raw_required_int,
-    raw_required_str,
 )
 
 
@@ -95,8 +93,8 @@ class Recurrence(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
         self.day_of_week: str | None = raw_optional_str(raw_element, "dayOfWeek")
         self.day_of_month: int | None = raw_element.get("dayOfMonth")
-        self.start_time: str = raw_required_str(raw_element, "startTime")
-        self.duration: int = raw_required_int(raw_element, "durationMinutes")
+        self.start_time: str | None = raw_optional_str(raw_element, "startTime")
+        self.duration: int | None = raw_element.get("durationMinutes")
 
 
 class Schedule(DynatraceObject):

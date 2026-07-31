@@ -14,14 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import timestamp_to_string
+from dynatrace.utils import (
+    raw_required_bool,
+    raw_required_datetime,
+    raw_required_str,
+    timestamp_to_string,
+)
 
 
 class AuditLogsService:
@@ -87,17 +92,14 @@ class UserType(Enum):
 
 class AuditLogEntry(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.category: str = raw_element.get("category")
-        self.environment_id: str = raw_element.get("environmentId")
-        self.event_type: EventType = EventType(raw_element.get("eventType"))
-        self.log_id: str = raw_element.get("logId")
-        self.success: bool = raw_element.get("success")
-        self.timestamp: datetime = datetime.fromtimestamp(
-            raw_element.get("timestamp") / 1000,
-            timezone.utc,
-        )
-        self.user: str = raw_element.get("user")
-        self.user_type: UserType = UserType(raw_element.get("userType"))
+        self.category: str = raw_required_str(raw_element, "category")
+        self.environment_id: str = raw_required_str(raw_element, "environmentId")
+        self.event_type: EventType = EventType(raw_element["eventType"])
+        self.log_id: str = raw_required_str(raw_element, "logId")
+        self.success: bool = raw_required_bool(raw_element, "success")
+        self.timestamp: datetime = raw_required_datetime(raw_element, "timestamp")
+        self.user: str = raw_required_str(raw_element, "user")
+        self.user_type: UserType = UserType(raw_element["userType"])
 
         self.entity_id: str | None = raw_element.get("entityId")
         self.user_origin: str | None = raw_element.get("userOrigin")
