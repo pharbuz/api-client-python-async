@@ -167,7 +167,7 @@ class ExtensionService:
     def create_instance(
         self,
         extension_id: str,
-        properties: dict[str, Any] = None,
+        properties: dict[str, Any] | None = None,
         enabled: bool | None = True,
         use_global: bool | None = True,
         host_id: str | None = None,
