@@ -124,14 +124,14 @@ class QueryExecutionService:
 
 # Shared DQL response primitives.
 class PositionInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.column: int | None = raw_element.get("column")
         self.index: int | None = raw_element.get("index")
         self.line: int | None = raw_element.get("line")
 
 
 class TokenPosition(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.start: PositionInfo | None = (
             PositionInfo(raw_element=raw_element.get("start"))
             if raw_element.get("start")
@@ -145,7 +145,7 @@ class TokenPosition(DynatraceObject):
 
 
 class MetadataNotification(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.arguments: list[str] | None = raw_element.get("arguments")
         self.message: str | None = raw_element.get("message")
         self.message_format: str | None = raw_element.get("messageFormat")
@@ -162,19 +162,19 @@ class MetadataNotification(DynatraceObject):
 
 
 class Timeframe(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.start: str | None = raw_element.get("start")
         self.end: str | None = raw_element.get("end")
 
 
 class GeoPoint(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.latitude: float | None = raw_element.get("latitude")
         self.longitude: float | None = raw_element.get("longitude")
 
 
 class FieldType(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.type: str | None = raw_element.get("type")
         self.types: list[RangedFieldTypes] = [
             RangedFieldTypes(raw_element=element)
@@ -183,7 +183,7 @@ class FieldType(DynatraceObject):
 
 
 class RangedFieldTypes(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.index_range: list[int] | None = raw_element.get("indexRange")
         mappings_raw = raw_element.get("mappings") or {}
         self.mappings: dict[str, FieldType] = {
@@ -192,7 +192,7 @@ class RangedFieldTypes(DynatraceObject):
 
 
 class MetricMetadata(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.description: str | None = raw_element.get("description")
         self.display_name: str | None = raw_element.get("displayName")
         self.field_name: str | None = raw_element.get("fieldName")
@@ -205,7 +205,7 @@ class MetricMetadata(DynatraceObject):
 
 
 class GrailMetadata(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.analysis_timeframe: Timeframe | None = (
             Timeframe(raw_element=raw_element.get("analysisTimeframe"))
             if raw_element.get("analysisTimeframe")
@@ -231,7 +231,7 @@ class GrailMetadata(DynatraceObject):
 
 
 class Metadata(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.grail: GrailMetadata | None = (
             GrailMetadata(raw_element=raw_element.get("grail"))
             if raw_element.get("grail")
@@ -244,7 +244,7 @@ class Metadata(DynatraceObject):
 
 
 class QueryResult(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.metadata: Metadata | None = (
             Metadata(raw_element=raw_element.get("metadata"))
             if raw_element.get("metadata")
@@ -258,7 +258,7 @@ class QueryResult(DynatraceObject):
 
 
 class QueryStartResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.progress: int | None = raw_element.get("progress")
         self.request_token: str | None = raw_element.get("requestToken")
         self.result: QueryResult | None = (
@@ -271,7 +271,7 @@ class QueryStartResponse(DynatraceObject):
 
 
 class QueryPollResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.progress: int | None = raw_element.get("progress")
         self.result: QueryResult | None = (
             QueryResult(raw_element=raw_element.get("result"))

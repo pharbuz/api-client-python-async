@@ -162,27 +162,27 @@ class Status(Enum):
 
 
 class AvailableSkillsResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         raw_skills = raw_element.get("skills") or []
         self.skills: list[SkillType] = [SkillType(skill) for skill in raw_skills]
 
 
 class Notification(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.severity: str | None = raw_element.get("severity")
         self.notification_type: str | None = raw_element.get("notificationType")
         self.message: str | None = raw_element.get("message")
 
 
 class SourceDocument(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.title: str | None = raw_element.get("title")
         self.url: str | None = raw_element.get("url")
         self.type: str | None = raw_element.get("type")
 
 
 class Metadata(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         notifications_raw = raw_element.get("notifications") or []
         self.notifications: list[Notification] = [
             Notification(raw_element=notification) for notification in notifications_raw
@@ -190,7 +190,7 @@ class Metadata(DynatraceObject):
 
 
 class MetadataWithSource(Metadata):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element or {})
         sources_raw = (raw_element or {}).get("sources") or []
         self.sources: list[SourceDocument] = [
@@ -199,14 +199,14 @@ class MetadataWithSource(Metadata):
 
 
 class ConversationHistoryItem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.role: str | None = raw_element.get("role")
         self.text: str | None = raw_element.get("text")
         self.supplementary: str | None = raw_element.get("supplementary")
 
 
 class State(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.version: str | None = raw_element.get("version")
         self.conversation_id: str | None = raw_element.get("conversationId")
         self.skill_name: str | None = raw_element.get("skillName")
@@ -217,7 +217,7 @@ class State(DynatraceObject):
 
 
 class ConversationResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.text: str | None = raw_element.get("text")
         self.message_token: str | None = raw_element.get("messageToken")
         status = raw_element.get("status")
@@ -239,7 +239,7 @@ class RecommenderResponse(ConversationResponse):
 
 
 class DocumentMetadata(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str | None = raw_element.get("id")
         self.external_id: str | None = raw_element.get("externalId")
         self.name: str | None = raw_element.get("name")
@@ -249,7 +249,7 @@ class DocumentMetadata(DynatraceObject):
 
 
 class ScoredDocument(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.document_id: str | None = raw_element.get("documentId")
         self.relevance_score: float | None = raw_element.get("relevanceScore")
         metadata_raw = raw_element.get("documentMetadata") or {}
@@ -259,7 +259,7 @@ class ScoredDocument(DynatraceObject):
 
 
 class DocumentSearchResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.message_token: str | None = raw_element.get("messageToken")
         status = raw_element.get("status")
         self.status: Status | None = Status(status) if status else None
@@ -270,7 +270,7 @@ class DocumentSearchResponse(DynatraceObject):
 
 
 class Nl2DqlResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.dql: str | None = raw_element.get("dql")
         self.message_token: str | None = raw_element.get("messageToken")
         status = raw_element.get("status")
@@ -282,7 +282,7 @@ class Nl2DqlResponse(DynatraceObject):
 
 
 class Dql2NlResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.summary: str | None = raw_element.get("summary")
         self.explanation: str | None = raw_element.get("explanation")
         self.message_token: str | None = raw_element.get("messageToken")

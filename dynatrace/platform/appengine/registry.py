@@ -108,12 +108,12 @@ class AppEngineRegistryService:
 
 
 class Warning(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.message: str | None = raw_element.get("message")
 
 
 class AppStub(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.warnings: list[Warning] = [
             Warning(raw_element=element) for element in raw_element.get("warnings", [])
         ]
@@ -121,25 +121,25 @@ class AppStub(DynatraceObject):
 
 
 class AppIcon(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.href: str | None = raw_element.get("href")
 
 
 class AppIsolatedUri(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.url: str | None = raw_element.get("url")
         self.base_url: str | None = raw_element.get("baseUrl")
         self.widget_url: str | None = raw_element.get("widgetUrl")
 
 
 class AppSignatureInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.signed: bool | None = raw_element.get("signed")
         self.publisher: str | None = raw_element.get("publisher")
 
 
 class ModificationInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.created_by: str | None = raw_element.get("createdBy")
         self.created_at: str | None = raw_element.get("createdAt")
         self.last_modified_by: str | None = raw_element.get("lastModifiedBy")
@@ -147,18 +147,18 @@ class ModificationInfo(DynatraceObject):
 
 
 class ResourceContext(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.operations: list[str] = raw_element.get("operations", [])
 
 
 class SubResourceConstraintViolation(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.path: str | None = raw_element.get("path")
         self.message: str | None = raw_element.get("message")
 
 
 class SubResourceError(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.message: str | None = raw_element.get("message")
         self.error_code: str | None = raw_element.get("errorCode")
         self.error_ref: str | None = raw_element.get("errorRef")
@@ -169,7 +169,7 @@ class SubResourceError(DynatraceObject):
 
 
 class SubResourceStatus(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.sub_resource_type: str | None = raw_element.get("subResourceType")
         self.status: str | None = raw_element.get("status")
         self.error: SubResourceError | None = (
@@ -180,7 +180,7 @@ class SubResourceStatus(DynatraceObject):
 
 
 class ResourceStatus(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.status: str | None = raw_element.get("status")
         self.sub_resource_types: list[str] = raw_element.get("subResourceTypes", [])
         self.sub_resource_statuses: list[SubResourceStatus] = [
@@ -194,7 +194,7 @@ class ResourceStatus(DynatraceObject):
 
 
 class AppInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str | None = raw_element.get("id")
         self.name: str | None = raw_element.get("name")
         self.version: str | None = raw_element.get("version")
@@ -237,20 +237,20 @@ class AppInfo(DynatraceObject):
 
 
 class AppInfoList(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.apps: list[AppInfo] = [
             AppInfo(raw_element=element) for element in raw_element.get("apps", [])
         ]
 
 
 class SearchAppActionItem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name: str | None = raw_element.get("name")
         self.description: str | None = raw_element.get("description")
 
 
 class SearchAppAction(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str | None = raw_element.get("id")
         self.name: str | None = raw_element.get("name")
         self.actions: list[SearchAppActionItem] = [
@@ -260,7 +260,7 @@ class SearchAppAction(DynatraceObject):
 
 
 class SearchAppActionList(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.apps: list[SearchAppAction] = [
             SearchAppAction(raw_element=element)
             for element in raw_element.get("apps", [])
@@ -269,7 +269,7 @@ class SearchAppActionList(DynatraceObject):
 
 
 class AppDefaultCsp(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.policy_directives: dict[str, list[str]] = raw_element.get(
             "policyDirectives", {}
         )
