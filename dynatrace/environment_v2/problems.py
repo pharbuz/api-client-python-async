@@ -23,13 +23,17 @@ from httpx import Response
 from dynatrace.configuration_v1.alerting_profiles import AlertingProfileStub
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.custom_tags import METag
+from dynatrace.environment_v2.events import Event
 from dynatrace.environment_v2.monitored_entities import EntityStub
 from dynatrace.environment_v2.schemas import ManagementZone
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
 from dynatrace.utils import (
     int64_to_datetime,
+    raw_optional_int,
     raw_optional_object,
+    raw_optional_str,
+    raw_optional_str_list,
     raw_required_bool,
     raw_required_datetime,
     raw_required_int,
@@ -242,6 +246,15 @@ class Problem(DynatraceObject):
         self.entity_tags: list[METag] | None = [
             METag(raw_element=t) for t in raw_element.get("entityTags", [])
         ]
+        self.k8s_cluster_name: list[str] = raw_optional_str_list(
+            raw_element, "k8s.cluster.name"
+        )
+        self.k8s_cluster_uid: list[str] = raw_optional_str_list(
+            raw_element, "k8s.cluster.uid"
+        )
+        self.k8s_namespace_name: list[str] = raw_optional_str_list(
+            raw_element, "k8s.namespace.name"
+        )
 
 
 class ProblemCloseResult(DynatraceObject):
@@ -265,6 +278,8 @@ class LinkedProblem(DynatraceObject):
 class CommentList(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.total_count: int = raw_required_int(raw_element, "totalCount")
+        self.next_page_key: str | None = raw_optional_str(raw_element, "nextPageKey")
+        self.page_size: int | None = raw_optional_int(raw_element, "pageSize")
         self.comments: list[Comment] | None = [
             Comment(raw_element=c) for c in raw_element.get("comments", [])
         ]
@@ -337,6 +352,14 @@ class EventEvidence(Evidence):
         super()._create_from_raw_data(raw_element)
         self.event_id: str | None = raw_element.get("eventId")
         self.event_type: str | None = raw_element.get("eventType")
+        self.end_time: datetime | None = (
+            int64_to_datetime(raw_element.get("endTime"))
+            if raw_element.get("endTime") != -1
+            else None
+        )
+        self.data: Event | None = raw_optional_object(
+            raw_element, "data", lambda value: Event(raw_element=value)
+        )
 
 
 class TransactionalEvidence(Evidence):
@@ -383,9 +406,17 @@ class MaintenanceWindowEvidence(Evidence):
 
 class ImpactAnalysis(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
-        self.impacts: list[Impact] = [
-            Impact(raw_element=i) for i in raw_element.get("impacts", [])
-        ]
+        self.impacts: list[Impact] = []
+        for impact in raw_element.get("impacts", []):
+            impact_type = impact.get("impactType")
+            if impact_type == ImpactType.SERVICE.value:
+                self.impacts.append(ServiceImpact(raw_element=impact))
+            elif impact_type == ImpactType.APPLICATION.value:
+                self.impacts.append(ApplicationImpact(raw_element=impact))
+            elif impact_type == ImpactType.MOBILE.value:
+                self.impacts.append(MobileImpact(raw_element=impact))
+            elif impact_type == ImpactType.CUSTOM_APPLICATION.value:
+                self.impacts.append(CustomApplicationImpact(raw_element=impact))
 
 
 class Impact(DynatraceObject):
@@ -401,10 +432,31 @@ class Impact(DynatraceObject):
         )
 
 
+class ServiceImpact(Impact):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        super()._create_from_raw_data(raw_element)
+        self.number_of_potentially_affected_service_calls: int | None = (
+            raw_optional_int(raw_element, "numberOfPotentiallyAffectedServiceCalls")
+        )
+
+
+class ApplicationImpact(Impact):
+    pass
+
+
+class MobileImpact(Impact):
+    pass
+
+
+class CustomApplicationImpact(Impact):
+    pass
+
+
 class SeverityLevel(Enum):
     AVAILABILITY = "AVAILABILITY"
     CUSTOM_ALERT = "CUSTOM_ALERT"
     ERROR = "ERROR"
+    INFO = "INFO"
     MONITORING_UNAVAILABLE = "MONITORING_UNAVAILABLE"
     PERFORMANCE = "PERFORMANCE"
     RESOURCE_CONTENTION = "RESOURCE_CONTENTION"

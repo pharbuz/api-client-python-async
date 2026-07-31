@@ -99,6 +99,101 @@ async def test_get(dt: DynatraceAsync) -> None:
     assert len(recent_comments) == 2
 
 
+def test_problem_parses_openapi_model_fields() -> None:
+    entity_stub = {
+        "entityId": {"id": "SERVICE-123", "type": "SERVICE"},
+        "name": "Checkout service",
+    }
+    problem = pb.Problem(
+        raw_element={
+            "affectedEntities": [entity_stub],
+            "displayId": "P-1",
+            "endTime": -1,
+            "entityTags": [],
+            "evidenceDetails": {
+                "details": [
+                    {
+                        "data": {
+                            "eventId": "event-id",
+                            "eventType": "CUSTOM_ALERT",
+                            "startTime": 1602511312869,
+                            "endTime": -1,
+                        },
+                        "displayName": "Deployment event",
+                        "entity": entity_stub,
+                        "evidenceType": "EVENT",
+                        "eventId": "event-id",
+                        "eventType": "CUSTOM_ALERT",
+                        "groupingEntity": entity_stub,
+                        "rootCauseRelevant": True,
+                        "startTime": 1602511312869,
+                        "endTime": -1,
+                    }
+                ],
+                "totalCount": 1,
+            },
+            "impactAnalysis": {
+                "impacts": [
+                    {
+                        "estimatedAffectedUsers": 1,
+                        "impactType": "SERVICE",
+                        "impactedEntity": entity_stub,
+                        "numberOfPotentiallyAffectedServiceCalls": 50,
+                    }
+                ]
+            },
+            "impactLevel": "SERVICES",
+            "impactedEntities": [entity_stub],
+            "k8s.cluster.name": ["prod"],
+            "k8s.cluster.uid": ["uid-1"],
+            "k8s.namespace.name": ["payments"],
+            "managementZones": [],
+            "problemFilters": [],
+            "problemId": "problem-id",
+            "recentComments": {
+                "comments": [
+                    {
+                        "authorName": "user@example.com",
+                        "content": "Investigating",
+                        "context": "incident",
+                        "createdAtTimestamp": 1602511312869,
+                        "id": "comment-id",
+                    }
+                ],
+                "nextPageKey": "AQAAABQBAAAABQ==",
+                "pageSize": 1,
+                "totalCount": 1,
+            },
+            "severityLevel": "INFO",
+            "startTime": 1602511312869,
+            "status": "OPEN",
+            "title": "Informational problem",
+        }
+    )
+
+    assert problem.end_time is None
+    assert problem.severity_level == pb.SeverityLevel.INFO
+    assert problem.k8s_cluster_name == ["prod"]
+    assert problem.k8s_cluster_uid == ["uid-1"]
+    assert problem.k8s_namespace_name == ["payments"]
+
+    assert problem.recent_comments is not None
+    assert problem.recent_comments.next_page_key == "AQAAABQBAAAABQ=="
+    assert problem.recent_comments.page_size == 1
+
+    assert problem.evidence_details is not None
+    event_evidence = problem.evidence_details.details[0]
+    assert isinstance(event_evidence, pb.EventEvidence)
+    assert event_evidence.end_time is None
+    assert event_evidence.data is not None
+    assert event_evidence.data.event_id == "event-id"
+
+    assert problem.impact_analysis is not None
+    service_impact = problem.impact_analysis.impacts[0]
+    assert isinstance(service_impact, pb.ServiceImpact)
+    assert service_impact.number_of_potentially_affected_service_calls == 50
+
+
 async def test_close(dt: DynatraceAsync) -> None:
     close_result = await dt.problems.close(
         problem_id=PROBLEM_ID, message="Closing this. 1234"
