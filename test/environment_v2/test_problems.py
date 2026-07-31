@@ -44,16 +44,15 @@ async def test_get(dt: DynatraceAsync):
     assert all(isinstance(et, METag) for et in problem.entity_tags)
     assert all(isinstance(pf, AlertingProfileStub) for pf in problem.problem_filters)
     assert isinstance(problem.evidence_details, pb.EvidenceDetails)
-    assert all(isinstance(e, pb.Evidence) for e in problem.evidence_details.details)
-    assert all(
-        isinstance(e.entity, EntityStub) for e in problem.evidence_details.details
-    )
-    assert all(
-        isinstance(e.grouping_entity, EntityStub)
-        for e in problem.evidence_details.details
-    )
+    evidence_details = problem.evidence_details.details
+    assert evidence_details is not None
+    assert all(isinstance(e, pb.Evidence) for e in evidence_details)
+    assert all(isinstance(e.entity, EntityStub) for e in evidence_details)
+    assert all(isinstance(e.grouping_entity, EntityStub) for e in evidence_details)
     assert isinstance(problem.recent_comments, pb.CommentList)
-    assert all(isinstance(c, pb.Comment) for c in problem.recent_comments.comments)
+    recent_comments = problem.recent_comments.comments
+    assert recent_comments is not None
+    assert all(isinstance(c, pb.Comment) for c in recent_comments)
     assert isinstance(problem.impact_analysis, pb.ImpactAnalysis)
     assert all(isinstance(i, pb.Impact) for i in problem.impact_analysis.impacts)
 
@@ -95,9 +94,9 @@ async def test_get(dt: DynatraceAsync):
     assert problem.start_time == int64_to_datetime(1622807640000)
     assert problem.end_time == int64_to_datetime(1622807820000)
     assert problem.evidence_details.total_count == 4
-    assert len(problem.evidence_details.details) == 4
+    assert len(evidence_details) == 4
     assert problem.recent_comments.total_count == 2
-    assert len(problem.recent_comments.comments) == 2
+    assert len(recent_comments) == 2
 
 
 async def test_close(dt: DynatraceAsync):
