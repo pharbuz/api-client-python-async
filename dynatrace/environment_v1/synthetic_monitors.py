@@ -20,6 +20,15 @@ from typing import Any
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import (
+    raw_optional_bool,
+    raw_optional_int,
+    raw_optional_object,
+    raw_optional_str,
+    raw_required_bool,
+    raw_required_int,
+    raw_required_str,
+)
 
 
 class MonitorType(Enum):
@@ -56,97 +65,97 @@ class TagContext(Enum):
 
 class MonitorCollectionElement(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.name: str = raw_element.get("name")
-        self.entity_id: str = raw_element.get("entityId")
-        self.monitor_type: str = raw_element.get("type")
-        self.enabled: bool = raw_element.get("enabled")
+        self.name: str = raw_required_str(raw_element, "name")
+        self.entity_id: str = raw_required_str(raw_element, "entityId")
+        self.monitor_type: str = raw_required_str(raw_element, "type")
+        self.enabled: bool = raw_required_bool(raw_element, "enabled")
 
 
 class LocalOutagePolicy(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.affected_locations: int = raw_element.get("affectedLocations")
-        self.consecutive_runs: int = raw_element.get("consecutiveRuns")
+        self.affected_locations: int = raw_required_int(raw_element, "affectedLocations")
+        self.consecutive_runs: int = raw_required_int(raw_element, "consecutiveRuns")
 
 
 class OutageHandlingPolicy(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.global_outage: bool = raw_element.get("globalOutage")
-        self.local_outage: bool = raw_element.get("localOutage")
+        self.global_outage: bool = raw_required_bool(raw_element, "globalOutage")
+        self.local_outage: bool = raw_required_bool(raw_element, "localOutage")
         self.local_outage_policy: LocalOutagePolicy = LocalOutagePolicy(
-            raw_element=raw_element.get("localOutagePolicy")
+            raw_element=raw_element["localOutagePolicy"]
         )
-        self.retry_on_error: bool = raw_element.get("retryOnError")
+        self.retry_on_error: bool | None = raw_optional_bool(raw_element, "retryOnError")
 
 
 class LoadingTimeThreshold(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.type: LoadingTimeThresholdType = LoadingTimeThresholdType(
-            raw_element.get("type")
-        )
-        self.value_ms: int = raw_element.get("valueMs")
-        self.request_index: int = raw_element.get("requestIndex")
-        self.event_index: int = raw_element.get("eventIndex")
+        self.type: LoadingTimeThresholdType = LoadingTimeThresholdType(raw_element["type"])
+        self.value_ms: int = raw_required_int(raw_element, "valueMs")
+        self.request_index: int | None = raw_optional_int(raw_element, "requestIndex")
+        self.event_index: int | None = raw_optional_int(raw_element, "eventIndex")
 
 
 class LoadingTimeThresholdsPolicyDto(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.enabled: bool = raw_element.get("enabled")
+        self.enabled: bool = raw_required_bool(raw_element, "enabled")
         self.thresholds: list[LoadingTimeThreshold] = [
-            LoadingTimeThreshold(raw_element=threshold)
-            for threshold in raw_element.get("thresholds")
+            LoadingTimeThreshold(raw_element=threshold) for threshold in raw_element["thresholds"]
         ]
 
 
 class AnomalyDetection(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.outage_handling: OutageHandlingPolicy = OutageHandlingPolicy(
-            raw_element=raw_element.get("outageHandling")
+        self.outage_handling: OutageHandlingPolicy | None = raw_optional_object(
+            raw_element,
+            "outageHandling",
+            lambda value: OutageHandlingPolicy(raw_element=value),
         )
-        self.loading_time_thresholds: LoadingTimeThresholdsPolicyDto = (
-            LoadingTimeThresholdsPolicyDto(
-                raw_element=raw_element.get("loadingTimeThresholds")
-            )
+        self.loading_time_thresholds: LoadingTimeThresholdsPolicyDto | None = raw_optional_object(
+            raw_element,
+            "loadingTimeThresholds",
+            lambda value: LoadingTimeThresholdsPolicyDto(raw_element=value),
         )
 
 
 class TagWithSourceInfo(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.source: TagSource = TagSource(raw_element.get("source"))
-        self.context: TagContext = TagContext(raw_element.get("context"))
-        self.key: str = raw_element.get("key")
-        self.value: str = raw_element.get("value")
+        self.source: TagSource | None = (
+            TagSource(raw_element["source"]) if raw_element.get("source") else None
+        )
+        self.context: TagContext = TagContext(raw_element["context"])
+        self.key: str = raw_required_str(raw_element, "key")
+        self.value: str | None = raw_optional_str(raw_element, "value")
 
 
 class ManagementZone(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.id: str = raw_element.get("id")
-        self.name: str = raw_element.get("name")
+        self.id: str = raw_required_str(raw_element, "id")
+        self.name: str = raw_required_str(raw_element, "name")
 
 
 class SyntheticMonitor(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.entity_id: str = raw_element.get("entityId")
-        self.name: str = raw_element.get("name")
-        self.frequency_min: int = raw_element.get("frequencyMin")
-        self.enabled: bool = raw_element.get("enabled")
-        self.type: MonitorType = MonitorType(raw_element.get("type"))
-        self.created_from: CreatedFrom = CreatedFrom(raw_element.get("createdFrom"))
-        self.script: dict = raw_element.get("script")
-        self.locations: list[str] = raw_element.get("locations")
-        self.anomaly_detection: AnomalyDetection = AnomalyDetection(
-            raw_element=raw_element.get("anomalyDetection")
+        self.entity_id: str = raw_required_str(raw_element, "entityId")
+        self.name: str = raw_required_str(raw_element, "name")
+        self.frequency_min: int = raw_required_int(raw_element, "frequencyMin")
+        self.enabled: bool = raw_required_bool(raw_element, "enabled")
+        self.type: MonitorType = MonitorType(raw_element["type"])
+        self.created_from: CreatedFrom = CreatedFrom(raw_element["createdFrom"])
+        self.script: dict[str, Any] = raw_element["script"]
+        self.locations: list[str] = raw_element["locations"]
+        self.anomaly_detection: AnomalyDetection | None = raw_optional_object(
+            raw_element,
+            "anomalyDetection",
+            lambda value: AnomalyDetection(raw_element=value),
         )
         self.tags: list[TagWithSourceInfo] = [
-            TagWithSourceInfo(raw_element=tag) for tag in raw_element.get("tags")
+            TagWithSourceInfo(raw_element=tag) for tag in raw_element["tags"]
         ]
         self.management_zones: list[ManagementZone] = [
-            ManagementZone(raw_element=zone)
-            for zone in raw_element.get("managementZones")
+            ManagementZone(raw_element=zone) for zone in raw_element["managementZones"]
         ]
-        self.automatically_assigned_apps: list[str] = raw_element.get(
-            "automaticallyAssignedApps"
-        )
-        self.manually_assigned_apps: list[str] = raw_element.get("manuallyAssignedApps")
+        self.automatically_assigned_apps: list[str] = raw_element["automaticallyAssignedApps"]
+        self.manually_assigned_apps: list[str] = raw_element["manuallyAssignedApps"]
 
 
 class SyntheticMonitorsService:
@@ -175,8 +184,6 @@ class SyntheticMonitorsService:
         return SyntheticMonitor(
             self.__http_client,
             raw_element=(
-                await self.__http_client.make_request(
-                    f"/api/v1/synthetic/monitors/{monitor_id}"
-                )
+                await self.__http_client.make_request(f"/api/v1/synthetic/monitors/{monitor_id}")
             ).json(),
         )

@@ -21,7 +21,14 @@ from typing import Any
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import HeaderPaginatedList
-from dynatrace.utils import datetime_to_int64
+from dynatrace.utils import (
+    datetime_to_int64,
+    raw_optional_int,
+    raw_optional_object,
+    raw_optional_str,
+    raw_optional_str_or_float,
+    raw_required_str,
+)
 
 
 class RelativeTime(Enum):
@@ -58,52 +65,58 @@ class MonitoringMode(Enum):
 
 class TagInfo(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.context: str = raw_element.get("context")
-        self.key: str = raw_element.get("key")
-        self.value: str = raw_element.get("value")
+        self.context: str = raw_required_str(raw_element, "context")
+        self.key: str = raw_required_str(raw_element, "key")
+        self.value: str | None = raw_optional_str(raw_element, "value")
 
 
 class AgentVersion(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.major: int = raw_element.get("major")
-        self.minor: int = raw_element.get("minor")
-        self.revision: int = raw_element.get("revision")
-        self.timestamp: str = raw_element.get("timestamp")
-        self.source_revision: str = raw_element.get("sourceRevision")
+        self.major: int | None = raw_optional_int(raw_element, "major")
+        self.minor: int | None = raw_optional_int(raw_element, "minor")
+        self.revision: int | None = raw_optional_int(raw_element, "revision")
+        self.timestamp: str | None = raw_optional_str(raw_element, "timestamp")
+        self.source_revision: str | None = raw_optional_str(raw_element, "sourceRevision")
 
 
 class HostGroup(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.me_id: str = raw_element.get("meId")
-        self.name: str = raw_element.get("name")
+        self.me_id: str | None = raw_optional_str(raw_element, "meId")
+        self.name: str | None = raw_optional_str(raw_element, "name")
 
 
 class Host(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.entity_id: str = raw_element.get("entityId")
-        self.display_name: str = raw_element.get("displayName")
-        self.customized_name: str = raw_element.get("customizedName")
-        self.discovered_name: str = raw_element.get("discoveredName")
-        self.first_seen_timestamp: int = raw_element.get("firstSeenTimestamp")
-        self.last_seen_timestamp: int = raw_element.get("lastSeenTimestamp")
-        self.tags: list[TagInfo] = [
-            TagInfo(raw_element=tag) for tag in raw_element.get("tags")
-        ]
-        self.os_type: str = raw_element.get("osType")
-        self.consumed_host_units: float = raw_element.get("consumedHostUnits")
-        self.agent_version: AgentVersion = AgentVersion(
-            raw_element=raw_element.get("agentVersion")
+        self.entity_id: str | None = raw_optional_str(raw_element, "entityId")
+        self.display_name: str | None = raw_optional_str(raw_element, "displayName")
+        self.customized_name: str | None = raw_optional_str(raw_element, "customizedName")
+        self.discovered_name: str | None = raw_optional_str(raw_element, "discoveredName")
+        self.first_seen_timestamp: int | None = raw_optional_int(raw_element, "firstSeenTimestamp")
+        self.last_seen_timestamp: int | None = raw_optional_int(raw_element, "lastSeenTimestamp")
+        self.tags: list[TagInfo] = [TagInfo(raw_element=tag) for tag in raw_element.get("tags", [])]
+        self.os_type: str | None = raw_optional_str(raw_element, "osType")
+        self.consumed_host_units: str | float | None = raw_optional_str_or_float(
+            raw_element, "consumedHostUnits"
         )
-        self.monitoring_mode: MonitoringMode | None = MonitoringMode(
-            raw_element.get("monitoringMode")
+        self.agent_version: AgentVersion | None = raw_optional_object(
+            raw_element, "agentVersion", lambda value: AgentVersion(raw_element=value)
         )
-        self.network_zone_id: str = raw_element.get("networkZoneId")
-        self.host_group: HostGroup = HostGroup(raw_element=raw_element.get("hostGroup"))
-        self.os_architecture: OSArchitecture = OSArchitecture(
-            raw_element.get("osArchitecture")
+        self.monitoring_mode: MonitoringMode | None = (
+            MonitoringMode(raw_element["monitoringMode"])
+            if raw_element.get("monitoringMode")
+            else None
         )
-        self.cpu_cores: int = raw_element.get("cpuCores")
-        self.os_version: str = raw_element.get("osVersion")
+        self.network_zone_id: str | None = raw_optional_str(raw_element, "networkZoneId")
+        self.host_group: HostGroup | None = raw_optional_object(
+            raw_element, "hostGroup", lambda value: HostGroup(raw_element=value)
+        )
+        self.os_architecture: OSArchitecture | None = (
+            OSArchitecture(raw_element["osArchitecture"])
+            if raw_element.get("osArchitecture")
+            else None
+        )
+        self.cpu_cores: int | None = raw_optional_int(raw_element, "cpuCores")
+        self.os_version: str | None = raw_optional_str(raw_element, "osVersion")
 
 
 class SmartScapeHostsService:
@@ -133,9 +146,7 @@ class SmartScapeHostsService:
         """
         params = {
             "pageSize": page_size,
-            "relativeTime": (
-                RelativeTime(relative_time).value if not start_timestamp else None
-            ),
+            "relativeTime": (RelativeTime(relative_time).value if not start_timestamp else None),
             "startTimestamp": datetime_to_int64(start_timestamp),
             "endTimestamp": datetime_to_int64(end_timestamp),
             "managementZone": management_zone if management_zone else None,

@@ -91,12 +91,12 @@ class TimeSerieService:
         technologies: list[str] | None = None,
     ) -> "TimeseriesRegistrationMessage":
 
-        unit: Unit = Unit(unit)
+        unit_value = Unit(unit).value if unit else None
         return TimeseriesRegistrationMessage(
             self.__http_client,
             metric_id=metric_id,
             display_name=display_name,
-            unit=unit.value,
+            unit=unit_value,
             dimensions=dimensions,
             technologies=technologies,
         )
