@@ -9,6 +9,7 @@ import json
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 import wrapt
 
@@ -24,7 +25,12 @@ def required_env(name: str) -> str:
 
 
 @wrapt.patch_function_wrapper("dynatrace.http_client", "HttpClient.make_request")
-async def dump_to_json(wrapped, instance, args, kwargs):
+async def dump_to_json(
+    wrapped: Any,
+    instance: Any,
+    args: tuple[Any, ...],
+    kwargs: dict[str, Any],
+) -> Any:
     r = await wrapped(*args, **kwargs)
     method = kwargs.get("method", "GET")
     params = kwargs.get("params", "")
