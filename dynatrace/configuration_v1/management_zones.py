@@ -51,7 +51,7 @@ __all__ = [
     "RuleType",
 ]
 
-ComparisonValue = str | int | float | bool | dict[str, Any] | None
+ComparisonValue = str | int | float | bool | list[Any] | dict[str, Any] | None
 
 
 class RuleType(Enum):

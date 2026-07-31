@@ -29,7 +29,7 @@ from dynatrace.utils import (
     raw_required_str,
 )
 
-ComparisonValue = str | int | float | bool | dict[str, Any] | None
+ComparisonValue = str | int | float | bool | list[Any] | dict[str, Any] | None
 
 
 class ComparisonBasicType(Enum):
