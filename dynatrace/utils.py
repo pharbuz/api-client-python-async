@@ -14,17 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from __future__ import annotations
+
 import functools
 import re
 import unicodedata
 import warnings
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from typing import Any, ParamSpec, TypeAlias, TypeVar
 
 ISO_8601 = "%Y-%m-%dT%H:%M:%S.%fZ"
 ISO_8601_NO_MS = "%Y-%m-%dT%H:%M:%SZ"
-JSONDict: TypeAlias = dict[str, Any]
+JSONScalar: TypeAlias = str | int | float | bool | None
+JSONValue: TypeAlias = JSONScalar | list["JSONValue"] | dict[str, "JSONValue"]
+JSONDict: TypeAlias = dict[str, JSONValue]
+JSONMapping: TypeAlias = Mapping[str, JSONValue]
 P = ParamSpec("P")
 R = TypeVar("R")
 T = TypeVar("T")
@@ -80,14 +85,14 @@ def int64_to_datetime(timestamp: int | None) -> datetime | None:
     return datetime.fromtimestamp(timestamp / 1000, timezone.utc)
 
 
-def raw_required_str(raw_element: JSONDict, key: str) -> str:
+def raw_required_str(raw_element: JSONMapping, key: str) -> str:
     value = raw_element[key]
     if not isinstance(value, str):
         raise TypeError(f"expected raw field {key!r} to be str")
     return value
 
 
-def raw_optional_str(raw_element: JSONDict, key: str) -> str | None:
+def raw_optional_str(raw_element: JSONMapping, key: str) -> str | None:
     value = raw_element.get(key)
     if value is None:
         return None
@@ -96,7 +101,7 @@ def raw_optional_str(raw_element: JSONDict, key: str) -> str | None:
     return value
 
 
-def raw_optional_str_or_float(raw_element: JSONDict, key: str) -> str | float | None:
+def raw_optional_str_or_float(raw_element: JSONMapping, key: str) -> str | float | None:
     value = raw_element.get(key)
     if value is None:
         return None
@@ -105,21 +110,21 @@ def raw_optional_str_or_float(raw_element: JSONDict, key: str) -> str | float | 
     return float(value) if isinstance(value, int | float) else value
 
 
-def raw_required_int(raw_element: JSONDict, key: str) -> int:
+def raw_required_int(raw_element: JSONMapping, key: str) -> int:
     value = raw_element[key]
     if not isinstance(value, int) or isinstance(value, bool):
         raise TypeError(f"expected raw field {key!r} to be int")
     return value
 
 
-def raw_required_float(raw_element: JSONDict, key: str) -> float:
+def raw_required_float(raw_element: JSONMapping, key: str) -> float:
     value = raw_element[key]
     if isinstance(value, bool) or not isinstance(value, int | float):
         raise TypeError(f"expected raw field {key!r} to be float")
     return float(value)
 
 
-def raw_optional_int(raw_element: JSONDict, key: str) -> int | None:
+def raw_optional_int(raw_element: JSONMapping, key: str) -> int | None:
     value = raw_element.get(key)
     if value is None:
         return None
@@ -128,14 +133,14 @@ def raw_optional_int(raw_element: JSONDict, key: str) -> int | None:
     return value
 
 
-def raw_required_bool(raw_element: JSONDict, key: str) -> bool:
+def raw_required_bool(raw_element: JSONMapping, key: str) -> bool:
     value = raw_element[key]
     if not isinstance(value, bool):
         raise TypeError(f"expected raw field {key!r} to be bool")
     return value
 
 
-def raw_optional_bool(raw_element: JSONDict, key: str) -> bool | None:
+def raw_optional_bool(raw_element: JSONMapping, key: str) -> bool | None:
     value = raw_element.get(key)
     if value is None:
         return None
@@ -144,14 +149,14 @@ def raw_optional_bool(raw_element: JSONDict, key: str) -> bool | None:
     return value
 
 
-def raw_optional_datetime(raw_element: JSONDict, key: str) -> datetime | None:
+def raw_optional_datetime(raw_element: JSONMapping, key: str) -> datetime | None:
     value = raw_element.get(key)
     if value is None:
         return None
     return _raw_datetime(value, key)
 
 
-def raw_required_datetime(raw_element: JSONDict, key: str) -> datetime:
+def raw_required_datetime(raw_element: JSONMapping, key: str) -> datetime:
     return _raw_datetime(raw_element[key], key)
 
 
@@ -170,7 +175,7 @@ def _raw_datetime(value: Any, key: str) -> datetime:
 
 
 def raw_optional_object(
-    raw_element: JSONDict, key: str, factory: Callable[[JSONDict], T]
+    raw_element: JSONMapping, key: str, factory: Callable[[JSONDict], T]
 ) -> T | None:
     value = raw_element.get(key)
     if value is None:

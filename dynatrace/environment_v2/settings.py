@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from httpx import Response
 
@@ -9,6 +9,8 @@ from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
 from dynatrace.utils import (
+    JSONDict,
+    JSONValue,
     raw_optional_bool,
     raw_optional_datetime,
     raw_optional_object,
@@ -101,7 +103,7 @@ class SettingService:
         validate_only: bool | None = False,
         body: list[SettingsObjectCreate] | SettingsObjectCreate | None = None,
         admin_access: bool | None = None,
-    ) -> Any:
+    ) -> JSONValue:
         """
         Creates a new settings object or validates the provided settigns object
 
@@ -123,7 +125,7 @@ class SettingService:
                 query_params=query_params,
             )
         ).json()
-        return response
+        return cast(JSONValue, response)
 
     async def get_object(
         self, object_id: str, admin_access: bool | None = None
@@ -195,7 +197,7 @@ class ModificationInfo(DynatraceObject):
 class SettingsObject(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.object_id: str | None = raw_optional_str(raw_element, "objectId")
-        self.value: dict[str, Any] | None = raw_element.get("value")
+        self.value: JSONDict | None = raw_element.get("value")
         self.author: str | None = raw_optional_str(raw_element, "author")
         self.created: datetime | None = raw_optional_datetime(raw_element, "created")
         self.created_by: str | None = raw_optional_str(raw_element, "createdBy")
@@ -219,7 +221,7 @@ class SettingsObjectCreate:
     def __init__(
         self,
         schema_id: str,
-        value: dict[str, Any],
+        value: JSONDict,
         scope: str,
         external_id: str | None = None,
         insert_after: str | None = None,
@@ -234,8 +236,8 @@ class SettingsObjectCreate:
         self.object_id = object_id
         self.schema_version = schema_version
 
-    def json(self) -> dict[str, Any]:
-        body: dict[str, Any] = {
+    def json(self) -> JSONDict:
+        body: JSONDict = {
             "schemaId": self.schema_id,
             "value": self.value,
             "scope": self.scope,
@@ -254,7 +256,7 @@ class SettingsObjectCreate:
 class SettingsObjectUpdate:
     def __init__(
         self,
-        value: dict[str, Any],
+        value: JSONDict,
         insert_after: str | None = None,
         insert_before: str | None = None,
         schema_version: str | None = None,
@@ -266,8 +268,8 @@ class SettingsObjectUpdate:
         self.schema_version = schema_version
         self.update_token = update_token
 
-    def json(self) -> dict[str, Any]:
-        body: dict[str, Any] = {"value": self.value}
+    def json(self) -> JSONDict:
+        body: JSONDict = {"value": self.value}
         if self.insert_after:
             body["insertAfter"] = self.insert_after
         if self.insert_before:
@@ -299,4 +301,4 @@ class EffectiveSettingsValue(DynatraceObject):
         self.schema_version: str | None = raw_element.get("schemaVersion")
         self.search_summary: str | None = raw_element.get("searchSummary")
         self.summary: str | None = raw_element.get("summary")
-        self.value: Any | None = raw_element.get("value")
+        self.value: JSONValue | None = raw_element.get("value")
