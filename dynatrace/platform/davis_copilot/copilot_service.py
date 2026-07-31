@@ -1,20 +1,15 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Protocol, runtime_checkable
+from typing import Any
 
 from httpx import Response
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
+from dynatrace.utils import JSONDict, JsonSerializable
 
-
-@runtime_checkable
-class _JsonSerializable(Protocol):
-    def to_json(self) -> dict[str, Any]: ...
-
-
-_Payload = dict[str, Any] | DynatraceObject | _JsonSerializable
+_Payload = JSONDict | DynatraceObject | JsonSerializable
 
 
 class CopilotService:
@@ -126,12 +121,12 @@ class CopilotService:
     @staticmethod
     def __normalize_payload(
         payload: _Payload | None,
-    ) -> dict[str, Any] | None:
+    ) -> JSONDict | None:
         if payload is None:
             return None
         if isinstance(payload, DynatraceObject):
             return payload.json()
-        if isinstance(payload, _JsonSerializable):
+        if isinstance(payload, JsonSerializable):
             return payload.to_json()
         return payload
 

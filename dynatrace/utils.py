@@ -22,7 +22,7 @@ import unicodedata
 import warnings
 from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
-from typing import Any, ParamSpec, TypeAlias, TypeVar
+from typing import Any, ParamSpec, Protocol, TypeAlias, TypeVar, runtime_checkable
 
 ISO_8601 = "%Y-%m-%dT%H:%M:%S.%fZ"
 ISO_8601_NO_MS = "%Y-%m-%dT%H:%M:%SZ"
@@ -33,6 +33,11 @@ JSONMapping: TypeAlias = Mapping[str, JSONValue]
 P = ParamSpec("P")
 R = TypeVar("R")
 T = TypeVar("T")
+
+
+@runtime_checkable
+class JsonSerializable(Protocol):
+    def to_json(self) -> JSONDict: ...
 
 
 def slugify(value: object) -> str:
