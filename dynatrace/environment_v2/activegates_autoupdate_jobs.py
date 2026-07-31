@@ -22,7 +22,14 @@ from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.schemas import VersionCompareType
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import timestamp_to_string
+from dynatrace.utils import (
+    raw_optional_int,
+    raw_optional_str,
+    raw_required_bool,
+    raw_required_int,
+    raw_required_str,
+    timestamp_to_string,
+)
 
 
 class UpdateType(Enum):
@@ -128,7 +135,7 @@ class ActiveGateAutoUpdateJobsService:
 
 class UpdateJobList(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.activegate_id: str = raw_element.get("agId")
+        self.activegate_id: str = raw_required_str(raw_element, "agId")
         self.update_jobs: list[UpdateJob] = [
             UpdateJob(raw_element=update_job)
             for update_job in raw_element.get("updateJobs", [])
@@ -137,22 +144,21 @@ class UpdateJobList(DynatraceObject):
 
 class UpdateJob(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.job_id: str = raw_element.get("jobId")
-        self.job_state: str = raw_element.get("jobState")
-        self.update_method: str = raw_element.get("updateMethod")
-        self.update_type: str = raw_element.get("updateType")
-        self.cancelable: bool = raw_element.get("cancelable")
-        self.start_version: str = raw_element.get("startVersion")
-        self.target_version: str = raw_element.get("targetVersion")
+        self.job_id: str = raw_required_str(raw_element, "jobId")
+        self.job_state: str = raw_required_str(raw_element, "jobState")
+        self.update_method: str = raw_required_str(raw_element, "updateMethod")
+        self.update_type: str = raw_required_str(raw_element, "updateType")
+        self.cancelable: bool = raw_required_bool(raw_element, "cancelable")
+        self.start_version: str | None = raw_optional_str(raw_element, "startVersion")
+        self.target_version: str = raw_required_str(raw_element, "targetVersion")
         self.timestamp: datetime = datetime.fromtimestamp(
-            raw_element.get("timestamp") / 1000,
+            raw_required_int(raw_element, "timestamp") / 1000,
             timezone.utc,
         )
-        self.ag_type: str = raw_element.get("agType")
-        self.environments: list[str] = raw_element.get("environments")
-        self.error: str = raw_element.get("error")
+        self.ag_type: str = raw_required_str(raw_element, "agType")
+        self.environments: list[str] = raw_element.get("environments", [])
+        self.error: str | None = raw_optional_str(raw_element, "error")
+        duration = raw_optional_int(raw_element, "duration")
         self.duration: timedelta | None = (
-            timedelta(milliseconds=raw_element.get("duration"))
-            if raw_element.get("duration")
-            else None
+            timedelta(milliseconds=duration) if duration is not None else None
         )

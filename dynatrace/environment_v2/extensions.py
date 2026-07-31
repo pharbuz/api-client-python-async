@@ -21,6 +21,11 @@ from typing import Any
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import (
+    raw_optional_str,
+    raw_required_int,
+    raw_required_str,
+)
 
 
 class ExtensionsServiceV2:
@@ -253,31 +258,33 @@ class SchemaFiles(DynatraceObject):
 
 class Extension(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.version: str = raw_element.get("version")
-        self.extension_name: str = raw_element.get("extensionName")
-        self.min_dynatrace_version: str = raw_element.get("minDynatraceVersion")
-        self.file_hash: str = raw_element.get("fileHash")
+        self.version: str = raw_required_str(raw_element, "version")
+        self.extension_name: str = raw_required_str(raw_element, "extensionName")
+        self.min_dynatrace_version: str | None = raw_optional_str(
+            raw_element, "minDynatraceVersion"
+        )
+        self.file_hash: str | None = raw_optional_str(raw_element, "fileHash")
         self.author: AuthorDTO = AuthorDTO(raw_element=raw_element.get("author"))
-        self.data_sources: list[str] = raw_element.get("dataSources")
-        self.variables: list[str] = raw_element.get("variables")
-        self.feature_sets: list[str] = raw_element.get("featureSets")
+        self.data_sources: list[str] = raw_element.get("dataSources", [])
+        self.variables: list[str] = raw_element.get("variables", [])
+        self.feature_sets: list[str] = raw_element.get("featureSets", [])
 
 
 class AuthorDTO(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.name: str = raw_element.get("name")
+        self.name: str | None = raw_optional_str(raw_element, "name")
 
 
 class ExtensionEventDTO(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.timestamp: str = raw_element.get("timestamp")
-        self.severity: str = raw_element.get("severity")
-        self.message: str = raw_element.get("message")
+        self.timestamp: str | None = raw_optional_str(raw_element, "timestamp")
+        self.severity: str | None = raw_optional_str(raw_element, "severity")
+        self.message: str | None = raw_optional_str(raw_element, "message")
 
 
 class ExtensionEnvironmentConfigurationVersion(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.version: str = raw_element.get("version")
+        self.version: str = raw_required_str(raw_element, "version")
 
     def to_json(self) -> dict[str, Any]:
         """Translates an ExtensionEnvironmentConfigurationVersion to a JSON dict."""
@@ -297,8 +304,8 @@ class ExtensionEnvironmentConfigurationVersion(DynatraceObject):
 
 class MinimalExtension(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.version: str = raw_element.get("version")
-        self.extension_name: str = raw_element.get("extensionName")
+        self.version: str = raw_required_str(raw_element, "version")
+        self.extension_name: str = raw_required_str(raw_element, "extensionName")
 
     def list_version(self) -> str:
         """Class method for obtaining extension2.0 version"""
@@ -360,12 +367,12 @@ class MonitoringConfigurationDto:
 
 class ExtensionMonitoringConfiguration(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.objectId: str = raw_element.get("objectId")
-        self.scope: str = raw_element.get("scope")
-        self.configuration: dict[str, Any] = raw_element.get("value")
+        self.objectId: str = raw_required_str(raw_element, "objectId")
+        self.scope: str = raw_required_str(raw_element, "scope")
+        self.configuration: dict[str, Any] | None = raw_element.get("value")
 
 
 class MonitoringConfigurationResponse(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.objectId: str = raw_element.get("objectId")
-        self.code: int = raw_element.get("code")
+        self.objectId: str | None = raw_optional_str(raw_element, "objectId")
+        self.code: int = raw_required_int(raw_element, "code")
