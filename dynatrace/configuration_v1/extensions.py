@@ -52,7 +52,7 @@ class ExtensionService:
             list_item="extensions",
         ).initialize()
 
-    async def get(self, extension_id: str):
+    async def get(self, extension_id: str) -> "Extension":
         response = (
             await self.__http_client.make_request(
                 f"/api/config/v1/extensions/{extension_id}"
@@ -90,7 +90,9 @@ class ExtensionService:
             target_params=params,
         ).initialize()
 
-    async def get_instance(self, extension_id: str, configuration_id: str):
+    async def get_instance(
+        self, extension_id: str, configuration_id: str
+    ) -> "ExtensionConfigurationDto":
         response = (
             await self.__http_client.make_request(
                 f"/api/config/v1/extensions/{extension_id}/instances/{configuration_id}"
@@ -245,7 +247,9 @@ class ExtensionConfigurationDto(DynatraceObject):
 
 
 class ExtensionShortRepresentation(EntityShortRepresentation):
-    async def get_full_configuration(self, extension_id: str):
+    async def get_full_configuration(
+        self, extension_id: str
+    ) -> ExtensionConfigurationDto:
         """
         Gets the full extension configuration for this ExtensionShortRepresentation
         """

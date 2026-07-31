@@ -405,7 +405,7 @@ class AutoTag(DynatraceObject):
 
 
 class AutoTagShortRepresentation(EntityShortRepresentation):
-    async def get_full_configuration(self):
+    async def get_full_configuration(self) -> AutoTag:
         """
         Get the full configuration for this auto tag rule short representation.
         """

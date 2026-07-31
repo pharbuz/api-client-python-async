@@ -38,7 +38,7 @@ class PluginService:
             list_item="values",
         ).initialize()
 
-    async def list_states(self, plugin_id) -> PaginatedList["PluginState"]:
+    async def list_states(self, plugin_id: str) -> PaginatedList["PluginState"]:
         """
         List the states of the specified plugin
         """
@@ -49,7 +49,7 @@ class PluginService:
             list_item="states",
         ).initialize()
 
-    async def delete(self, plugin_id) -> Response:
+    async def delete(self, plugin_id: str) -> Response:
         """
         Deletes the ZIP file of the specified plugin
         :param plugin_id: The ID of the plugin to be deleted

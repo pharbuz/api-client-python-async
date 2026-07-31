@@ -219,7 +219,7 @@ class AlertingProfile(DynatraceObject):
 
 
 class AlertingProfileStub(EntityShortRepresentation):
-    async def get_full_configuration(self):
+    async def get_full_configuration(self) -> AlertingProfile:
         """
         Gathers the full details of the alerting profile
         """

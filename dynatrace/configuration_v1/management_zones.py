@@ -17,6 +17,8 @@ limitations under the License.
 from enum import Enum
 from typing import Any
 
+from httpx import Response
+
 from dynatrace.configuration_v1.auto_tags import (
     ComparisonBasicType,
     ConditionKeyAttribute,
@@ -110,7 +112,7 @@ class ManagementZoneService:
             raw_element=response.json(), http_client=self.__http_client
         )
 
-    async def delete(self, management_zone_id: str):
+    async def delete(self, management_zone_id: str) -> Response:
         """Deletes the specified management zone
 
         :param networkzone_id: the ID of the management zone
@@ -193,7 +195,7 @@ class ManagementZone(DynatraceObject):
 
 
 class ManagementZoneShortRepresentation(EntityShortRepresentation):
-    async def get_full_configuration(self):
+    async def get_full_configuration(self) -> ManagementZone:
         """
         Get the full configuration for this management zone short representation.
         """

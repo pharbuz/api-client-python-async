@@ -17,6 +17,8 @@ limitations under the License.
 from enum import Enum
 from typing import Any
 
+from httpx import Response
+
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.utils import raw_optional_int, raw_required_str
@@ -83,7 +85,7 @@ class AnomalyDetectionPGService:
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
 
-    async def get_configuration(self, id: str):
+    async def get_configuration(self, id: str) -> AnomalyDetectionPG:
         """
         Get the anomaly detection configuration for the specified process group.
         """
@@ -98,7 +100,7 @@ class AnomalyDetectionPGService:
 
     async def put_configuration(
         self, id: str, anomaly_detection_config: AnomalyDetectionPG
-    ):
+    ) -> Response:
         """
         Update the anomaly detection configuration for the specified process group.
         """
@@ -108,7 +110,7 @@ class AnomalyDetectionPGService:
             params=anomaly_detection_config.json(),
         )
 
-    async def delete_configuration(self, id: str):
+    async def delete_configuration(self, id: str) -> Response:
         """
         Deletes the anomaly detection configuration for the process group. This is the same as turning availaility monitoring off.
         """

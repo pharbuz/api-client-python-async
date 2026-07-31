@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import Any
+
 from httpx import Response
 
 from dynatrace.configuration_v1.tile import Tile
@@ -56,12 +58,12 @@ class DashboardService:
         ).json()
         return Dashboard(self.__http_client, None, response)
 
-    async def post(self, body: dict):
+    async def post(self, body: dict[str, Any]) -> Response:
         return await self.__http_client.make_request(
             "/api/config/v1/dashboards", params=body, method="POST"
         )
 
-    async def put(self, dashboard_id: str, body: dict):
+    async def put(self, dashboard_id: str, body: dict[str, Any]) -> Response:
         return await self.__http_client.make_request(
             f"/api/config/v1/dashboards/{dashboard_id}", params=body, method="PUT"
         )
@@ -114,7 +116,7 @@ class Dashboard(DynatraceObject):
             Tile(self._http_client, None, raw_tile)
             for raw_tile in raw_element.get("tiles", [])
         ]
-        self.raw_json: dict = raw_element
+        self.raw_json: dict[str, Any] = raw_element
 
 
 class DashboardStub(DynatraceObject):

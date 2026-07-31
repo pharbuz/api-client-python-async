@@ -1,4 +1,7 @@
 import builtins
+from typing import Any
+
+from httpx import Response
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -17,13 +20,15 @@ class GeoRegionsIpAddressMappingsService:
         response = (await self._http_client.make_request(self.ENDPOINT)).json()
         return IPAddressMapping(self._http_client, None, response)
 
-    async def put(self, mappings: builtins.list["IPAddressMapping"]):
+    async def put(self, mappings: builtins.list["IPAddressMapping"]) -> Response:
         """
         Updates the IP address mappings of the environment
         """
         data = [mapping.json() for mapping in mappings]
-        body = {"ipAddressMappingRules": data}
-        (await self._http_client.make_request(self.ENDPOINT, method="PUT", params=body))
+        body: dict[str, Any] = {"ipAddressMappingRules": data}
+        return await self._http_client.make_request(
+            self.ENDPOINT, method="PUT", params=body
+        )
 
 
 class IPAddressMapping(DynatraceObject):
