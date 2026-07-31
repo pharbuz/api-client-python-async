@@ -126,7 +126,7 @@ class ActiveGateService:
 
 
 class ActiveGate(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str | None = raw_optional_str(raw_element, "id")
         self.network_addresses = raw_element.get("networkAddresses", [])
         self.os_type: str | None = raw_optional_str(raw_element, "osType")
@@ -150,7 +150,7 @@ class ActiveGate(DynatraceObject):
 
 
 class ActiveGateModule(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.misconfigured: bool | None = raw_optional_bool(
             raw_element, "misconfigured"
         )

@@ -54,7 +54,7 @@ class TenantTokenService:
 
 
 class TenantTokenConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.active: TenantToken | None = raw_optional_object(
             raw_element, "active", lambda value: TenantToken(raw_element=value)
         )
@@ -64,5 +64,5 @@ class TenantTokenConfig(DynatraceObject):
 
 
 class TenantToken(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.value: str | None = raw_optional_str(raw_element, "value")

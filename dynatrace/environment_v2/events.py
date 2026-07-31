@@ -199,7 +199,7 @@ class EventServiceV2:
 
 
 class Event(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         # Mandatory
         self.event_id: str = raw_element["eventId"]
         self.event_type: str = raw_element["eventType"]
@@ -265,7 +265,7 @@ class Event(DynatraceObject):
 
 
 class EventProperty(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.key: str | None = raw_element.get("key")
         self.value: str | None = raw_element.get("value")
 
@@ -274,7 +274,7 @@ class EventProperty(DynatraceObject):
 
 
 class EventPropertyDetails(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.key: str = raw_element["key"]
         self.display_name: str | None = raw_element.get("displayName")
         self.filterable: bool | None = raw_element.get("filterable")
@@ -292,7 +292,7 @@ class EventPropertyDetails(DynatraceObject):
 
 
 class EventType(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.type: str = raw_element["type"]
         self.display_name: str = raw_element["displayName"]
         self.severity_level: EventSeverity | None = (

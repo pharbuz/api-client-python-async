@@ -107,7 +107,7 @@ class MetricService:
 
 
 class MetricSeries(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.timestamps: list[datetime] = [
             converted
             for converted in (
@@ -122,7 +122,7 @@ class MetricSeries(DynatraceObject):
 
 
 class MetricSeriesCollection(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.metric_id: str = raw_required_str(raw_element, "metricId")
         self.data: list[MetricSeries] = [
             MetricSeries(self._http_client, self._headers, metric_serie)
@@ -132,13 +132,13 @@ class MetricSeriesCollection(DynatraceObject):
 
 
 class MetricDefaultAggregation(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.parameter: float = raw_element.get("parameter")
         self.type: str = raw_element.get("type")
 
 
 class MetricDimensionDefinition(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.index: int = raw_element.get("index")
         self.name: str = raw_element.get("name")
         self.key: str = raw_element.get("key")
@@ -183,7 +183,7 @@ class Transformation(Enum):
 
 
 class MetricDescriptor(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
 
         # required
         self.metric_id: str = raw_element.get("metricId")
@@ -233,5 +233,5 @@ class ValueType(Enum):
 
 
 class MetricValueType(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.type = ValueType(raw_element.get("type"))

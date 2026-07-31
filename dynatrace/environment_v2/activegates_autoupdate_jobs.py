@@ -135,7 +135,7 @@ class ActiveGateAutoUpdateJobsService:
 
 
 class UpdateJobList(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.activegate_id: str | None = raw_optional_str(raw_element, "agId")
         self.update_jobs: list[UpdateJob] = [
             UpdateJob(raw_element=update_job)
@@ -144,7 +144,7 @@ class UpdateJobList(DynatraceObject):
 
 
 class UpdateJob(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.job_id: str | None = raw_optional_str(raw_element, "jobId")
         self.job_state: str | None = raw_optional_str(raw_element, "jobState")
         self.update_method: str | None = raw_optional_str(raw_element, "updateMethod")

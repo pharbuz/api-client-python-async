@@ -183,7 +183,7 @@ class SettingService:
 
 
 class ModificationInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.deleteable: bool = raw_required_bool(raw_element, "deletable")
         self.first: bool | None = raw_optional_bool(raw_element, "first")
         self.modifiable: bool = raw_required_bool(raw_element, "modifiable")
@@ -193,7 +193,7 @@ class ModificationInfo(DynatraceObject):
 
 
 class SettingsObject(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.object_id: str | None = raw_optional_str(raw_element, "objectId")
         self.value: dict[str, Any] | None = raw_element.get("value")
         self.author: str | None = raw_optional_str(raw_element, "author")
@@ -280,14 +280,14 @@ class SettingsObjectUpdate:
 
 
 class SchemaStub(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.display_name = raw_element["displayName"]
         self.latest_schema_version = raw_element["latestSchemaVersion"]
         self.schema_id = raw_element["schemaId"]
 
 
 class EffectiveSettingsValue(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.author: str | None = raw_element.get("author")
         self.created: datetime | None = raw_optional_datetime(raw_element, "created")
         self.created_by: str | None = raw_element.get("createdBy")

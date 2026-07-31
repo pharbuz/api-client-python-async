@@ -182,7 +182,7 @@ class ProblemService:
 
 
 class Problem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         # required
         self.display_id: str = raw_required_str(raw_element, "displayId")
         self.problem_id: str = raw_required_str(raw_element, "problemId")
@@ -245,7 +245,7 @@ class Problem(DynatraceObject):
 
 
 class ProblemCloseResult(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.problem_id: str = raw_required_str(raw_element, "problemId")
         self.closing: bool = raw_required_bool(raw_element, "closing")
         self.close_timestamp: datetime = raw_required_datetime(
@@ -257,13 +257,13 @@ class ProblemCloseResult(DynatraceObject):
 
 
 class LinkedProblem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.display_id: str = raw_required_str(raw_element, "displayId")
         self.problem_id: str = raw_required_str(raw_element, "problemId")
 
 
 class CommentList(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.total_count: int = raw_required_int(raw_element, "totalCount")
         self.comments: list[Comment] | None = [
             Comment(raw_element=c) for c in raw_element.get("comments", [])
@@ -271,7 +271,7 @@ class CommentList(DynatraceObject):
 
 
 class Comment(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.created_at: datetime = raw_required_datetime(
             raw_element, "createdAtTimestamp"
         )
@@ -282,7 +282,7 @@ class Comment(DynatraceObject):
 
 
 class EvidenceDetails(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         raw_details = raw_element.get("details", [])
         self.total_count: int = raw_required_int(raw_element, "totalCount")
         self.details: list[Evidence] | None = (
@@ -315,7 +315,7 @@ class EvidenceDetails(DynatraceObject):
 
 
 class Evidence(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.evidence_type: EvidenceType = EvidenceType(
             raw_required_str(raw_element, "evidenceType")
         )
@@ -333,14 +333,14 @@ class Evidence(DynatraceObject):
 
 
 class EventEvidence(Evidence):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.event_id: str | None = raw_element.get("eventId")
         self.event_type: str | None = raw_element.get("eventType")
 
 
 class TransactionalEvidence(Evidence):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.value_before_change_point: float | None = raw_element.get(
             "valueBeforeChangePoint"
@@ -353,7 +353,7 @@ class TransactionalEvidence(Evidence):
 
 
 class MetricEvidence(Evidence):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.value_before_change_point: float | None = raw_element.get(
             "valueBeforeChangePoint"
@@ -367,13 +367,13 @@ class MetricEvidence(Evidence):
 
 
 class AvailabilityEvidence(Evidence):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.end_time: datetime | None = int64_to_datetime(raw_element.get("endTime"))
 
 
 class MaintenanceWindowEvidence(Evidence):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.maintenance_window_id: str | None = raw_element.get(
             "maintenanceWindowConfigId"
@@ -382,14 +382,14 @@ class MaintenanceWindowEvidence(Evidence):
 
 
 class ImpactAnalysis(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.impacts: list[Impact] = [
             Impact(raw_element=i) for i in raw_element.get("impacts", [])
         ]
 
 
 class Impact(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.impact_type: ImpactType = ImpactType(
             raw_required_str(raw_element, "impactType")
         )

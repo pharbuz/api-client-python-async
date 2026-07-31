@@ -299,7 +299,7 @@ class SecurityProblemService:
 
 
 class SecurityProblem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.security_problem_id: str | None = raw_element.get("securityProblemId")
         self.display_id: str | None = raw_element.get("displayId")
         self.title: str | None = raw_element.get("title")
@@ -352,7 +352,7 @@ class SecurityProblem(DynatraceObject):
 
 
 class RiskAssessment(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.risk_level: SecurityProblemRiskLevel | None = (
             SecurityProblemRiskLevel(raw_element.get("riskLevel"))
             if raw_element.get("riskLevel")
@@ -377,12 +377,12 @@ class RiskAssessment(DynatraceObject):
 
 
 class SecurityProblemEvent(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.raw_event: dict[str, Any] = raw_element
 
 
 class RemediationItem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.remediation_item_id: str | None = raw_element.get("remediationItemId")
         self.entity_id: str | None = raw_element.get("entityId")
         self.entity_name: str | None = raw_element.get("entityName")
@@ -391,14 +391,14 @@ class RemediationItem(DynatraceObject):
 
 
 class RemediationProgressEntity(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.entity_id: str | None = raw_element.get("entityId")
         self.entity_name: str | None = raw_element.get("entityName")
         self.raw_remediation_progress_entity: dict[str, Any] = raw_element
 
 
 class VulnerableFunctionsContainer(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.vulnerable_functions: list[dict[str, Any]] = raw_element.get(
             "vulnerableFunctions", []
         )
@@ -408,7 +408,7 @@ class VulnerableFunctionsContainer(DynatraceObject):
 
 
 class BulkMuteSummary(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.mute_state_change_triggered: bool | None = raw_element.get(
             "muteStateChangeTriggered"
         )
@@ -418,7 +418,7 @@ class BulkMuteSummary(DynatraceObject):
 
 
 class BulkMuteResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.summary: list[BulkMuteSummary] = [
             BulkMuteSummary(raw_element=item) for item in raw_element.get("summary", [])
         ]

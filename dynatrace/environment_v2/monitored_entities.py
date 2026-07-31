@@ -245,7 +245,7 @@ class EntityService:
 
 
 class Entity(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.last_seen: datetime | None = int64_to_datetime(
             raw_element.get("lastSeenTms", 0)
         )
@@ -280,7 +280,7 @@ class Entity(DynatraceObject):
 
 
 class EntityShortRepresentation(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id = raw_element.get("id")
         self.name = raw_element.get("name")
         self.description = raw_element.get("description")
@@ -290,7 +290,7 @@ class EntityShortRepresentation(DynatraceObject):
 
 
 class EntityStub(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.entity_id: EntityId = EntityId(raw_element=raw_element["entityId"])
         self.name: str | None = raw_element.get("name")
 
@@ -299,7 +299,7 @@ class EntityStub(DynatraceObject):
 
 
 class EntityId(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str = raw_element["id"]
         self.type: str = raw_element["type"]
 
@@ -308,14 +308,14 @@ class EntityId(DynatraceObject):
 
 
 class EntityIcon(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.primary_icon_type = raw_element.get("primaryIconType")
         self.secondary_icon_type = raw_element.get("secondaryIconType")
         self.custom_icon_path = raw_element.get("customIconPath")
 
 
 class CustomDeviceCreation(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.custom_device_id: str = raw_element["customDeviceId"]
         self.display_name: str = raw_element["displayName"]
         self.group: str | None = raw_element.get("group")
@@ -367,7 +367,7 @@ class CustomDeviceCreation(DynatraceObject):
 
 
 class EntityType(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.type: str = raw_element["type"]
         self.display_name: str = raw_element["displayName"]
         self.entity_limit_exceeded: bool = raw_element.get("entityLimitExceeded", False)
@@ -388,7 +388,7 @@ class EntityType(DynatraceObject):
 
 
 class SecurityContextResult(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.entity_ids: list[str] | None = raw_element.get("entityIds", [])
         self.management_zone_ids: list[int] | None = raw_element.get(
             "managementZoneIds"
@@ -402,20 +402,20 @@ class SecurityContextResult(DynatraceObject):
 
 
 class EntityTypePropertyDto(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str = raw_element["id"]
         self.type: str = raw_element["type"]
         self.display_name: str | None = raw_element.get("displayName")
 
 
 class ToPosition(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.from_types: list[str] = raw_element["fromTypes"]
         self.id: str = raw_element["id"]
 
 
 class FromPosition(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.to_types: list[str] = raw_element["toTypes"]
         self.id: str = raw_element["id"]
 
@@ -429,8 +429,8 @@ class MessageType(Enum):
     SINGLE = "SINGLE"
     SINGLE_TYPE = "SINGLE_TYPE"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value

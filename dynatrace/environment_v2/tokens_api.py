@@ -185,7 +185,7 @@ class TokenService:
 
 
 class ApiToken(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.last_used_date: datetime | None = iso8601_to_datetime(
             raw_element.get("lastUsedDate")
         )
@@ -211,7 +211,7 @@ class ApiToken(DynatraceObject):
 
 
 class ApiTokenCreated(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.token: str = raw_element.get("token")
         self.expiration_date: datetime | None = iso8601_to_datetime(
             raw_element.get("expirationDate")

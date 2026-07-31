@@ -85,7 +85,7 @@ class CredentialVaultService:
 
 
 class CredentialAccessData(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str = raw_element.get("id", "")
         self.type: str = raw_element.get("type", "")
 
@@ -94,18 +94,18 @@ class CredentialAccessData(DynatraceObject):
 
 
 class CredentialUsageHandler(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.type: str = raw_element.get("type", "")
         self.count: int = raw_element.get("count", 0)
 
 
 class CredentialsId(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str = raw_element.get("id", "")
 
 
 class CredentialsResponseElement(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name: str = raw_element.get("name", "")
         self.id: str = raw_element.get("id", "")
         self.type: str = raw_element.get("type", "")

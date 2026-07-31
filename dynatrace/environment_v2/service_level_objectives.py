@@ -195,7 +195,7 @@ class SloService:
 
 
 class Slo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         # required
         self.name: str = raw_required_str(raw_element, "name")
         self.id: str = raw_element.get("id", "")
@@ -277,7 +277,7 @@ class Slo(DynatraceObject):
 class SloEvaluationType(Enum):
     AGGREGATE = "AGGREGATE"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
 
 
@@ -286,5 +286,5 @@ class SloStatus(Enum):
     SUCCESS = "SUCCESS"
     WARNING = "WARNING"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value

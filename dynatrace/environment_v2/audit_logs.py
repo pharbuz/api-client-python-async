@@ -91,7 +91,7 @@ class UserType(Enum):
 
 
 class AuditLogEntry(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.category: str = raw_required_str(raw_element, "category")
         self.environment_id: str = raw_required_str(raw_element, "environmentId")
         self.event_type: EventType = EventType(raw_element["eventType"])

@@ -47,7 +47,7 @@ class MonitoringStateService:
 class MonitoredEntityState(DynatraceObject):
     """Monitoring state of a process group instance."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.entity_id: str | None = raw_element.get("entityId")
         self.params: list[MonitoredEntityStateParam] = [
             MonitoredEntityStateParam(raw_element=param)
@@ -60,6 +60,6 @@ class MonitoredEntityState(DynatraceObject):
 class MonitoredEntityStateParam(DynatraceObject):
     """Key-value parameter attached to a monitoring state."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.key: str | None = raw_element.get("key")
         self.values: str | None = raw_element.get("values")

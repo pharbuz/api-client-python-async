@@ -125,7 +125,7 @@ class NetworkZoneService:
 
 
 class NetworkZone(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str | None = raw_optional_str(raw_element, "id")
         self.description: str | None = raw_optional_str(raw_element, "description")
         self.alternative_zones: list[str] = raw_element.get("alternativeZones", [])
@@ -144,14 +144,14 @@ class NetworkZone(DynatraceObject):
 
 
 class NetworkZoneSettings(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, bool]):
+    def _create_from_raw_data(self, raw_element: dict[str, bool]) -> None:
         self.network_zones_enabled: bool | None = raw_optional_bool(
             raw_element, "networkZonesEnabled"
         )
 
 
 class NetworkZoneConnectionStatistics(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.hosts_configured_but_not_connected: list[str] = raw_element.get(
             "hostsConfiguredButNotConnected", []
         )

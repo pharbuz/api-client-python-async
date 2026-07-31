@@ -85,7 +85,7 @@ class SyntheticMonitorService:
 
 
 class SyntheticMonitorSummary(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.enabled: bool = raw_element.get("enabled", True)
         self.entity_id: str = raw_element["entityId"]
         self.name: str = raw_element["name"]
@@ -93,12 +93,12 @@ class SyntheticMonitorSummary(DynatraceObject):
 
 
 class MonitorEntityId(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.entity_id: str = raw_element["entityId"]
 
 
 class SyntheticBrowserMonitor(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.automatically_assigned_entities: list[str] = raw_element.get(
             "automaticallyAssignedEntities", []
         )
@@ -134,7 +134,7 @@ class SyntheticBrowserMonitor(DynatraceObject):
 
 
 class SyntheticMultiProtocolMonitor(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.description: str | None = raw_element.get("description")
         self.enabled: bool = raw_element.get("enabled", True)
         self.entity_id: str = raw_element["entityId"]

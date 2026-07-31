@@ -145,7 +145,7 @@ class LogService:
 
 
 class LogRecord(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.additional_columns: dict[str, Any] = (
             raw_element.get("additionalColumns") or {}
         )
@@ -156,7 +156,7 @@ class LogRecord(DynatraceObject):
 
 
 class AggregatedLog(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.aggregation_result: dict[str, Any] | None = raw_element.get(
             "aggregationResult"
         )

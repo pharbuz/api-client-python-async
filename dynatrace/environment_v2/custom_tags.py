@@ -117,7 +117,7 @@ class CustomTagService:
 
 
 class AddedEntityTags(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.matched_entities_count: int = raw_element.get("matchedEntitiesCount", 0)
         self.applied_tags: list[METag] = [
             METag(raw_element=tag) for tag in raw_element.get("appliedTags", [])
@@ -125,7 +125,7 @@ class AddedEntityTags(DynatraceObject):
 
 
 class DeletedEntityTags(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.matched_entities_count: int = raw_element.get("matchedEntitiesCount", 0)
 
 
@@ -139,7 +139,7 @@ class AddEntityTags:
 
 
 class METag(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.context: TagContext = TagContext(raw_element["context"])
         self.key: str = raw_element["key"]
         self.value: str | None = raw_element.get("value")

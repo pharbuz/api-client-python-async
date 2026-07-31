@@ -255,12 +255,12 @@ class ExtensionsServiceV2:
 
 
 class SchemaFiles(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.files: list[str] = raw_element.get("files", [])
 
 
 class Extension(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.version: str = raw_required_str(raw_element, "version")
         self.extension_name: str = raw_required_str(raw_element, "extensionName")
         self.min_dynatrace_version: str = raw_required_str(
@@ -274,19 +274,19 @@ class Extension(DynatraceObject):
 
 
 class AuthorDTO(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name: str | None = raw_element.get("name")
 
 
 class ExtensionEventDTO(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.timestamp: str | None = raw_element.get("timestamp")
         self.severity: str | None = raw_element.get("severity")
         self.message: str | None = raw_element.get("message")
 
 
 class ExtensionEnvironmentConfigurationVersion(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.version: str = raw_required_str(raw_element, "version")
 
     def to_json(self) -> dict[str, Any]:
@@ -306,7 +306,7 @@ class ExtensionEnvironmentConfigurationVersion(DynatraceObject):
 
 
 class MinimalExtension(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.version: str = raw_required_str(raw_element, "version")
         self.extension_name: str = raw_required_str(raw_element, "extensionName")
 
@@ -369,13 +369,13 @@ class MonitoringConfigurationDto:
 
 
 class ExtensionMonitoringConfiguration(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.objectId: str = raw_required_str(raw_element, "objectId")
         self.scope: str = raw_required_str(raw_element, "scope")
         self.configuration: dict[str, Any] = raw_element["value"]
 
 
 class MonitoringConfigurationResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.objectId: str = raw_required_str(raw_element, "objectId")
         self.code: int = raw_required_int(raw_element, "code")
