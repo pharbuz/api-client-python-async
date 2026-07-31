@@ -22,6 +22,12 @@ from dynatrace.environment_v2.monitored_entities import EntityShortRepresentatio
 from dynatrace.environment_v2.schemas import ConfigurationMetadata
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import (
+    raw_optional_bool,
+    raw_optional_str,
+    raw_required_bool,
+    raw_required_str,
+)
 
 
 class ComparisonBasicType(Enum):
@@ -332,11 +338,15 @@ class AutoTagService:
 
 class ComparisonBasic(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.operator: str = raw_element.get("operator")
-        self.value: dict = raw_element.get("value")
-        self.negate: bool = raw_element.get("negate")
-        self.type: ComparisonBasicType = ComparisonBasicType(raw_element.get("type"))
-        self.case_sensitive: bool = raw_element.get("caseSensitive")
+        self.operator: str = raw_required_str(raw_element, "operator")
+        self.value: dict[str, Any] | None = raw_element.get("value")
+        self.negate: bool = raw_required_bool(raw_element, "negate")
+        self.type: ComparisonBasicType = ComparisonBasicType(
+            raw_required_str(raw_element, "type")
+        )
+        self.case_sensitive: bool | None = raw_optional_bool(
+            raw_element, "caseSensitive"
+        )
 
 
 class ConditionKey(DynatraceObject):
@@ -357,16 +367,16 @@ class EntityRuleEngineCondition(DynatraceObject):
 
 class EntitySelectorBasedAutoTagRule(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.enabled: bool = raw_element.get("enabled")
-        self.entity_selector: str = raw_element.get("entitySelector")
-        self.value_format: str = raw_element.get("valueFormat")
+        self.enabled: bool | None = raw_optional_bool(raw_element, "enabled")
+        self.entity_selector: str = raw_required_str(raw_element, "entitySelector")
+        self.value_format: str | None = raw_optional_str(raw_element, "valueFormat")
 
 
 class AutoTagRule(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.type: RuleType = RuleType(raw_element.get("type"))
-        self.enabled: bool = raw_element.get("enabled")
-        self.value_format: str = raw_element.get("valueFormat")
+        self.type: RuleType = RuleType(raw_required_str(raw_element, "type"))
+        self.enabled: bool = raw_required_bool(raw_element, "enabled")
+        self.value_format: str | None = raw_optional_str(raw_element, "valueFormat")
         self.propagation_types: list[PropagationType] = [
             PropagationType(prop_type)
             for prop_type in (raw_element.get("propagationTypes") or [])
@@ -382,11 +392,11 @@ class AutoTag(DynatraceObject):
         self.metadata: ConfigurationMetadata = ConfigurationMetadata(
             self._http_client, None, raw_element.get("metadata")
         )
-        self.id: str = raw_element.get("id")
-        self.name: str = raw_element.get("name")
-        self.description: str = raw_element.get("description")
+        self.id: str | None = raw_optional_str(raw_element, "id")
+        self.name: str = raw_required_str(raw_element, "name")
+        self.description: str | None = raw_optional_str(raw_element, "description")
         self.rules: list[AutoTagRule] = [
-            AutoTagRule(raw_element=rule) for rule in raw_element.get("rules")
+            AutoTagRule(raw_element=rule) for rule in raw_element.get("rules", [])
         ]
         self.entity_selector_based_rules: list[EntitySelectorBasedAutoTagRule] = [
             EntitySelectorBasedAutoTagRule(raw_element=rule)
