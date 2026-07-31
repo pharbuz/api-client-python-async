@@ -47,7 +47,7 @@ class AccountAuditsService:
 
 
 class Audit(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.event_id: str | None = raw_element.get("eventId")
         self.timestamp: str | None = raw_element.get("timestamp")
         self.user: str | None = raw_element.get("user")
@@ -78,12 +78,12 @@ class Audit(DynatraceObject):
 
 
 class AuditWarning(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.message: str | None = raw_element.get("message")
 
 
 class AuditsByAccount(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.audits: builtins.list[Audit] = [
             Audit(raw_element=a) for a in raw_element.get("audits", [])
         ]

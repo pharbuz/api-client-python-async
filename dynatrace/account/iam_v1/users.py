@@ -101,7 +101,7 @@ class AccountUsersService:
 class UserLoginMetadata(DynatraceObject):
     """User login metadata."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.successful_login_counter: int | None = raw_element.get(
             "successfulLoginCounter"
         )
@@ -115,7 +115,7 @@ class UserLoginMetadata(DynatraceObject):
 class User(DynatraceObject):
     """User object."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.uid: str | None = raw_element.get("uid")
         self.email: str | None = raw_element.get("email")
         self.name: str | None = raw_element.get("name")
@@ -133,7 +133,7 @@ class User(DynatraceObject):
 class UserList(DynatraceObject):
     """List of users."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.count: int | None = raw_element.get("count")
         self.items: list[User] = [
             User(raw_element=e) for e in raw_element.get("items", [])
@@ -143,14 +143,14 @@ class UserList(DynatraceObject):
 class UserCreationResponse(DynatraceObject):
     """Response from user creation."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.user_uuid: str | None = raw_element.get("userUuid")
 
 
 class Group(DynatraceObject):
     """Group object."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.group_name: str | None = raw_element.get("groupName")
         self.uuid: str | None = raw_element.get("uuid")
         self.owner: str | None = raw_element.get("owner")
@@ -164,7 +164,7 @@ class Group(DynatraceObject):
 class UserGroups(DynatraceObject):
     """User with their groups."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.uid: str | None = raw_element.get("uid")
         self.email: str | None = raw_element.get("email")
         self.name: str | None = raw_element.get("name")

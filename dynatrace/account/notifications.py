@@ -81,7 +81,7 @@ class NotificationSortField(Enum):
 
 
 class NotificationDetails(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.environments: builtins.list[str] | None = raw_element.get("environments")
         self.capabilities: builtins.list[str] | None = raw_element.get("capabilities")
         self.all_environments: bool | None = raw_element.get("allEnvironments")
@@ -91,7 +91,7 @@ class NotificationDetails(DynatraceObject):
 
 
 class Notification(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.key: str | None = raw_element.get("key")
         self.account_uuid: str | None = raw_element.get("accountUuid")
         self.message: str | None = raw_element.get("message")
@@ -105,7 +105,7 @@ class Notification(DynatraceObject):
 
 
 class NotificationList(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.records: builtins.list[Notification] = [
             Notification(raw_element=record)
             for record in raw_element.get("records", [])

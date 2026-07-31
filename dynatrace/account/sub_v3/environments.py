@@ -93,7 +93,7 @@ class SubscriptionEnvironmentService:
 
 
 class EnvironmentCostEntry(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.start_time: str | None = raw_element.get("startTime")
         self.end_time: str | None = raw_element.get("endTime")
         self.value: float | None = raw_element.get("value")
@@ -104,7 +104,7 @@ class EnvironmentCostEntry(DynatraceObject):
 
 
 class EnvironmentCost(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.cluster_id: str | None = raw_element.get("clusterId")
         self.environment_id: str | None = raw_element.get("environmentId")
         self.cost: list[EnvironmentCostEntry] = [
@@ -113,7 +113,7 @@ class EnvironmentCost(DynatraceObject):
 
 
 class EnvironmentCostResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.data: list[EnvironmentCost] = [
             EnvironmentCost(raw_element=e) for e in raw_element.get("data", [])
         ]
@@ -122,7 +122,7 @@ class EnvironmentCostResponse(DynatraceObject):
 
 
 class EnvironmentUsageEntry(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.capability_key: str | None = raw_element.get("capabilityKey")
         self.capability_name: str | None = raw_element.get("capabilityName")
         self.start_time: str | None = raw_element.get("startTime")
@@ -132,7 +132,7 @@ class EnvironmentUsageEntry(DynatraceObject):
 
 
 class EnvironmentUsage(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.cluster_id: str | None = raw_element.get("clusterId")
         self.environment_id: str | None = raw_element.get("environmentId")
         self.usage: list[EnvironmentUsageEntry] = [
@@ -141,7 +141,7 @@ class EnvironmentUsage(DynatraceObject):
 
 
 class EnvironmentUsageResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.data: list[EnvironmentUsage] = [
             EnvironmentUsage(raw_element=e) for e in raw_element.get("data", [])
         ]

@@ -52,7 +52,7 @@ class CostAllocationService:
 
 
 class CostAllocationResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.environment_id: str | None = raw_element.get("environmentId")
         self.field: str | None = raw_element.get("field")
         self.records = raw_element.get("records", [])

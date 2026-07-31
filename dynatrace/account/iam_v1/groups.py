@@ -83,7 +83,7 @@ class AccountGroupsService:
 class Group(DynatraceObject):
     """Group object."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.uuid: str | None = raw_element.get("uuid")
         self.name: str | None = raw_element.get("name")
         self.description: str | None = raw_element.get("description")
@@ -106,7 +106,7 @@ class Group(DynatraceObject):
 class GroupList(DynatraceObject):
     """List of groups."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.count: int | None = raw_element.get("count")
         self.items: list[Group] = [
             Group(raw_element=e) for e in raw_element.get("items", [])
@@ -116,7 +116,7 @@ class GroupList(DynatraceObject):
 class GroupUser(DynatraceObject):
     """User in a group."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.uid: str | None = raw_element.get("uid")
         self.email: str | None = raw_element.get("email")
         self.name: str | None = raw_element.get("name")
@@ -128,7 +128,7 @@ class GroupUser(DynatraceObject):
 class GroupMembers(DynatraceObject):
     """Members of a group."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.count: int | None = raw_element.get("count")
         self.items: list[GroupUser] = [
             GroupUser(raw_element=e) for e in raw_element.get("items", [])
@@ -150,7 +150,7 @@ class GroupUpdateRequest(DynatraceObject):
         self.description: str | None = description
         self.federated_attribute_values: list[str] = federated_attribute_values or []
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name = raw_element.get("name")
         self.description = raw_element.get("description")
         self.federated_attribute_values = raw_element.get(

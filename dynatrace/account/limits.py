@@ -26,7 +26,7 @@ class AccountLimitsService:
 class AccountLimit(DynatraceObject):
     """Account limit entry."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.current_value: float | None = raw_element.get("currentValue")
         self.limit_type: str | None = raw_element.get("limitType")
         self.limit_value: float | None = raw_element.get("limitValue")
@@ -35,7 +35,7 @@ class AccountLimit(DynatraceObject):
 class AccountLimitsPage(DynatraceObject):
     """Page of account limits."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.page_size: float | None = raw_element.get("pageSize")
         self.page_number: float | None = raw_element.get("pageNumber")
         self.total: float | None = raw_element.get("total")

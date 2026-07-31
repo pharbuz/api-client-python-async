@@ -59,20 +59,20 @@ class AccountEnvironmentsV1Service:
 
 # Response models.
 class TenantResource(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name: str | None = raw_element.get("name")
         self.id: str | None = raw_element.get("id")
 
 
 class ManagementZoneResource(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.parent: str | None = raw_element.get("parent")
         self.name: str | None = raw_element.get("name")
         self.id: str | None = raw_element.get("id")
 
 
 class AccountEnvironmentsWithZones(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.tenant_resources: list[TenantResource] = [
             TenantResource(raw_element=e)
             for e in raw_element.get("tenantResources", [])
@@ -85,7 +85,7 @@ class AccountEnvironmentsWithZones(DynatraceObject):
 
 # Request/response payload models.
 class IpAllowlistEntry(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name: str | None = raw_element.get("name")
         self.ip_range: str | None = raw_element.get("ipRange")
 
@@ -97,7 +97,7 @@ class IpAllowlistEntry(DynatraceObject):
 
 
 class IpAllowlistConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.enabled: bool | None = raw_element.get("enabled")
         self.allow_webhook_override: bool | None = raw_element.get(
             "allowWebhookOverride"

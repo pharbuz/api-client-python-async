@@ -180,7 +180,7 @@ class SubscriptionService:
 
 
 class SubscriptionSummary(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.uuid: str = raw_required_str(raw_element, "uuid")
         self.type: str | None = raw_element.get("type")
         self.sub_type: str | None = raw_element.get("subType")
@@ -191,7 +191,7 @@ class SubscriptionSummary(DynatraceObject):
 
 
 class SubscriptionDetail(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.uuid: str = raw_required_str(raw_element, "uuid")
         self.type: str | None = raw_element.get("type")
         self.sub_type: str | None = raw_element.get("subType")
@@ -219,19 +219,19 @@ class SubscriptionDetail(DynatraceObject):
 
 
 class SubscriptionPeriod(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.start_time: str | None = raw_element.get("startTime")
         self.end_time: str | None = raw_element.get("endTime")
 
 
 class SubscriptionCapability(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.key: str | None = raw_element.get("key")
         self.name: str | None = raw_element.get("name")
 
 
 class SubscriptionUsageItem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.capability_key: str | None = raw_element.get("capabilityKey")
         self.capability_name: str | None = raw_element.get("capabilityName")
         self.start_time: str | None = raw_element.get("startTime")
@@ -241,7 +241,7 @@ class SubscriptionUsageItem(DynatraceObject):
 
 
 class SubscriptionUsageResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.data: builtins.list[SubscriptionUsageItem] = [
             SubscriptionUsageItem(raw_element=e) for e in raw_element.get("data", [])
         ]
@@ -249,7 +249,7 @@ class SubscriptionUsageResponse(DynatraceObject):
 
 
 class SubscriptionCostItem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.start_time: str | None = raw_element.get("startTime")
         self.end_time: str | None = raw_element.get("endTime")
         self.value: float | None = raw_element.get("value")
@@ -258,7 +258,7 @@ class SubscriptionCostItem(DynatraceObject):
 
 
 class SubscriptionCostResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.data: builtins.list[SubscriptionCostItem] = [
             SubscriptionCostItem(raw_element=e) for e in raw_element.get("data", [])
         ]
@@ -266,7 +266,7 @@ class SubscriptionCostResponse(DynatraceObject):
 
 
 class SubscriptionEnvironmentUsage(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.environment_id: str | None = raw_element.get("environmentId")
         self.usage: builtins.list[SubscriptionUsageItem] = [
             SubscriptionUsageItem(raw_element=e) for e in raw_element.get("usage", [])
@@ -274,7 +274,7 @@ class SubscriptionEnvironmentUsage(DynatraceObject):
 
 
 class SubscriptionEnvironmentUsageResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.data: builtins.list[SubscriptionEnvironmentUsage] = [
             SubscriptionEnvironmentUsage(raw_element=e)
             for e in raw_element.get("data", [])
@@ -283,7 +283,7 @@ class SubscriptionEnvironmentUsageResponse(DynatraceObject):
 
 
 class SubscriptionEnvironmentCostItem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.start_time: str | None = raw_element.get("startTime")
         self.end_time: str | None = raw_element.get("endTime")
         self.value: float | None = raw_element.get("value")
@@ -293,7 +293,7 @@ class SubscriptionEnvironmentCostItem(DynatraceObject):
 
 
 class SubscriptionEnvironmentCost(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.environment_id: str | None = raw_element.get("environmentId")
         self.cost: builtins.list[SubscriptionEnvironmentCostItem] = [
             SubscriptionEnvironmentCostItem(raw_element=e)
@@ -302,7 +302,7 @@ class SubscriptionEnvironmentCost(DynatraceObject):
 
 
 class SubscriptionEnvironmentCostResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.data: builtins.list[SubscriptionEnvironmentCost] = [
             SubscriptionEnvironmentCost(raw_element=e)
             for e in raw_element.get("data", [])
@@ -311,7 +311,7 @@ class SubscriptionEnvironmentCostResponse(DynatraceObject):
 
 
 class SubscriptionEvent(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.environment_uuid: str | None = raw_element.get("environmentUuid")
         self.capability: str | None = raw_element.get("capability")
         self.date: str | None = raw_element.get("date")
@@ -323,7 +323,7 @@ class SubscriptionEvent(DynatraceObject):
 
 
 class SubscriptionForecast(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.forecast_median: float | None = raw_element.get("forecastMedian")
         self.forecast_lower: float | None = raw_element.get("forecastLower")
         self.forecast_upper: float | None = raw_element.get("forecastUpper")

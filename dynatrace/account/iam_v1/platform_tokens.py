@@ -111,7 +111,7 @@ class AccountPlatformTokensService:
 class PlatformToken(DynatraceObject):
     """Platform token object."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.token_id: str | None = raw_element.get("tokenId")
         self.name: str | None = raw_element.get("name")
         self.status: str | None = raw_element.get("status")
@@ -125,7 +125,7 @@ class PlatformToken(DynatraceObject):
 class PlatformTokenPage(DynatraceObject):
     """Page of platform tokens."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.items: list[PlatformToken] = [
             PlatformToken(raw_element=e) for e in raw_element.get("items", [])
         ]
@@ -136,7 +136,7 @@ class PlatformTokenPage(DynatraceObject):
 class PlatformTokenSecret(DynatraceObject):
     """Platform token secret (returned on creation)."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.token_id: str | None = raw_element.get("tokenId")
         self.secret: str | None = raw_element.get("secret")
         self.name: str | None = raw_element.get("name")
