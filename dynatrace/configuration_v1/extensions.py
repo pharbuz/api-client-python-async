@@ -100,7 +100,9 @@ class ExtensionService:
             http_client=self.__http_client, raw_element=response
         )
 
-    async def post_instance(self, extension_configuration: "ExtensionConfigurationDto"):
+    async def post_instance(
+        self, extension_configuration: "ExtensionConfigurationDto"
+    ) -> Response:
         return await extension_configuration.post()
 
     async def validate_instance(
@@ -202,7 +204,7 @@ class ExtensionProperty(DynatraceObject):
 
 
 class ExtensionConfigurationDto(DynatraceObject):
-    async def post(self):
+    async def post(self) -> Response:
 
         return await self._make_request(
             f"/api/config/v1/extensions/{self.extension_id}/instances",
@@ -210,7 +212,7 @@ class ExtensionConfigurationDto(DynatraceObject):
             method="POST",
         )
 
-    async def validate(self):
+    async def validate(self) -> Response:
         return await self._make_request(
             f"/api/config/v1/extensions/{self.extension_id}/instances/validator",
             params=self.to_json(),
@@ -259,7 +261,7 @@ class Extension(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
-        self.type: str = ExtensionType(raw_element.get("type"))
+        self.type: ExtensionType = ExtensionType(raw_element.get("type"))
         self.version: str = raw_element.get("version")
         self.metric_group: str = raw_element.get("metricGroup")
         self.metadata: ConfigurationMetadata = ConfigurationMetadata(

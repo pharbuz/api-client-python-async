@@ -106,7 +106,7 @@ class EventCreation(DynatraceObject):
 
         super().__init__(http_client, None, raw_element)
 
-    async def post(self):
+    async def post(self) -> Response:
         return await self._make_request(
             "/api/v1/events", params=self._raw_element, method="POST"
         )

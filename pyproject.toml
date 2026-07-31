@@ -52,6 +52,11 @@ packages = ["dynatrace"]
 show_error_codes = true
 color_output = false
 ignore_missing_imports = true
+warn_return_any = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+check_untyped_defs = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
