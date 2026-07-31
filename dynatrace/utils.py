@@ -18,10 +18,13 @@ import functools
 import re
 import unicodedata
 import warnings
+from collections.abc import Callable
 from datetime import datetime, timezone
+from typing import Any, TypeVar
 
 ISO_8601 = "%Y-%m-%dT%H:%M:%S.%fZ"
 ISO_8601_NO_MS = "%Y-%m-%dT%H:%M:%SZ"
+T = TypeVar("T")
 
 
 def slugify(value):
@@ -74,6 +77,69 @@ def int64_to_datetime(timestamp: int | None) -> datetime | None:
     return datetime.fromtimestamp(timestamp / 1000, timezone.utc)
 
 
+def raw_required_str(raw_element: dict[str, Any], key: str) -> str:
+    value = raw_element[key]
+    if not isinstance(value, str):
+        raise TypeError(f"expected raw field {key!r} to be str")
+    return value
+
+
+def raw_optional_str(raw_element: dict[str, Any], key: str) -> str | None:
+    value = raw_element.get(key)
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise TypeError(f"expected raw field {key!r} to be str")
+    return value
+
+
+def raw_required_int(raw_element: dict[str, Any], key: str) -> int:
+    value = raw_element[key]
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise TypeError(f"expected raw field {key!r} to be int")
+    return value
+
+
+def raw_optional_int(raw_element: dict[str, Any], key: str) -> int | None:
+    value = raw_element.get(key)
+    if value is None:
+        return None
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise TypeError(f"expected raw field {key!r} to be int")
+    return value
+
+
+def raw_required_bool(raw_element: dict[str, Any], key: str) -> bool:
+    value = raw_element[key]
+    if not isinstance(value, bool):
+        raise TypeError(f"expected raw field {key!r} to be bool")
+    return value
+
+
+def raw_optional_bool(raw_element: dict[str, Any], key: str) -> bool | None:
+    value = raw_element.get(key)
+    if value is None:
+        return None
+    if not isinstance(value, bool):
+        raise TypeError(f"expected raw field {key!r} to be bool")
+    return value
+
+
+def raw_optional_datetime(raw_element: dict[str, Any], key: str) -> datetime | None:
+    return int64_to_datetime(raw_optional_int(raw_element, key))
+
+
+def raw_optional_object(
+    raw_element: dict[str, Any], key: str, factory: Callable[[dict[str, Any]], T]
+) -> T | None:
+    value = raw_element.get(key)
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise TypeError(f"expected raw field {key!r} to be object")
+    return factory(value)
+
+
 def datetime_to_int64(timestamp: datetime | None) -> int | None:
     if not isinstance(timestamp, datetime):
         return timestamp
@@ -94,7 +160,7 @@ def build_headers(
     if dt_client_context is not None:
         headers["dt-client-context"] = dt_client_context
     if enforce_query_consumption_limit_header is not None:
-        headers["enforce-query-consumption-limit"] = bool_header_value(
-            enforce_query_consumption_limit_header
+        headers["enforce-query-consumption-limit"] = (
+            "true" if enforce_query_consumption_limit_header else "false"
         )
     return headers or None
