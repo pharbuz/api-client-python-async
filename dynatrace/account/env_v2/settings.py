@@ -1,5 +1,7 @@
 """Account settings API wrappers."""
 
+from __future__ import annotations
+
 from typing import Any
 
 from httpx import Response
@@ -23,7 +25,7 @@ class SettingService(DtSettingsService):
         account_uuid: str,
         page: int | None = None,
         page_size: int | None = None,
-    ) -> "FieldValuesPage":
+    ) -> FieldValuesPage:
         """Lists all possible values for the costcenter field."""
         return await self._list_field_values(
             account_uuid, "costcenters", page, page_size
@@ -32,7 +34,7 @@ class SettingService(DtSettingsService):
     async def add_costcenters(
         self,
         account_uuid: str,
-        values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
+        values: list[str] | list[FieldValue] | FieldValuesRequest | dict[str, Any],
     ) -> Response:
         """Adds the provided values to the costcenter field."""
         return await self._write_field_values(
@@ -42,7 +44,7 @@ class SettingService(DtSettingsService):
     async def replace_costcenters(
         self,
         account_uuid: str,
-        values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
+        values: list[str] | list[FieldValue] | FieldValuesRequest | dict[str, Any],
     ) -> Response:
         """Replaces the current values of the costcenter field."""
         return await self._write_field_values(
@@ -61,14 +63,14 @@ class SettingService(DtSettingsService):
         account_uuid: str,
         page: int | None = None,
         page_size: int | None = None,
-    ) -> "FieldValuesPage":
+    ) -> FieldValuesPage:
         """Lists all possible values for the product field."""
         return await self._list_field_values(account_uuid, "products", page, page_size)
 
     async def add_products(
         self,
         account_uuid: str,
-        values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
+        values: list[str] | list[FieldValue] | FieldValuesRequest | dict[str, Any],
     ) -> Response:
         """Adds the provided values to the product field."""
         return await self._write_field_values(
@@ -78,7 +80,7 @@ class SettingService(DtSettingsService):
     async def replace_products(
         self,
         account_uuid: str,
-        values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
+        values: list[str] | list[FieldValue] | FieldValuesRequest | dict[str, Any],
     ) -> Response:
         """Replaces the current values of the product field."""
         return await self._write_field_values(
@@ -153,7 +155,7 @@ class SettingService(DtSettingsService):
         field: str,
         page: int | None,
         page_size: int | None,
-    ) -> "FieldValuesPage":
+    ) -> FieldValuesPage:
         params = {
             "page": page,
             "page-size": page_size,
@@ -170,7 +172,7 @@ class SettingService(DtSettingsService):
         self,
         account_uuid: str,
         field: str,
-        values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
+        values: list[str] | list[FieldValue] | FieldValuesRequest | dict[str, Any],
         method: str,
     ) -> Response:
         return await self.__http_client.make_request(
@@ -181,7 +183,7 @@ class SettingService(DtSettingsService):
 
     @staticmethod
     def _field_values_body(
-        values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
+        values: list[str] | list[FieldValue] | FieldValuesRequest | dict[str, Any],
     ) -> dict[str, Any]:
         if isinstance(values, FieldValuesRequest):
             return values.to_json()
