@@ -93,6 +93,7 @@ def int64_to_datetime(timestamp: int | None) -> datetime | None:
 
 
 def raw_required_str(raw_element: JSONMapping, key: str) -> str:
+    """Return a required raw field as a string."""
     value = raw_element[key]
     if not isinstance(value, str):
         raise TypeError(f"expected raw field {key!r} to be str")
@@ -100,6 +101,7 @@ def raw_required_str(raw_element: JSONMapping, key: str) -> str:
 
 
 def raw_optional_str(raw_element: JSONMapping, key: str) -> str | None:
+    """Return an optional raw field as a string, or None when it is missing."""
     value = raw_element.get(key)
     if value is None:
         return None
@@ -109,6 +111,7 @@ def raw_optional_str(raw_element: JSONMapping, key: str) -> str | None:
 
 
 def raw_optional_str_list(raw_element: JSONMapping, key: str) -> list[str]:
+    """Return an optional raw field as a string list, defaulting to an empty list."""
     value = raw_element.get(key, [])
     if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
         raise TypeError(f"expected raw field {key!r} to be list[str]")
@@ -116,6 +119,7 @@ def raw_optional_str_list(raw_element: JSONMapping, key: str) -> list[str]:
 
 
 def raw_required_str_list(raw_element: JSONMapping, key: str) -> list[str]:
+    """Return a required raw field as a string list."""
     value = raw_element[key]
     if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
         raise TypeError(f"expected raw field {key!r} to be list[str]")
@@ -125,6 +129,7 @@ def raw_required_str_list(raw_element: JSONMapping, key: str) -> list[str]:
 def raw_optional_str_list_or_none(
     raw_element: JSONMapping, key: str
 ) -> list[str] | None:
+    """Return an optional raw field as a string list, or None when it is missing."""
     value = raw_element.get(key)
     if value is None:
         return None
@@ -136,6 +141,7 @@ def raw_optional_str_list_or_none(
 def raw_optional_enum_or_str(
     enum_type: type[TEnum], raw_value: Any
 ) -> TEnum | str | None:
+    """Return an optional raw enum value, preserving unknown string values."""
     if raw_value is None:
         return None
     if not isinstance(raw_value, str):
@@ -149,6 +155,7 @@ def raw_optional_enum_or_str(
 
 
 def raw_optional_str_or_float(raw_element: JSONMapping, key: str) -> str | float | None:
+    """Return an optional raw field as a string or float, or None when missing."""
     value = raw_element.get(key)
     if value is None:
         return None
@@ -158,6 +165,7 @@ def raw_optional_str_or_float(raw_element: JSONMapping, key: str) -> str | float
 
 
 def raw_optional_float(raw_element: JSONMapping, key: str) -> float | None:
+    """Return an optional raw field as a float, or None when it is missing."""
     value = raw_element.get(key)
     if value is None:
         return None
@@ -167,6 +175,7 @@ def raw_optional_float(raw_element: JSONMapping, key: str) -> float | None:
 
 
 def raw_optional_dict(raw_element: JSONMapping, key: str) -> dict[str, Any] | None:
+    """Return an optional raw field as a dictionary, or None when it is missing."""
     value = raw_element.get(key)
     if value is None:
         return None
@@ -176,6 +185,7 @@ def raw_optional_dict(raw_element: JSONMapping, key: str) -> dict[str, Any] | No
 
 
 def raw_optional_str_dict(raw_element: JSONMapping, key: str) -> dict[str, str] | None:
+    """Return an optional raw field as a string-to-string dictionary."""
     value = raw_element.get(key)
     if value is None:
         return None
@@ -194,6 +204,7 @@ def raw_optional_str_dict(raw_element: JSONMapping, key: str) -> dict[str, str] 
 def raw_optional_float_dict(
     raw_element: JSONMapping, key: str
 ) -> dict[str, float] | None:
+    """Return an optional raw field as a string-to-float dictionary."""
     value = raw_element.get(key)
     if value is None:
         return None
@@ -210,6 +221,7 @@ def raw_optional_float_dict(
 
 
 def raw_required_int(raw_element: JSONMapping, key: str) -> int:
+    """Return a required raw field as an integer."""
     value = raw_element[key]
     if not isinstance(value, int) or isinstance(value, bool):
         raise TypeError(f"expected raw field {key!r} to be int")
@@ -217,6 +229,7 @@ def raw_required_int(raw_element: JSONMapping, key: str) -> int:
 
 
 def raw_required_float(raw_element: JSONMapping, key: str) -> float:
+    """Return a required raw field as a float."""
     value = raw_element[key]
     if isinstance(value, bool) or not isinstance(value, int | float):
         raise TypeError(f"expected raw field {key!r} to be float")
@@ -224,6 +237,7 @@ def raw_required_float(raw_element: JSONMapping, key: str) -> float:
 
 
 def raw_optional_int(raw_element: JSONMapping, key: str) -> int | None:
+    """Return an optional raw field as an integer, or None when it is missing."""
     value = raw_element.get(key)
     if value is None:
         return None
@@ -233,6 +247,7 @@ def raw_optional_int(raw_element: JSONMapping, key: str) -> int | None:
 
 
 def raw_required_bool(raw_element: JSONMapping, key: str) -> bool:
+    """Return a required raw field as a boolean."""
     value = raw_element[key]
     if not isinstance(value, bool):
         raise TypeError(f"expected raw field {key!r} to be bool")
@@ -240,6 +255,7 @@ def raw_required_bool(raw_element: JSONMapping, key: str) -> bool:
 
 
 def raw_optional_bool(raw_element: JSONMapping, key: str) -> bool | None:
+    """Return an optional raw field as a boolean, or None when it is missing."""
     value = raw_element.get(key)
     if value is None:
         return None
@@ -249,6 +265,7 @@ def raw_optional_bool(raw_element: JSONMapping, key: str) -> bool | None:
 
 
 def raw_optional_datetime(raw_element: JSONMapping, key: str) -> datetime | None:
+    """Return an optional raw timestamp field as a UTC datetime."""
     value = raw_element.get(key)
     if value is None:
         return None
@@ -256,6 +273,7 @@ def raw_optional_datetime(raw_element: JSONMapping, key: str) -> datetime | None
 
 
 def raw_required_datetime(raw_element: JSONMapping, key: str) -> datetime:
+    """Return a required raw timestamp field as a UTC datetime."""
     return _raw_datetime(raw_element[key], key)
 
 
@@ -276,6 +294,7 @@ def _raw_datetime(value: Any, key: str) -> datetime:
 def raw_optional_object(
     raw_element: JSONMapping, key: str, factory: Callable[[JSONDict], T]
 ) -> T | None:
+    """Return an optional raw object field transformed by the provided factory."""
     value = raw_element.get(key)
     if value is None:
         return None
@@ -287,6 +306,7 @@ def raw_optional_object(
 def raw_required_object(
     raw_element: JSONMapping, key: str, factory: Callable[[JSONDict], T]
 ) -> T:
+    """Return a required raw object field transformed by the provided factory."""
     value = raw_element[key]
     if not isinstance(value, dict):
         raise TypeError(f"expected raw field {key!r} to be object")
@@ -296,6 +316,7 @@ def raw_required_object(
 def raw_optional_object_list(
     raw_element: JSONMapping, key: str, factory: Callable[[JSONDict], T]
 ) -> list[T] | None:
+    """Return an optional raw object list transformed by the provided factory."""
     value = raw_element.get(key)
     if value is None:
         return None
@@ -307,6 +328,7 @@ def raw_optional_object_list(
 def raw_required_object_list(
     raw_element: JSONMapping, key: str, factory: Callable[[JSONDict], T]
 ) -> list[T]:
+    """Return a required raw object list transformed by the provided factory."""
     value = raw_element[key]
     if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
         raise TypeError(f"expected raw field {key!r} to be list[object]")
@@ -316,6 +338,7 @@ def raw_required_object_list(
 def raw_optional_object_dict(
     raw_element: JSONMapping, key: str, factory: Callable[[JSONDict], T]
 ) -> dict[str, T] | None:
+    """Return an optional raw object dictionary transformed by the provided factory."""
     value = raw_element.get(key)
     if value is None:
         return None
