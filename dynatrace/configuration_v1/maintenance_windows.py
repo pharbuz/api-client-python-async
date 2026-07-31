@@ -36,7 +36,7 @@ class TagCombination(Enum):
     NONE = None
 
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
 
 
 class MonitoredEntityFilter(DynatraceObject):
@@ -105,7 +105,7 @@ class Schedule(DynatraceObject):
         end: str,
         zone_id: str,
         recurrence: Recurrence | None = None,
-    ):
+    ) -> "Schedule":
         raw_element = {
             "recurrenceType": recurrence_type,
             "recurrence": recurrence,

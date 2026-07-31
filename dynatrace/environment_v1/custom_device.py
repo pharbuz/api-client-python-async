@@ -190,19 +190,19 @@ class CustomDevicePushMessage(DynatraceObject):
                 or "Data point timestamp is too far in the past" in f"{e}"
             ):
                 if "configuration.Creation timestamp" in f"{e}":
-                    max_timestamp = int(
+                    max_timestamp_ms = int(
                         f"{e}".split("configuration.Creation timestamp is:")[1]
                         .split('"')[0]
                         .strip()
                     )
                     max_timestamp = datetime.fromtimestamp(
-                        max_timestamp / 1000, tz=timezone.utc
+                        max_timestamp_ms / 1000, tz=timezone.utc
                     )
                 else:
                     max_timestamp = datetime.now(tz=timezone.utc) - timedelta(
                         minutes=59
                     )
-                self._http_client.log.warning(
+                self._require_http_client().log.warning(
                     f"Some data points were invalid, removing data points older than {max_timestamp}"
                 )
                 for s in self.series:

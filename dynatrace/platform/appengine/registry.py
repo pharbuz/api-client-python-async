@@ -1,7 +1,7 @@
 """AppEngine Registry API wrappers."""
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from httpx import Response
 
@@ -90,7 +90,7 @@ class AppEngineRegistryService:
         response = await self.__http_client.make_request(
             self.ENDPOINT_APP_MANIFEST_SCHEMA
         )
-        return response.json()
+        return cast(dict[str, Any], response.json())
 
     async def get_default_csp_properties(self) -> "AppDefaultCsp":
         """Get default CSP rules for apps."""

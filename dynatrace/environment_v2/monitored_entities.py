@@ -332,8 +332,8 @@ class CustomDeviceCreation(DynatraceObject):
             else None
         )
 
-    def to_json(self):
-        body = {
+    def to_json(self) -> dict[str, Any]:
+        body: dict[str, Any] = {
             "customDeviceId": self.custom_device_id,
             "displayName": self.display_name,
         }

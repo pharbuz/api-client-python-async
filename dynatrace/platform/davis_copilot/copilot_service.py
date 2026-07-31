@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any
+from typing import Any, cast
 
 from httpx import Response
 
@@ -138,7 +138,7 @@ class CopilotService:
         if hasattr(payload, "to_json") and callable(
             getattr(payload, "to_json")  # noqa: B009
         ):
-            return payload.to_json()
+            return cast(dict[str, Any], payload.to_json())
         return payload
 
 

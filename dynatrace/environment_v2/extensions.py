@@ -16,7 +16,7 @@ limitations under the License.
 
 import builtins
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -185,7 +185,7 @@ class ExtensionsServiceV2:
         response = (
             await self.__http_client.make_request(f"{self.SCHEMA_ENDPOINT}")
         ).json()
-        return response.get("versions", [])
+        return cast(builtins.list[str], response.get("versions", []))
 
     async def list_schemas(self, schema_version: str) -> "SchemaFiles":
         response = await self.__http_client.make_request(
@@ -196,24 +196,25 @@ class ExtensionsServiceV2:
     async def get_schema_file(
         self, schema_version: str, file_name: str
     ) -> dict[str, Any]:
-        return (
+        response = (
             await self.__http_client.make_request(
                 f"{self.SCHEMA_ENDPOINT}/{schema_version}/{file_name}"
             )
         ).json()
+        return cast(dict[str, Any], response)
 
     async def post_monitoring_configurations(
         self,
         extension_name: str,
         configurations: builtins.list["MonitoringConfigurationDto"],
-    ) -> builtins.list:
+    ) -> builtins.list[Any]:
         params = [c.to_json() for c in configurations]
         response = await self.__http_client.make_request(
             f"{self.ENDPOINT}/{extension_name}/monitoringConfigurations",
             params=params,
             method="POST",
         )
-        return response.json()
+        return cast(builtins.list[Any], response.json())
 
     async def list_monitoring_configurations(
         self,
