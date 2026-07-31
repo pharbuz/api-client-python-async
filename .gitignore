@@ -174,5 +174,6 @@ AGENTS.md
 
 # OpenAPI
 openapi.json
+openapi_env_v1.json
 openapi_env_v2.json
 openapi_configuration_v1.json
