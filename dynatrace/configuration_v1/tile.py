@@ -14,16 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from collections.abc import Callable
 from enum import Enum
-from typing import Any, TypeVar
+from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.monitored_entities import EntityShortRepresentation
 from dynatrace.http_client import HttpClient
-from dynatrace.utils import raw_optional_bool, raw_optional_int, raw_optional_str
-
-T = TypeVar("T")
+from dynatrace.utils import (
+    raw_optional_bool,
+    raw_optional_dict,
+    raw_optional_float,
+    raw_optional_float_dict,
+    raw_optional_int,
+    raw_optional_object,
+    raw_optional_object_dict,
+    raw_optional_object_list,
+    raw_optional_str,
+    raw_optional_str_list_or_none,
+)
 
 
 class TileType(Enum):
@@ -126,20 +134,398 @@ class Tile(DynatraceObject):
             raw_element, "isAutoRefreshDisabled"
         )
         self.name_size: str | None = raw_optional_str(raw_element, "nameSize")
-        self.bounds: TileBounds | None = _optional_object(
+        self.bounds: TileBounds | None = raw_optional_object(
             raw_element, "bounds", lambda value: TileBounds(raw_element=value)
         )
-        self.tile_filter: TileFilter | None = _optional_object(
+        self.tile_filter: TileFilter | None = raw_optional_object(
             raw_element,
             "tileFilter",
             lambda value: TileFilter(self._http_client, None, value),
         )
 
 
+class CustomChartingItemMetadataConfig(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.custom_color: str | None = raw_optional_str(raw_element, "customColor")
+        self.last_modified: int | None = raw_optional_int(raw_element, "lastModified")
+
+
+class CustomFilterChartSeriesDimensionConfig(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.entity_dimension: bool | None = raw_optional_bool(
+            raw_element, "entityDimension"
+        )
+        self.id: str | None = raw_optional_str(raw_element, "id")
+        self.name: str | None = raw_optional_str(raw_element, "name")
+        self.values: list[str] | None = raw_optional_str_list_or_none(
+            raw_element, "values"
+        )
+
+
+class CustomFilterChartSeriesConfig(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.aggregation: str | None = raw_optional_str(raw_element, "aggregation")
+        self.aggregation_rate: str | None = raw_optional_str(
+            raw_element, "aggregationRate"
+        )
+        self.dimensions: list[CustomFilterChartSeriesDimensionConfig] | None = (
+            raw_optional_object_list(
+                raw_element,
+                "dimensions",
+                lambda value: CustomFilterChartSeriesDimensionConfig(raw_element=value),
+            )
+        )
+        self.entity_type: str | None = raw_optional_str(raw_element, "entityType")
+        self.metric: str | None = raw_optional_str(raw_element, "metric")
+        self.percentile: int | None = raw_optional_int(raw_element, "percentile")
+        self.sort_ascending: bool | None = raw_optional_bool(
+            raw_element, "sortAscending"
+        )
+        self.sort_column: bool | None = raw_optional_bool(raw_element, "sortColumn")
+        self.type: str | None = raw_optional_str(raw_element, "type")
+
+
+class CustomFilterChartConfig(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.axis_limits: dict[str, float] | None = raw_optional_float_dict(
+            raw_element, "axisLimits"
+        )
+        self.left_axis_custom_unit: str | None = raw_optional_str(
+            raw_element, "leftAxisCustomUnit"
+        )
+        self.legend_shown: bool | None = raw_optional_bool(raw_element, "legendShown")
+        self.result_metadata: dict[str, CustomChartingItemMetadataConfig] | None = (
+            raw_optional_object_dict(
+                raw_element,
+                "resultMetadata",
+                lambda value: CustomChartingItemMetadataConfig(raw_element=value),
+            )
+        )
+        self.right_axis_custom_unit: str | None = raw_optional_str(
+            raw_element, "rightAxisCustomUnit"
+        )
+        self.series: list[CustomFilterChartSeriesConfig] | None = (
+            raw_optional_object_list(
+                raw_element,
+                "series",
+                lambda value: CustomFilterChartSeriesConfig(raw_element=value),
+            )
+        )
+        self.type: str | None = raw_optional_str(raw_element, "type")
+
+
+class CustomFilterConfig(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.chart_config: CustomFilterChartConfig | None = raw_optional_object(
+            raw_element,
+            "chartConfig",
+            lambda value: CustomFilterChartConfig(raw_element=value),
+        )
+        self.custom_name: str | None = raw_optional_str(raw_element, "customName")
+        self.default_name: str | None = raw_optional_str(raw_element, "defaultName")
+        self.filters_per_entity_type: dict[str, Any] | None = raw_optional_dict(
+            raw_element, "filtersPerEntityType"
+        )
+        self.type: str | None = raw_optional_str(raw_element, "type")
+
+
+class DexpFilterCriterion(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.evaluator: str | None = raw_optional_str(raw_element, "evaluator")
+        self.match_exactly: bool | None = raw_optional_bool(raw_element, "matchExactly")
+        self.value: str | None = raw_optional_str(raw_element, "value")
+
+
+class DexpFilterRelationship(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.id: str | None = raw_optional_str(raw_element, "id")
+        self.target_entity: str | None = raw_optional_str(raw_element, "targetEntity")
+        self.type: str | None = raw_optional_str(raw_element, "type")
+
+
+class DataExplorerFilter(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.criteria: list[DexpFilterCriterion] | None = raw_optional_object_list(
+            raw_element,
+            "criteria",
+            lambda value: DexpFilterCriterion(raw_element=value),
+        )
+        self.entity_attribute: str | None = raw_optional_str(
+            raw_element, "entityAttribute"
+        )
+        self.filter: str | None = raw_optional_str(raw_element, "filter")
+        self.filter_operator: str | None = raw_optional_str(
+            raw_element, "filterOperator"
+        )
+        self.filter_type: str | None = raw_optional_str(raw_element, "filterType")
+        self.global_entity: str | None = raw_optional_str(raw_element, "globalEntity")
+        self.nested_filters: list[DataExplorerFilter] | None = raw_optional_object_list(
+            raw_element,
+            "nestedFilters",
+            lambda value: DataExplorerFilter(raw_element=value),
+        )
+        self.relationship: DexpFilterRelationship | None = raw_optional_object(
+            raw_element,
+            "relationship",
+            lambda value: DexpFilterRelationship(raw_element=value),
+        )
+
+
+class DataExplorerTimeShift(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.factor: int | None = raw_optional_int(raw_element, "factor")
+        self.unit: str | None = raw_optional_str(raw_element, "unit")
+
+
+class DataExplorerQuery(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.default_value: float | None = raw_optional_float(
+            raw_element, "defaultValue"
+        )
+        self.enabled: bool | None = raw_optional_bool(raw_element, "enabled")
+        self.filter_by: DataExplorerFilter | None = raw_optional_object(
+            raw_element, "filterBy", lambda value: DataExplorerFilter(raw_element=value)
+        )
+        self.fold_transformation: str | None = raw_optional_str(
+            raw_element, "foldTransformation"
+        )
+        self.generated_metric_selector: str | None = raw_optional_str(
+            raw_element, "generatedMetricSelector"
+        )
+        self.histogram: bool | None = raw_optional_bool(raw_element, "histogram")
+        self.id: str | None = raw_optional_str(raw_element, "id")
+        self.limit: int | None = raw_optional_int(raw_element, "limit")
+        self.metric: str | None = raw_optional_str(raw_element, "metric")
+        self.metric_selector: str | None = raw_optional_str(
+            raw_element, "metricSelector"
+        )
+        self.rate: str | None = raw_optional_str(raw_element, "rate")
+        self.sort_by: str | None = raw_optional_str(raw_element, "sortBy")
+        self.sort_by_dimension: str | None = raw_optional_str(
+            raw_element, "sortByDimension"
+        )
+        self.space_aggregation: str | None = raw_optional_str(
+            raw_element, "spaceAggregation"
+        )
+        self.split_by: list[str] | None = raw_optional_str_list_or_none(
+            raw_element, "splitBy"
+        )
+        self.time_aggregation: str | None = raw_optional_str(
+            raw_element, "timeAggregation"
+        )
+        self.time_shift: DataExplorerTimeShift | None = raw_optional_object(
+            raw_element,
+            "timeShift",
+            lambda value: DataExplorerTimeShift(raw_element=value),
+        )
+
+
+class DataExplorerQuerySettings(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.fold_aggregation: str | None = raw_optional_str(
+            raw_element, "foldAggregation"
+        )
+        self.fold_transformation: str | None = raw_optional_str(
+            raw_element, "foldTransformation"
+        )
+        self.global_limit_query_id: str | None = raw_optional_str(
+            raw_element, "globalLimitQueryId"
+        )
+        self.resolution: str | None = raw_optional_str(raw_element, "resolution")
+
+
+class Axis(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.display_name: str | None = raw_optional_str(raw_element, "displayName")
+        self.visible: bool | None = raw_optional_bool(raw_element, "visible")
+
+
+class YAxis(Axis):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        super()._create_from_raw_data(raw_element)
+        self.default_axis: bool | None = raw_optional_bool(raw_element, "defaultAxis")
+        self.max: str | None = raw_optional_str(raw_element, "max")
+        self.min: str | None = raw_optional_str(raw_element, "min")
+        self.position: str | None = raw_optional_str(raw_element, "position")
+        self.query_ids: list[str] | None = raw_optional_str_list_or_none(
+            raw_element, "queryIds"
+        )
+
+
+class Axes(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.x_axis: Axis | None = raw_optional_object(
+            raw_element, "xAxis", lambda value: Axis(raw_element=value)
+        )
+        self.y_axes: list[YAxis] | None = raw_optional_object_list(
+            raw_element, "yAxes", lambda value: YAxis(raw_element=value)
+        )
+
+
+class VisualizationThresholdRule(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.color: str | None = raw_optional_str(raw_element, "color")
+        self.value: float | None = raw_optional_float(raw_element, "value")
+
+
+class VisualizationThreshold(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.axis_target: str | None = raw_optional_str(raw_element, "axisTarget")
+        self.column_id: str | None = raw_optional_str(raw_element, "columnId")
+        self.query_id: str | None = raw_optional_str(raw_element, "queryId")
+        self.rules: list[VisualizationThresholdRule] | None = raw_optional_object_list(
+            raw_element,
+            "rules",
+            lambda value: VisualizationThresholdRule(raw_element=value),
+        )
+        self.visible: bool | None = raw_optional_bool(raw_element, "visible")
+
+
+class VisualizationGlobalProperties(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.has_trendline: bool | None = raw_optional_bool(raw_element, "hasTrendline")
+        self.hide_legend: bool | None = raw_optional_bool(raw_element, "hideLegend")
+        self.series_type: str | None = raw_optional_str(raw_element, "seriesType")
+        self.theme: str | None = raw_optional_str(raw_element, "theme")
+        self.threshold: VisualizationThreshold | None = raw_optional_object(
+            raw_element,
+            "threshold",
+            lambda value: VisualizationThreshold(raw_element=value),
+        )
+
+
+class GraphChartSettings(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.connect_nulls: bool | None = raw_optional_bool(raw_element, "connectNulls")
+
+
+class HeatmapSettings(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.show_labels: bool | None = raw_optional_bool(raw_element, "showLabels")
+        self.x_axis_buckets: int | None = raw_optional_int(raw_element, "xAxisBuckets")
+        self.y_axis: str | None = raw_optional_str(raw_element, "yAxis")
+        self.y_axis_buckets: int | None = raw_optional_int(raw_element, "yAxisBuckets")
+
+
+class HoneycombSettings(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.show_hive: bool | None = raw_optional_bool(raw_element, "showHive")
+        self.show_labels: bool | None = raw_optional_bool(raw_element, "showLabels")
+        self.show_legend: bool | None = raw_optional_bool(raw_element, "showLegend")
+
+
+class VisualizationProperties(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.alias: str | None = raw_optional_str(raw_element, "alias")
+        self.color: str | None = raw_optional_str(raw_element, "color")
+        self.series_type: str | None = raw_optional_str(raw_element, "seriesType")
+
+
+class VisualizationSerieOverride(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.color: str | None = raw_optional_str(raw_element, "color")
+        self.name: str | None = raw_optional_str(raw_element, "name")
+
+
+class VisualizationRule(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.matcher: str | None = raw_optional_str(raw_element, "matcher")
+        self.properties: VisualizationProperties | None = raw_optional_object(
+            raw_element,
+            "properties",
+            lambda value: VisualizationProperties(raw_element=value),
+        )
+        self.series_overrides: list[VisualizationSerieOverride] | None = (
+            raw_optional_object_list(
+                raw_element,
+                "seriesOverrides",
+                lambda value: VisualizationSerieOverride(raw_element=value),
+            )
+        )
+        self.unit_transform: str | None = raw_optional_str(raw_element, "unitTransform")
+        self.value_format: str | None = raw_optional_str(raw_element, "valueFormat")
+
+
+class SingleValueSettings(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.link_tile_color_to_threshold: bool | None = raw_optional_bool(
+            raw_element, "linkTileColorToThreshold"
+        )
+        self.show_spark_line: bool | None = raw_optional_bool(
+            raw_element, "showSparkLine"
+        )
+        self.show_trend: bool | None = raw_optional_bool(raw_element, "showTrend")
+
+
+class TableSettings(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.hidden_columns: list[str] | None = raw_optional_str_list_or_none(
+            raw_element, "hiddenColumns"
+        )
+        self.is_threshold_background_applied_to_cell: bool | None = raw_optional_bool(
+            raw_element, "isThresholdBackgroundAppliedToCell"
+        )
+
+
+class VisualizationConfiguration(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.axes: Axes | None = raw_optional_object(
+            raw_element, "axes", lambda value: Axes(raw_element=value)
+        )
+        self.global_properties: VisualizationGlobalProperties | None = (
+            raw_optional_object(
+                raw_element,
+                "global",
+                lambda value: VisualizationGlobalProperties(raw_element=value),
+            )
+        )
+        self.graph_chart_settings: GraphChartSettings | None = raw_optional_object(
+            raw_element,
+            "graphChartSettings",
+            lambda value: GraphChartSettings(raw_element=value),
+        )
+        self.heatmap_settings: HeatmapSettings | None = raw_optional_object(
+            raw_element,
+            "heatmapSettings",
+            lambda value: HeatmapSettings(raw_element=value),
+        )
+        self.honeycomb_settings: HoneycombSettings | None = raw_optional_object(
+            raw_element,
+            "honeycombSettings",
+            lambda value: HoneycombSettings(raw_element=value),
+        )
+        self.rules: list[VisualizationRule] | None = raw_optional_object_list(
+            raw_element, "rules", lambda value: VisualizationRule(raw_element=value)
+        )
+        self.single_value_settings: SingleValueSettings | None = raw_optional_object(
+            raw_element,
+            "singleValueSettings",
+            lambda value: SingleValueSettings(raw_element=value),
+        )
+        self.table_settings: TableSettings | None = raw_optional_object(
+            raw_element,
+            "tableSettings",
+            lambda value: TableSettings(raw_element=value),
+        )
+        self.thresholds: list[VisualizationThreshold] | None = raw_optional_object_list(
+            raw_element,
+            "thresholds",
+            lambda value: VisualizationThreshold(raw_element=value),
+        )
+        self.type: str | None = raw_optional_str(raw_element, "type")
+
+
+class UserSessionQueryTileConfiguration(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.has_axis_bucketing: bool | None = raw_optional_bool(
+            raw_element, "hasAxisBucketing"
+        )
+
+
 class AssignedEntitiesTile(Tile):
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
-        self.assigned_entities: list[str] | None = _optional_str_list(
+        self.assigned_entities: list[str] | None = raw_optional_str_list_or_none(
             raw_element, "assignedEntities"
         )
 
@@ -153,8 +539,10 @@ class AssignedEntitiesWithMetricTile(AssignedEntitiesTile):
 class CustomChartingTile(Tile):
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
-        self.filter_config: dict[str, Any] | None = _optional_dict(
-            raw_element, "filterConfig"
+        self.filter_config: CustomFilterConfig | None = raw_optional_object(
+            raw_element,
+            "filterConfig",
+            lambda value: CustomFilterConfig(raw_element=value),
         )
 
 
@@ -162,17 +550,21 @@ class DataExplorerTile(Tile):
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.custom_name: str | None = raw_optional_str(raw_element, "customName")
-        self.metric_expressions: list[str] | None = _optional_str_list(
+        self.metric_expressions: list[str] | None = raw_optional_str_list_or_none(
             raw_element, "metricExpressions"
         )
-        self.queries: list[dict[str, Any]] | None = _optional_dict_list(
-            raw_element, "queries"
+        self.queries: list[DataExplorerQuery] | None = raw_optional_object_list(
+            raw_element, "queries", lambda value: DataExplorerQuery(raw_element=value)
         )
-        self.queries_settings: dict[str, Any] | None = _optional_dict(
-            raw_element, "queriesSettings"
+        self.queries_settings: DataExplorerQuerySettings | None = raw_optional_object(
+            raw_element,
+            "queriesSettings",
+            lambda value: DataExplorerQuerySettings(raw_element=value),
         )
-        self.visual_config: dict[str, Any] | None = _optional_dict(
-            raw_element, "visualConfig"
+        self.visual_config: VisualizationConfiguration | None = raw_optional_object(
+            raw_element,
+            "visualConfig",
+            lambda value: VisualizationConfiguration(raw_element=value),
         )
 
 
@@ -180,7 +572,7 @@ class FilterableEntityTile(Tile):
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.chart_visible: bool | None = raw_optional_bool(raw_element, "chartVisible")
-        self.filter_config: dict[str, Any] | None = _optional_dict(
+        self.filter_config: dict[str, Any] | None = raw_optional_dict(
             raw_element, "filterConfig"
         )
 
@@ -241,49 +633,13 @@ class UserSessionQueryTile(Tile):
             raw_element, "timeFrameShift"
         )
         self.type: str | None = raw_optional_str(raw_element, "type")
-        self.visualization_config: dict[str, Any] | None = _optional_dict(
-            raw_element, "visualizationConfig"
+        self.visualization_config: UserSessionQueryTileConfiguration | None = (
+            raw_optional_object(
+                raw_element,
+                "visualizationConfig",
+                lambda value: UserSessionQueryTileConfiguration(raw_element=value),
+            )
         )
-
-
-def _optional_object(
-    raw_element: dict[str, Any], key: str, factory: Callable[[dict[str, Any]], T]
-) -> T | None:
-    value = raw_element.get(key)
-    if value is None:
-        return None
-    if not isinstance(value, dict):
-        raise TypeError(f"expected raw field {key!r} to be object")
-    return factory(value)
-
-
-def _optional_dict(raw_element: dict[str, Any], key: str) -> dict[str, Any] | None:
-    value = raw_element.get(key)
-    if value is None:
-        return None
-    if not isinstance(value, dict):
-        raise TypeError(f"expected raw field {key!r} to be object")
-    return value
-
-
-def _optional_str_list(raw_element: dict[str, Any], key: str) -> list[str] | None:
-    value = raw_element.get(key)
-    if value is None:
-        return None
-    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-        raise TypeError(f"expected raw field {key!r} to be list[str]")
-    return value
-
-
-def _optional_dict_list(
-    raw_element: dict[str, Any], key: str
-) -> list[dict[str, Any]] | None:
-    value = raw_element.get(key)
-    if value is None:
-        return None
-    if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
-        raise TypeError(f"expected raw field {key!r} to be list[object]")
-    return value
 
 
 def _optional_tile_type(raw_element: dict[str, Any], key: str) -> TileType | str | None:
