@@ -29,6 +29,8 @@ from dynatrace.utils import (
     raw_required_str,
 )
 
+ComparisonValue = str | int | float | bool | dict[str, Any] | None
+
 
 class ComparisonBasicType(Enum):
     APPLICATION_TYPE = "APPLICATION_TYPE"
@@ -339,7 +341,7 @@ class AutoTagService:
 class ComparisonBasic(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.operator: str = raw_required_str(raw_element, "operator")
-        self.value: dict[str, Any] | None = raw_element.get("value")
+        self.value: ComparisonValue = raw_element.get("value")
         self.negate: bool = raw_required_bool(raw_element, "negate")
         self.type: ComparisonBasicType = ComparisonBasicType(
             raw_required_str(raw_element, "type")
