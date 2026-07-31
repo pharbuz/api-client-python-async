@@ -105,7 +105,7 @@ class AccountServiceUsersService:
 class ServiceUser(DynatraceObject):
     """Service user object."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.user_uuid: str | None = raw_element.get("userUuid")
         self.name: str | None = raw_element.get("name")
         self.description: str | None = raw_element.get("description")
@@ -119,7 +119,7 @@ class ServiceUser(DynatraceObject):
 class ServiceUsersPage(DynatraceObject):
     """Page of service users."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.items: list[ServiceUser] = [
             ServiceUser(raw_element=e) for e in raw_element.get("items", [])
         ]

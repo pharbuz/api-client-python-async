@@ -205,7 +205,7 @@ class FieldValue(DynatraceObject):
         if key is not None:
             self.key = key
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.key = raw_element.get("key")
 
     def to_json(self) -> dict[str, Any]:
@@ -226,7 +226,7 @@ class FieldValuesRequest(DynatraceObject):
                 for value in values
             ]
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.values = [
             FieldValue(raw_element=value) for value in raw_element.get("values", [])
         ]
@@ -236,7 +236,7 @@ class FieldValuesRequest(DynatraceObject):
 
 
 class FieldValuesPage(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.records: list[FieldValue] = [
             FieldValue(raw_element=record) for record in raw_element.get("records", [])
         ]

@@ -39,7 +39,7 @@ class AccountEnvironmentsV2Service:
 
 
 class AccountEnvironmentItem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str | None = raw_element.get("id")
         self.name: str | None = raw_element.get("name")
         self.active: bool | None = raw_element.get("active")
@@ -47,19 +47,19 @@ class AccountEnvironmentItem(DynatraceObject):
 
 
 class AccountEnvironmentsV2Response(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.data: list[AccountEnvironmentItem] = [
             AccountEnvironmentItem(raw_element=e) for e in raw_element.get("data", [])
         ]
 
 
 class AccountClusterItem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.cluster_id: str | None = raw_element.get("clusterId")
 
 
 class AccountClustersResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.data: list[AccountClusterItem] = [
             AccountClusterItem(raw_element=e) for e in raw_element.get("data", [])
         ]

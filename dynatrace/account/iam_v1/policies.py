@@ -214,7 +214,7 @@ class AccountPoliciesService:
 class PolicyStatement(DynatraceObject):
     """Policy statement."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.effect: str | None = raw_element.get("effect")
         self.permissions: list[str] = raw_element.get("permissions", [])
         self.conditions: list[dict[str, Any]] = raw_element.get("conditions", [])
@@ -223,7 +223,7 @@ class PolicyStatement(DynatraceObject):
 class Policy(DynatraceObject):
     """Policy object."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.uuid: str | None = raw_element.get("uuid")
         self.name: str | None = raw_element.get("name")
         self.description: str | None = raw_element.get("description")
@@ -238,14 +238,14 @@ class Policy(DynatraceObject):
 class PolicyList(DynatraceObject):
     """List of policies."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.policies: list[dict[str, Any]] = raw_element.get("policies", [])
 
 
 class PolicyOverview(DynatraceObject):
     """Policy overview object."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.uuid: str | None = raw_element.get("uuid")
         self.name: str | None = raw_element.get("name")
         self.description: str | None = raw_element.get("description")
@@ -256,7 +256,7 @@ class PolicyOverview(DynatraceObject):
 class PolicyOverviewList(DynatraceObject):
     """List of policy overviews."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.policy_overview_list: list[PolicyOverview] = [
             PolicyOverview(raw_element=e)
             for e in raw_element.get("policyOverviewList", [])
@@ -266,7 +266,7 @@ class PolicyOverviewList(DynatraceObject):
 class PolicyBinding(DynatraceObject):
     """Policy binding object."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.policy_uuid: str | None = raw_element.get("policyUuid")
         self.groups: list[str] = raw_element.get("groups", [])
         self.parameters: dict[str, str] = raw_element.get("parameters", {})
@@ -277,7 +277,7 @@ class PolicyBinding(DynatraceObject):
 class PolicyBindings(DynatraceObject):
     """Policy bindings for a level."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.level_type: str | None = raw_element.get("levelType")
         self.level_id: str | None = raw_element.get("levelId")
         self.policy_bindings: list[PolicyBinding] = [
@@ -288,14 +288,14 @@ class PolicyBindings(DynatraceObject):
 class PolicyUuids(DynatraceObject):
     """List of policy UUIDs."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.policy_uuids: list[str] = raw_element.get("policyUuids", [])
 
 
 class EffectivePermission(DynatraceObject):
     """Effective permission."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.permission: str | None = raw_element.get("permission")
         self.effects: list[dict[str, Any]] = raw_element.get("effects", [])
 
@@ -303,7 +303,7 @@ class EffectivePermission(DynatraceObject):
 class EffectivePermissions(DynatraceObject):
     """Effective permissions for a user or group."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.effective_permissions: list[EffectivePermission] = [
             EffectivePermission(raw_element=e)
             for e in raw_element.get("effectivePermissions", [])
@@ -328,7 +328,7 @@ class PolicyCreateRequest(DynatraceObject):
         self.statement_query: str | None = statement_query
         self.tags: list[str] = tags or []
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name = raw_element.get("name")
         self.description = raw_element.get("description")
         self.statement_query = raw_element.get("statementQuery")
@@ -356,7 +356,7 @@ class PolicyBindingsCreateRequest(DynatraceObject):
         self.groups = groups
         self.boundaries = boundaries or []
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.groups = raw_element.get("groups", [])
         self.boundaries = raw_element.get("boundaries", [])
 
