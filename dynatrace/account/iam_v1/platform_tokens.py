@@ -32,7 +32,7 @@ class AccountPlatformTokensService:
         size: int | None = None,
     ) -> "PlatformTokenPage":
         """List all platform tokens within account."""
-        params = {}
+        params: dict[str, Any] = {}
         if search_term is not None:
             params["searchTerm"] = search_term
         if status is not None:

@@ -23,9 +23,7 @@ class AccountEnvironmentsV1Service:
     # Environment list and IP allowlist endpoints.
     async def list(self, account_uuid: str) -> "AccountEnvironmentsWithZones":
         resp = (
-            await self.__http_client.make_request(
-                f"/env/v1/accounts/{account_uuid}/environments"
-            )
+            await self.__http_client.make_request(f"/env/v1/accounts/{account_uuid}/environments")
         ).json()
         return AccountEnvironmentsWithZones(raw_element=resp)
 
@@ -74,8 +72,7 @@ class ManagementZoneResource(DynatraceObject):
 class AccountEnvironmentsWithZones(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.tenant_resources: list[TenantResource] = [
-            TenantResource(raw_element=e)
-            for e in raw_element.get("tenantResources", [])
+            TenantResource(raw_element=e) for e in raw_element.get("tenantResources", [])
         ]
         self.management_zone_resources: list[ManagementZoneResource] = [
             ManagementZoneResource(raw_element=e)
@@ -99,9 +96,7 @@ class IpAllowlistEntry(DynatraceObject):
 class IpAllowlistConfig(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.enabled: bool | None = raw_element.get("enabled")
-        self.allow_webhook_override: bool | None = raw_element.get(
-            "allowWebhookOverride"
-        )
+        self.allow_webhook_override: bool | None = raw_element.get("allowWebhookOverride")
         self.allowlist: list[IpAllowlistEntry] = [
             IpAllowlistEntry(raw_element=e) for e in raw_element.get("allowlist", [])
         ]

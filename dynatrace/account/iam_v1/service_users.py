@@ -49,7 +49,7 @@ class AccountServiceUsersService:
         page_key: str | None = None,
     ) -> "ServiceUsersPage":
         """List all service users assigned to account."""
-        params = {}
+        params: dict[str, Any] = {}
         if page is not None:
             params["page"] = page
         if page_size is not None:
