@@ -1,16 +1,22 @@
 import time
+from typing import Any
 from urllib.parse import parse_qs
 
 import httpx
+import pytest
 
 from dynatrace.auth import DynatraceOAuthClient
 
 
-async def test_oauth_client_fetches_token_before_first_request(monkeypatch):
+async def test_oauth_client_fetches_token_before_first_request(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     fetch_calls = []
     request_calls = []
 
-    async def fake_request(self, method, url, **kwargs):
+    async def fake_request(
+        self: Any, method: str, url: str, **kwargs: Any
+    ) -> httpx.Response:
         if url == "https://sso.example.com/sso/oauth2/token":
             fetch_calls.append((url, kwargs))
             token = {
@@ -43,7 +49,7 @@ async def test_oauth_client_fetches_token_before_first_request(monkeypatch):
     assert request_calls[0][2]["headers"]["Authorization"] == "Bearer token-1"
 
 
-async def test_oauth_client_fetches_token_as_form_urlencoded_request():
+async def test_oauth_client_fetches_token_as_form_urlencoded_request() -> None:
     token_requests = []
 
     async def handler(request: httpx.Request) -> httpx.Response:
@@ -88,7 +94,7 @@ async def test_oauth_client_fetches_token_as_form_urlencoded_request():
     }
 
 
-async def test_oauth_client_handles_dynatrace_token_response_with_expires_in():
+async def test_oauth_client_handles_dynatrace_token_response_with_expires_in() -> None:
     token_requests = []
     resource_requests = []
 
@@ -135,7 +141,7 @@ async def test_oauth_client_handles_dynatrace_token_response_with_expires_in():
     )
 
 
-async def test_oauth_client_rejects_unsupported_token_type():
+async def test_oauth_client_rejects_unsupported_token_type() -> None:
     async def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(
             200,
@@ -165,11 +171,15 @@ async def test_oauth_client_rejects_unsupported_token_type():
         raise AssertionError("expected unsupported token_type to raise RuntimeError")
 
 
-async def test_oauth_client_refetches_token_after_401(monkeypatch):
+async def test_oauth_client_refetches_token_after_401(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     fetch_calls = []
     request_calls = []
 
-    async def fake_request(self, method, url, **kwargs):
+    async def fake_request(
+        self: Any, method: str, url: str, **kwargs: Any
+    ) -> httpx.Response:
         if url == "https://sso.example.com/sso/oauth2/token":
             fetch_calls.append((url, kwargs))
             token = {
@@ -202,11 +212,15 @@ async def test_oauth_client_refetches_token_after_401(monkeypatch):
     assert request_calls[1][2]["headers"]["Authorization"] == "Bearer token-2"
 
 
-async def test_oauth_client_refetches_expired_token_before_request(monkeypatch):
+async def test_oauth_client_refetches_expired_token_before_request(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     fetch_calls = []
     request_calls = []
 
-    async def fake_request(self, method, url, **kwargs):
+    async def fake_request(
+        self: Any, method: str, url: str, **kwargs: Any
+    ) -> httpx.Response:
         if url == "https://sso.example.com/sso/oauth2/token":
             fetch_calls.append((url, kwargs))
             expires_in = -1 if len(fetch_calls) == 1 else 3600
