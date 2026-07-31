@@ -76,7 +76,7 @@ class PluginShortRepresentation(EntityShortRepresentation):
         """
         Deletes the ZIP file of this plugin
         """
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"/api/config/v1/plugins/{self.id}/binary", method="DELETE"
         )
 

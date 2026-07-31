@@ -400,6 +400,6 @@ class AutoTagShortRepresentation(EntityShortRepresentation):
         Get the full configuration for this auto tag rule short representation.
         """
         response = (
-            await self._http_client.make_request(f"/api/config/v1/autoTags/{self.id}")
+            await self._make_request(f"/api/config/v1/autoTags/{self.id}")
         ).json()
         return AutoTag(http_client=self._http_client, raw_element=response)

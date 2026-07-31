@@ -169,7 +169,7 @@ class ThirdPartySyntheticTests(DynatraceObject):
         super().__init__(http_client, None, raw_element)
 
     async def post(self):
-        return await self._http_client.make_request(
+        return await self._make_request(
             "/api/v1/synthetic/ext/tests", params=self._raw_element, method="POST"
         )
 
@@ -331,7 +331,7 @@ class ThirdPartySyntheticEvents(DynatraceObject):
         super().__init__(http_client, None, raw_element)
 
     async def post(self):
-        return await self._http_client.make_request(
+        return await self._make_request(
             "/api/v1/synthetic/ext/events", params=self._raw_element, method="POST"
         )
 

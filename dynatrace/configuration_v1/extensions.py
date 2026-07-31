@@ -203,14 +203,14 @@ class ExtensionProperty(DynatraceObject):
 class ExtensionConfigurationDto(DynatraceObject):
     async def post(self):
 
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"/api/config/v1/extensions/{self.extension_id}/instances",
             params=self.to_json(),
             method="POST",
         )
 
     async def validate(self):
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"/api/config/v1/extensions/{self.extension_id}/instances/validator",
             params=self.to_json(),
             method="POST",
@@ -247,7 +247,7 @@ class ExtensionShortRepresentation(EntityShortRepresentation):
         Gets the full extension configuration for this ExtensionShortRepresentation
         """
         response = (
-            await self._http_client.make_request(
+            await self._make_request(
                 f"/api/config/v1/extensions/{extension_id}/instances/{self.id}"
             )
         ).json()
@@ -290,7 +290,7 @@ class ExtensionDto(DynatraceObject):
         Gets the full extension for this ExtensionDto
         """
         response = (
-            await self._http_client.make_request(f"/api/config/v1/extensions/{self.id}")
+            await self._make_request(f"/api/config/v1/extensions/{self.id}")
         ).json()
         return Extension(self._http_client, None, response)
 
@@ -315,7 +315,7 @@ class ExtensionDto(DynatraceObject):
         """
         Deletes the ZIP file of this extension
         """
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"/api/config/v1/extensions/{self.id}", method="DELETE"
         )
 

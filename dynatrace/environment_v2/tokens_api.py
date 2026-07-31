@@ -203,9 +203,7 @@ class ApiToken(DynatraceObject):
         self.enabled: bool = raw_element.get("enabled")
 
     async def delete(self):
-        return await self._http_client.make_request(
-            f"/api/v2/apiTokens/{self.id}", method="DELETE"
-        )
+        return await self._make_request(f"/api/v2/apiTokens/{self.id}", method="DELETE")
 
     def __repr__(self):
         return f"ApiToken(id={self.id}, owner={self.owner}, name={self.name})"

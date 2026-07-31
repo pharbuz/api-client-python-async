@@ -288,7 +288,7 @@ class ExtensionEnvironmentConfigurationVersion(DynatraceObject):
 
         :param extension_name: the name of the extension required for making the API call
         """
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"{ExtensionsServiceV2.ENDPOINT}/{extension_name}/environmentConfiguration",
             params=self.to_json(),
             method="PUT",
@@ -312,7 +312,7 @@ class MinimalExtension(DynatraceObject):
         :return: ExtensionEnvironmentConfigurationVersion object
         """
         response = (
-            await self._http_client.make_request(
+            await self._make_request(
                 f"{ExtensionsServiceV2.ENDPOINT}/{self.extension_name}/environmentConfiguration"
             )
         ).json()

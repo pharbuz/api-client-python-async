@@ -193,7 +193,7 @@ class MaintenanceWindow(DynatraceObject):
             raise ValueError(
                 "Object does not have an HTTP Client. Use maintenance_window.post() instead."
             )
-        response = await self._http_client.make_request(
+        response = await self._make_request(
             path=MaintenanceWindowService.ENDPOINT, params=self.to_json(), method="POST"
         )
         self.id = response.json().get("id")
@@ -343,8 +343,6 @@ class MaintenanceWindowStub(DynatraceObject):
         Gets the full maintenance window for this stub
         """
         response = (
-            await self._http_client.make_request(
-                f"{MaintenanceWindowService.ENDPOINT}/{self.id}"
-            )
+            await self._make_request(f"{MaintenanceWindowService.ENDPOINT}/{self.id}")
         ).json()
         return MaintenanceWindow(self._http_client, None, response)

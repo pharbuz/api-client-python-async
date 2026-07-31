@@ -212,7 +212,7 @@ class MonitoringConfig(DynatraceObject):
         }
 
     async def put(self) -> "Response":
-        return await self._http_client.make_request(
+        return await self._make_request(
             path=f"{OneAgentOnAHostService.ENDPOINT}/{self.id}/monitoring",
             method="PUT",
             params=self.to_json(),
@@ -247,7 +247,7 @@ class HostAutoUpdateConfig(DynatraceObject):
         }
 
     async def put(self) -> "Response":
-        return await self._http_client.make_request(
+        return await self._make_request(
             path=f"{OneAgentOnAHostService.ENDPOINT}/{self.id}/autoupdate",
             method="PUT",
             params=self.to_json(),

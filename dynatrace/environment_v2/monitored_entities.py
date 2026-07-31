@@ -358,7 +358,7 @@ class CustomDeviceCreation(DynatraceObject):
         return body
 
     async def post(self, ui_based: bool | None = None) -> "Response":
-        return await self._http_client.make_request(
+        return await self._make_request(
             path=f"{EntityService.ENDPOINT_ENTITIES}/custom",
             method="POST",
             params=self.to_json(),
