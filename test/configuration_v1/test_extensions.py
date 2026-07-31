@@ -1,4 +1,7 @@
 from datetime import datetime, timezone
+from typing import Any
+
+import pytest
 
 from dynatrace import DynatraceAsync
 from dynatrace.configuration_v1.extensions import (
@@ -12,8 +15,9 @@ from dynatrace.configuration_v1.extensions import (
     GlobalExtensionConfiguration,
 )
 from dynatrace.environment_v2.monitored_entities import EntityShortRepresentation
+from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from test.async_utils import collect
+from test.async_utils import MockResponse, collect
 
 
 async def test_list(dt: DynatraceAsync) -> None:
@@ -97,6 +101,107 @@ async def test_get_instance_configuration(dt: DynatraceAsync) -> None:
         config.properties["openkit_application_id"]
         == "87eee414-9338-446b-988b-bbdbf495c4f4"
     )
+
+
+async def test_put_instance_configuration(
+    dt: DynatraceAsync, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[dict[str, Any]] = []
+
+    async def fake_make_request(
+        self: HttpClient,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
+        calls.append({"path": path, "params": params, "method": method})
+        return MockResponse(None)
+
+    monkeypatch.setattr(HttpClient, "make_request", fake_make_request)
+
+    config = dt.extensions.create_instance(
+        extension_id="custom.remote.python.demo",
+        properties={"serverIp": "127.0.0.1"},
+        enabled=True,
+        use_global=False,
+        activegate=EntityShortRepresentation(
+            raw_element={"id": "7835970235169136995", "name": "ActiveGate Host Name"}
+        ),
+        endpoint_id="endpoint-id",
+        endpoint_name="endpoint-name",
+    )
+
+    await dt.extensions.put_instance("configuration-id", config)
+
+    assert calls == [
+        {
+            "path": "/api/config/v1/extensions/custom.remote.python.demo/instances/configuration-id",
+            "params": {
+                "extensionId": "custom.remote.python.demo",
+                "enabled": True,
+                "useGlobal": False,
+                "properties": {"serverIp": "127.0.0.1"},
+                "hostId": None,
+                "activeGate": {
+                    "id": "7835970235169136995",
+                    "name": "ActiveGate Host Name",
+                    "description": None,
+                },
+                "endpointId": "endpoint-id",
+                "endpointName": "endpoint-name",
+            },
+            "method": "PUT",
+        }
+    ]
+
+
+async def test_put_global_configuration(
+    dt: DynatraceAsync, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[dict[str, Any]] = []
+
+    async def fake_make_request(
+        self: HttpClient,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
+        calls.append({"path": path, "params": params, "method": method})
+        return MockResponse(None)
+
+    monkeypatch.setattr(HttpClient, "make_request", fake_make_request)
+
+    config = GlobalExtensionConfiguration(
+        raw_element={
+            "enabled": True,
+            "extensionId": "custom.remote.python.demo",
+            "infraOnlyEnabled": False,
+            "properties": {"serverIp": "127.0.0.1"},
+        },
+    )
+
+    await dt.extensions.put_global_configuration(config)
+
+    assert calls == [
+        {
+            "path": "/api/config/v1/extensions/custom.remote.python.demo/global",
+            "params": {
+                "enabled": True,
+                "extensionId": "custom.remote.python.demo",
+                "infraOnlyEnabled": False,
+                "properties": {"serverIp": "127.0.0.1"},
+            },
+            "method": "PUT",
+        }
+    ]
 
 
 async def test_list_activegate_extension_modules(dt: DynatraceAsync) -> None:

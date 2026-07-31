@@ -30,11 +30,8 @@ from dynatrace.utils import raw_optional_int, raw_required_bool
 
 
 class ExtensionService:
-
-    # TODO - Early adopter as of May 12th 2021. Check back for updates
     def __init__(self, http_client: HttpClient):
         self.__http_client = http_client
-        pass
 
     async def list(self, page_size: int = 200) -> PaginatedList["ExtensionDto"]:
         """
@@ -112,6 +109,13 @@ class ExtensionService:
     ) -> Response:
         return await extension_configuration.validate()
 
+    async def put_instance(
+        self,
+        configuration_id: str,
+        extension_configuration: "ExtensionConfigurationDto",
+    ) -> Response:
+        return await extension_configuration.put(configuration_id)
+
     async def get_instance_configuration(
         self, extension_id: str, configuration_id: str
     ) -> "ExtensionConfigurationDto":
@@ -123,8 +127,6 @@ class ExtensionService:
         return ExtensionConfigurationDto(
             http_client=self.__http_client, raw_element=response
         )
-
-    # TODO - Can't implement put_instance because of APM-300262, fixed in 1.219
 
     async def delete_instance_configuration(
         self, extension_id: str, configuration_id: str
@@ -142,7 +144,18 @@ class ExtensionService:
                 f"/api/config/v1/extensions/{extension_id}/global"
             )
         ).json()
-        return GlobalExtensionConfiguration(raw_element=response)
+        return GlobalExtensionConfiguration(
+            http_client=self.__http_client, raw_element=response
+        )
+
+    async def put_global_configuration(
+        self, global_configuration: "GlobalExtensionConfiguration"
+    ) -> Response:
+        return await self.__http_client.make_request(
+            f"/api/config/v1/extensions/{global_configuration.extension_id}/global",
+            params=global_configuration.to_json(),
+            method="PUT",
+        )
 
     async def get_binary(self, extension_id: str) -> bytes:
         return (
@@ -219,6 +232,13 @@ class ExtensionConfigurationDto(DynatraceObject):
             f"/api/config/v1/extensions/{self.extension_id}/instances/validator",
             params=self.to_json(),
             method="POST",
+        )
+
+    async def put(self, configuration_id: str) -> Response:
+        return await self._make_request(
+            f"/api/config/v1/extensions/{self.extension_id}/instances/{configuration_id}",
+            params=self.to_json(),
+            method="PUT",
         )
 
     def to_json(self) -> dict[str, Any]:
@@ -328,6 +348,21 @@ class ExtensionDto(DynatraceObject):
 
 
 class GlobalExtensionConfiguration(DynatraceObject):
+    async def put(self) -> Response:
+        return await self._make_request(
+            f"/api/config/v1/extensions/{self.extension_id}/global",
+            params=self.to_json(),
+            method="PUT",
+        )
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "enabled": self.enabled,
+            "extensionId": self.extension_id,
+            "infraOnlyEnabled": self.infraOnlyEnabled,
+            "properties": self.properties,
+        }
+
     def _create_from_raw_data(self, raw_element: Any) -> None:
         self.enabled: bool = raw_required_bool(raw_element, "enabled")
         self.extension_id: str | None = raw_element.get("extensionId")
