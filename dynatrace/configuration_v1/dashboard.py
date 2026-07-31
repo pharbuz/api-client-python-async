@@ -122,7 +122,7 @@ class DashboardStub(DynatraceObject):
         """
         Deletes this dashboard
         """
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"/api/config/v1/dashboards/{self.id}", method="DELETE"
         )
 
@@ -136,6 +136,6 @@ class DashboardStub(DynatraceObject):
         Gets the full dashboard for this stub
         """
         response = (
-            await self._http_client.make_request(f"/api/config/v1/dashboards/{self.id}")
+            await self._make_request(f"/api/config/v1/dashboards/{self.id}")
         ).json()
         return Dashboard(self._http_client, None, response)

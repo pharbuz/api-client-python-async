@@ -114,7 +114,7 @@ class IpAllowlistConfig(DynatraceObject):
         }
 
     async def put(self, account_uuid: str, environment_uuid: str) -> Response:
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"/env/v1/accounts/{account_uuid}/environments/{environment_uuid}/ip-allowlist",
             method="PUT",
             params=self.to_json(),

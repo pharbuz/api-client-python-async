@@ -151,7 +151,7 @@ class CustomDevicePushMessage(DynatraceObject):
 
     async def post(self, only_valid_data_points=False):
         try:
-            response = await self._http_client.make_request(
+            response = await self._make_request(
                 f"/api/v1/entity/infrastructure/custom/{self.device_id}",
                 params=self._raw_element,
                 method="POST",

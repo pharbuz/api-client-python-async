@@ -173,7 +173,7 @@ class AlertingProfile(DynatraceObject):
             raise ValueError(
                 "Object does not have an HTTP Client. Use alerting_profiles.post() instead."
             )
-        response = await self._http_client.make_request(
+        response = await self._make_request(
             path=AlertingProfileService.ENDPOINT, params=self.to_json(), method="POST"
         )
         self.id = response.json().get("id")
@@ -194,7 +194,7 @@ class AlertingProfile(DynatraceObject):
             raise ValueError(
                 "Object does not have an HTTP Client. Use alerting_profiles.put() instead."
             )
-        response = await self._http_client.make_request(
+        response = await self._make_request(
             path=f"{AlertingProfileService.ENDPOINT}/{self.id}",
             params=self.to_json(),
             method="PUT",
@@ -226,9 +226,7 @@ class AlertingProfileStub(EntityShortRepresentation):
         if not self._http_client:
             raise ValueError("Object does not have an HTTP Client implemented.")
         response = (
-            await self._http_client.make_request(
-                f"{AlertingProfileService.ENDPOINT}/{self.id}"
-            )
+            await self._make_request(f"{AlertingProfileService.ENDPOINT}/{self.id}")
         ).json()
         return AlertingProfile(self._http_client, None, response)
 

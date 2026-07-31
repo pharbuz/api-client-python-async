@@ -291,7 +291,7 @@ class MetricEventShortRepresentation(EntityShortRepresentation):
         """
         Deletes this metric event
         """
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"/api/config/v1/anomalyDetection/metricEvents/{self.id}", method="DELETE"
         )
 
@@ -300,7 +300,7 @@ class MetricEventShortRepresentation(EntityShortRepresentation):
         Gets the full metric event for this stub
         """
         response = (
-            await self._http_client.make_request(
+            await self._make_request(
                 f"/api/config/v1/anomalyDetection/metricEvents/{self.id}"
             )
         ).json()

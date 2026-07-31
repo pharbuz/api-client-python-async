@@ -187,8 +187,6 @@ class ManagementZoneShortRepresentation(EntityShortRepresentation):
         Get the full configuration for this management zone short representation.
         """
         response = (
-            await self._http_client.make_request(
-                f"{ManagementZoneService.ENDPOINT}/{self.id}"
-            )
+            await self._make_request(f"{ManagementZoneService.ENDPOINT}/{self.id}")
         ).json()
         return ManagementZone(http_client=self._http_client, raw_element=response)

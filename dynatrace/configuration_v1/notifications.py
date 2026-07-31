@@ -228,10 +228,9 @@ class NotificationConfigStub(DynatraceObject):
         Gets the full notification configuration for this stub.
         """
         response = (
-            await self._http_client.make_request(
-                f"/api/config/v1/notifications/{self.id}"
-            )
+            await self._make_request(f"/api/config/v1/notifications/{self.id}")
         ).json()
+        notification: Notification
         if self.type == NotificationType.ANSIBLETOWER:
             notification = AnsibleTowerNotificationConfig(
                 self._http_client, None, response
@@ -272,7 +271,7 @@ class NotificationConfigStub(DynatraceObject):
         """
         Delete the notification for this stub.
         """
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"/api/config/v1/notifications/{self.id}", method="DELETE"
         )
 

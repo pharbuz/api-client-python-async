@@ -258,7 +258,7 @@ class Slo(DynatraceObject):
 
     async def post(self) -> "Response":
         """Creates this object as a new SLO in Dynatrace"""
-        response = await self._http_client.make_request(
+        response = await self._make_request(
             path=SloService.ENDPOINT, method="POST", params=self.to_json()
         )
         if response.status_code == 201:
@@ -269,7 +269,7 @@ class Slo(DynatraceObject):
 
     async def put(self) -> "Response":
         """Updates an existing SLO in Dynatrace based on this object's details"""
-        return await self._http_client.make_request(
+        return await self._make_request(
             path=f"{SloService.ENDPOINT}/{self.id}", method="PUT", params=self.to_json()
         )
 

@@ -123,7 +123,7 @@ class TimeseriesRegistrationMessage(DynatraceObject):
         super().__init__(http_client, None, raw_element)
 
     async def put(self):
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"/api/v1/timeseries/{self.metric_id}",
             params=self._raw_element,
             method="PUT",

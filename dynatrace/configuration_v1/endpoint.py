@@ -24,6 +24,6 @@ class EndpointShortRepresentation(EntityShortRepresentation):
         """
         Deletes this endpoint
         """
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"/api/config/v1/plugins/{plugin_id}/endpoints/{self.id}", method="DELETE"
         )
