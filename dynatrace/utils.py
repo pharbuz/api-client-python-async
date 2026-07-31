@@ -20,15 +20,17 @@ import unicodedata
 import warnings
 from collections.abc import Callable
 from datetime import datetime, timezone
-from typing import Any, TypeAlias, TypeVar
+from typing import Any, ParamSpec, TypeAlias, TypeVar
 
 ISO_8601 = "%Y-%m-%dT%H:%M:%S.%fZ"
 ISO_8601_NO_MS = "%Y-%m-%dT%H:%M:%SZ"
 JSONDict: TypeAlias = dict[str, Any]
+P = ParamSpec("P")
+R = TypeVar("R")
 T = TypeVar("T")
 
 
-def slugify(value):
+def slugify(value: object) -> str:
     value = str(value)
     value = unicodedata.normalize("NFKC", value)
     value = re.sub(r"[:.-/\s]+", "_", value)
@@ -36,10 +38,10 @@ def slugify(value):
     return value
 
 
-def deprecated(reason=""):
-    def decorator(func):
+def deprecated(reason: str = "") -> Callable[[Callable[P, R]], Callable[P, R]]:
+    def decorator(func: Callable[P, R]) -> Callable[P, R]:
         @functools.wraps(func)
-        def new_func(*args, **kwargs):
+        def new_func(*args: P.args, **kwargs: P.kwargs) -> R:
             warnings.warn(
                 f"'{func.__name__}' is deprecated. {reason}",
                 category=DeprecationWarning,

@@ -130,7 +130,7 @@ def build_dynatrace_oauth_client(
     scope: str = "account-uac-read",
     verify_ssl: bool = False,
     token_timeout: int = 30,
-    **kwargs,
+    **kwargs: Any,
 ) -> DynatraceOAuthClient:
     token_url = f"{sso_base_url.rstrip('/')}/sso/oauth2/token"
     resource = f"urn:dtaccount:{account_uuid}"
