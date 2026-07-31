@@ -1,12 +1,20 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, cast
+from typing import Any, Protocol, runtime_checkable
 
 from httpx import Response
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
+
+
+@runtime_checkable
+class _JsonSerializable(Protocol):
+    def to_json(self) -> dict[str, Any]: ...
+
+
+_Payload = dict[str, Any] | DynatraceObject | _JsonSerializable
 
 
 class CopilotService:
@@ -26,7 +34,7 @@ class CopilotService:
 
     async def send_conversation_message(
         self,
-        payload: dict[str, Any] | DynatraceObject,
+        payload: _Payload,
         accept: str | None = "application/json",
         raw_response: bool = False,
     ) -> RecommenderResponse | Response:
@@ -52,9 +60,7 @@ class CopilotService:
             self.__http_client, dict(response.headers), response.json()
         )
 
-    async def submit_conversation_feedback(
-        self, payload: dict[str, Any] | DynatraceObject
-    ) -> Response:
+    async def submit_conversation_feedback(self, payload: _Payload) -> Response:
         """Submit feedback for a recommender conversation."""
         body = self.__normalize_payload(payload)
         return await self.__http_client.make_request(
@@ -63,9 +69,7 @@ class CopilotService:
             method="POST",
         )
 
-    async def document_search(
-        self, payload: dict[str, Any] | DynatraceObject
-    ) -> DocumentSearchResponse:
+    async def document_search(self, payload: _Payload) -> DocumentSearchResponse:
         """Execute a document search request."""
         body = self.__normalize_payload(payload)
         response = await self.__http_client.make_request(
@@ -77,9 +81,7 @@ class CopilotService:
             self.__http_client, dict(response.headers), response.json()
         )
 
-    async def explain_dql_query(
-        self, payload: dict[str, Any] | DynatraceObject
-    ) -> Dql2NlResponse:
+    async def explain_dql_query(self, payload: _Payload) -> Dql2NlResponse:
         """Explain a DQL query via the dql2nl skill."""
         body = self.__normalize_payload(payload)
         response = await self.__http_client.make_request(
@@ -91,9 +93,7 @@ class CopilotService:
             self.__http_client, dict(response.headers), response.json()
         )
 
-    async def submit_dql2nl_feedback(
-        self, payload: dict[str, Any] | DynatraceObject
-    ) -> Response:
+    async def submit_dql2nl_feedback(self, payload: _Payload) -> Response:
         """Submit feedback for a dql2nl response."""
         body = self.__normalize_payload(payload)
         return await self.__http_client.make_request(
@@ -102,9 +102,7 @@ class CopilotService:
             method="POST",
         )
 
-    async def generate_dql_query(
-        self, payload: dict[str, Any] | DynatraceObject
-    ) -> Nl2DqlResponse:
+    async def generate_dql_query(self, payload: _Payload) -> Nl2DqlResponse:
         """Generate a DQL query from natural language via the nl2dql skill."""
         body = self.__normalize_payload(payload)
         response = await self.__http_client.make_request(
@@ -116,9 +114,7 @@ class CopilotService:
             self.__http_client, dict(response.headers), response.json()
         )
 
-    async def submit_nl2dql_feedback(
-        self, payload: dict[str, Any] | DynatraceObject
-    ) -> Response:
+    async def submit_nl2dql_feedback(self, payload: _Payload) -> Response:
         """Submit feedback for an nl2dql response."""
         body = self.__normalize_payload(payload)
         return await self.__http_client.make_request(
@@ -129,16 +125,14 @@ class CopilotService:
 
     @staticmethod
     def __normalize_payload(
-        payload: dict[str, Any] | DynatraceObject | None,
+        payload: _Payload | None,
     ) -> dict[str, Any] | None:
         if payload is None:
             return None
         if isinstance(payload, DynatraceObject):
             return payload.json()
-        if hasattr(payload, "to_json") and callable(
-            getattr(payload, "to_json")  # noqa: B009
-        ):
-            return cast(dict[str, Any], payload.to_json())
+        if isinstance(payload, _JsonSerializable):
+            return payload.to_json()
         return payload
 
 
