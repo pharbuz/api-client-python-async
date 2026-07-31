@@ -47,7 +47,7 @@ class QueryAssistanceService:
             self.ENDPOINT_AUTOCOMPLETE, params=body, headers=headers, method="POST"
         )
         return AutocompleteResponse(
-            self.__http_client, response.headers, response.json()
+            self.__http_client, dict(response.headers), response.json()
         )
 
     async def parse(
@@ -69,7 +69,9 @@ class QueryAssistanceService:
         response = await self.__http_client.make_request(
             self.ENDPOINT_PARSE, params=body, headers=headers, method="POST"
         )
-        return DQLNode.from_dict(response.json(), self.__http_client, response.headers)
+        return DQLNode.from_dict(
+            response.json(), self.__http_client, dict(response.headers)
+        )
 
     async def verify(
         self,
@@ -92,7 +94,9 @@ class QueryAssistanceService:
         response = await self.__http_client.make_request(
             self.ENDPOINT_VERIFY, params=body, headers=headers, method="POST"
         )
-        return VerifyResponse(self.__http_client, response.headers, response.json())
+        return VerifyResponse(
+            self.__http_client, dict(response.headers), response.json()
+        )
 
     # Shared DQL response primitives.
 
