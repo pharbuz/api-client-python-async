@@ -73,7 +73,9 @@ class MonitorCollectionElement(DynatraceObject):
 
 class LocalOutagePolicy(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.affected_locations: int = raw_required_int(raw_element, "affectedLocations")
+        self.affected_locations: int = raw_required_int(
+            raw_element, "affectedLocations"
+        )
         self.consecutive_runs: int = raw_required_int(raw_element, "consecutiveRuns")
 
 
@@ -84,12 +86,16 @@ class OutageHandlingPolicy(DynatraceObject):
         self.local_outage_policy: LocalOutagePolicy = LocalOutagePolicy(
             raw_element=raw_element["localOutagePolicy"]
         )
-        self.retry_on_error: bool | None = raw_optional_bool(raw_element, "retryOnError")
+        self.retry_on_error: bool | None = raw_optional_bool(
+            raw_element, "retryOnError"
+        )
 
 
 class LoadingTimeThreshold(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.type: LoadingTimeThresholdType = LoadingTimeThresholdType(raw_element["type"])
+        self.type: LoadingTimeThresholdType = LoadingTimeThresholdType(
+            raw_element["type"]
+        )
         self.value_ms: int = raw_required_int(raw_element, "valueMs")
         self.request_index: int | None = raw_optional_int(raw_element, "requestIndex")
         self.event_index: int | None = raw_optional_int(raw_element, "eventIndex")
@@ -99,7 +105,8 @@ class LoadingTimeThresholdsPolicyDto(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.enabled: bool = raw_required_bool(raw_element, "enabled")
         self.thresholds: list[LoadingTimeThreshold] = [
-            LoadingTimeThreshold(raw_element=threshold) for threshold in raw_element["thresholds"]
+            LoadingTimeThreshold(raw_element=threshold)
+            for threshold in raw_element["thresholds"]
         ]
 
 
@@ -110,10 +117,12 @@ class AnomalyDetection(DynatraceObject):
             "outageHandling",
             lambda value: OutageHandlingPolicy(raw_element=value),
         )
-        self.loading_time_thresholds: LoadingTimeThresholdsPolicyDto | None = raw_optional_object(
-            raw_element,
-            "loadingTimeThresholds",
-            lambda value: LoadingTimeThresholdsPolicyDto(raw_element=value),
+        self.loading_time_thresholds: LoadingTimeThresholdsPolicyDto | None = (
+            raw_optional_object(
+                raw_element,
+                "loadingTimeThresholds",
+                lambda value: LoadingTimeThresholdsPolicyDto(raw_element=value),
+            )
         )
 
 
@@ -154,7 +163,9 @@ class SyntheticMonitor(DynatraceObject):
         self.management_zones: list[ManagementZone] = [
             ManagementZone(raw_element=zone) for zone in raw_element["managementZones"]
         ]
-        self.automatically_assigned_apps: list[str] = raw_element["automaticallyAssignedApps"]
+        self.automatically_assigned_apps: list[str] = raw_element[
+            "automaticallyAssignedApps"
+        ]
         self.manually_assigned_apps: list[str] = raw_element["manuallyAssignedApps"]
 
 
@@ -184,6 +195,8 @@ class SyntheticMonitorsService:
         return SyntheticMonitor(
             self.__http_client,
             raw_element=(
-                await self.__http_client.make_request(f"/api/v1/synthetic/monitors/{monitor_id}")
+                await self.__http_client.make_request(
+                    f"/api/v1/synthetic/monitors/{monitor_id}"
+                )
             ).json(),
         )

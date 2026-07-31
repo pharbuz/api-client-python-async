@@ -107,11 +107,15 @@ class EventCreation(DynatraceObject):
         super().__init__(http_client, None, raw_element)
 
     async def post(self):
-        return await self._make_request("/api/v1/events", params=self._raw_element, method="POST")
+        return await self._make_request(
+            "/api/v1/events", params=self._raw_element, method="POST"
+        )
 
 
 class PushEventAttachRules:
-    def __init__(self, entity_ids: list[str] | None, tag_rule: list["TagMatchRule"] | None):
+    def __init__(
+        self, entity_ids: list[str] | None, tag_rule: list["TagMatchRule"] | None
+    ):
 
         self._raw_element = {
             "entityIds": entity_ids,

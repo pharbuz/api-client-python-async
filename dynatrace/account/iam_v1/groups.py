@@ -26,7 +26,9 @@ class AccountGroupsService:
     async def list(self, account_uuid: str) -> "GroupList":
         """List all user groups of an account."""
         resp = (
-            await self.__http_client.make_request(f"/iam/v1/accounts/{account_uuid}/groups")
+            await self.__http_client.make_request(
+                f"/iam/v1/accounts/{account_uuid}/groups"
+            )
         ).json()
         return GroupList(raw_element=resp)
 
@@ -85,7 +87,9 @@ class Group(DynatraceObject):
         self.uuid: str | None = raw_element.get("uuid")
         self.name: str | None = raw_element.get("name")
         self.description: str | None = raw_element.get("description")
-        self.federated_attribute_values: list[str] = raw_element.get("federatedAttributeValues", [])
+        self.federated_attribute_values: list[str] = raw_element.get(
+            "federatedAttributeValues", []
+        )
         self.owner: str | None = raw_element.get("owner")
         self.created_at: str | None = raw_element.get("createdAt")
         self.updated_at: str | None = raw_element.get("updatedAt")
@@ -104,7 +108,9 @@ class GroupList(DynatraceObject):
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.count: int | None = raw_element.get("count")
-        self.items: list[Group] = [Group(raw_element=e) for e in raw_element.get("items", [])]
+        self.items: list[Group] = [
+            Group(raw_element=e) for e in raw_element.get("items", [])
+        ]
 
 
 class GroupUser(DynatraceObject):
@@ -147,7 +153,9 @@ class GroupUpdateRequest(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.name = raw_element.get("name")
         self.description = raw_element.get("description")
-        self.federated_attribute_values = raw_element.get("federatedAttributeValues", [])
+        self.federated_attribute_values = raw_element.get(
+            "federatedAttributeValues", []
+        )
 
     def to_json(self) -> dict[str, Any]:
         return {

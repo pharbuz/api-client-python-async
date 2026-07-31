@@ -122,11 +122,17 @@ class OneAgentOnAHostService:
             "hostGroupName": host_group_name,
             "osType": OsType(os_type).value if os_type else None,
             "availabilityState": (
-                AvailabilityState(availability_state).value if availability_state else None
+                AvailabilityState(availability_state).value
+                if availability_state
+                else None
             ),
-            "monitoringType": (MonitoringType(monitoring_type).value if monitoring_type else None),
+            "monitoringType": (
+                MonitoringType(monitoring_type).value if monitoring_type else None
+            ),
             "autoUpdateSetting": AutoUpdate(auto_update).value if auto_update else None,
-            "updateStatus": (UpdateStatus(update_status).value if update_status else None),
+            "updateStatus": (
+                UpdateStatus(update_status).value if update_status else None
+            ),
         }
         return await PaginatedList(
             HostAgentInfo,
@@ -143,7 +149,9 @@ class HostAgentInfo(DynatraceObject):
         self.host_info: HostInfo | None = raw_optional_object(
             raw_element, "hostInfo", lambda value: HostInfo(raw_element=value)
         )
-        self.faulty_version: bool | None = raw_optional_bool(raw_element, "faultyVersion")
+        self.faulty_version: bool | None = raw_optional_bool(
+            raw_element, "faultyVersion"
+        )
         self.active: bool | None = raw_optional_bool(raw_element, "active")
         self.configured_monitoring_mode: ConfiguredMonitoringMode | None = (
             ConfiguredMonitoringMode(raw_element["configuredMonitoringMode"])
@@ -161,7 +169,9 @@ class HostAgentInfo(DynatraceObject):
             else None
         )
         self.update_status: UpdateStatus | None = (
-            UpdateStatus(raw_element["updateStatus"]) if raw_element.get("updateStatus") else None
+            UpdateStatus(raw_element["updateStatus"])
+            if raw_element.get("updateStatus")
+            else None
         )
         self.available_versions: list[str] | None = raw_element.get("availableVersions")
         self.config_monitoring_enabled: bool | None = raw_optional_bool(
@@ -172,8 +182,12 @@ class HostAgentInfo(DynatraceObject):
             if raw_element.get("availabilityState")
             else None
         )
-        self.activegate_id: int | None = raw_optional_int(raw_element, "currentActiveGateId")
-        self.networkzone_id: str | None = raw_optional_str(raw_element, "currentNetworkZoneId")
+        self.activegate_id: int | None = raw_optional_int(
+            raw_element, "currentActiveGateId"
+        )
+        self.networkzone_id: str | None = raw_optional_str(
+            raw_element, "currentNetworkZoneId"
+        )
 
 
 # todo - incomplete + firstSeenTimestamp is of type integer, how do we work with that here?
@@ -181,7 +195,9 @@ class HostInfo(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.entity_id: str | None = raw_optional_str(raw_element, "entityId")
         self.display_name: str | None = raw_optional_str(raw_element, "displayName")
-        self.discovered_name: str | None = raw_optional_str(raw_element, "discoveredName")
+        self.discovered_name: str | None = raw_optional_str(
+            raw_element, "discoveredName"
+        )
         self.consumed_host_units: str | float | None = raw_optional_str_or_float(
             raw_element, "consumedHostUnits"
         )
@@ -189,7 +205,9 @@ class HostInfo(DynatraceObject):
         self.host_group: HostGroup | None = raw_optional_object(
             raw_element, "hostGroup", lambda value: HostGroup(raw_element=value)
         )
-        self.tags: list[TagInfo] = [TagInfo(raw_element=t) for t in raw_element.get("tags", [])]
+        self.tags: list[TagInfo] = [
+            TagInfo(raw_element=t) for t in raw_element.get("tags", [])
+        ]
         self.os_type: OsType | None = (
             OsType(raw_element.get("osType")) if raw_element.get("osType") else None
         )
