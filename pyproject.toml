@@ -57,6 +57,13 @@ warn_unused_ignores = true
 warn_redundant_casts = true
 no_implicit_optional = true
 check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_any_generics = true
+no_implicit_reexport = true
+strict_equality = true
+show_column_numbers = true
+pretty = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
