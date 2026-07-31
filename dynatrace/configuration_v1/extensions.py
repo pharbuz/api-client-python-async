@@ -26,6 +26,7 @@ from dynatrace.environment_v2.monitored_entities import EntityShortRepresentatio
 from dynatrace.environment_v2.schemas import ConfigurationMetadata
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import raw_optional_int, raw_required_bool
 
 
 class ExtensionService:
@@ -322,7 +323,7 @@ class ExtensionDto(DynatraceObject):
 
 class GlobalExtensionConfiguration(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.enabled: bool = raw_element.get("enabled")
+        self.enabled: bool = raw_required_bool(raw_element, "enabled")
         self.extension_id: str | None = raw_element.get("extensionId")
         self.infraOnlyEnabled: bool | None = raw_element.get("infraOnlyEnabled")
         self.properties: dict[str, Any] | None = raw_element.get("properties")
@@ -355,7 +356,9 @@ class ExtensionState(DynatraceObject):
         self.state_description: str | None = raw_element.get("stateDescription")
         self.host_id: str | None = raw_element.get("hostId")
         self.process_id: str | None = raw_element.get("processId")
-        self.timestamp: datetime | None = datetime.fromtimestamp(
-            raw_element.get("timestamp") / 1000,
-            timezone.utc,
+        timestamp = raw_optional_int(raw_element, "timestamp")
+        self.timestamp: datetime | None = (
+            datetime.fromtimestamp(timestamp / 1000, timezone.utc)
+            if timestamp is not None
+            else None
         )

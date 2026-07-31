@@ -24,6 +24,12 @@ from dynatrace.environment_v2.custom_tags import METag
 from dynatrace.environment_v2.monitored_entities import EntityShortRepresentation
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import (
+    raw_optional_object,
+    raw_optional_str,
+    raw_required_int,
+    raw_required_str,
+)
 
 
 class TagCombination(Enum):
@@ -37,9 +43,9 @@ class TagCombination(Enum):
 
 class MonitoredEntityFilter(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
-        self.type: str = raw_element.get("type")
-        self.mz_id: str = raw_element.get("mzId")
-        self.tags: list[METag] | None = [
+        self.type: str | None = raw_optional_str(raw_element, "type")
+        self.mz_id: str | None = raw_optional_str(raw_element, "mzId")
+        self.tags: list[METag] = [
             METag(raw_element=tag) for tag in raw_element.get("tags", [])
         ]
         self.tag_combination: TagCombination | None = TagCombination(
@@ -57,9 +63,9 @@ class MonitoredEntityFilter(DynatraceObject):
 
 class Scope(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
-        self.entities: list[str] = raw_element.get("entities")
-        self.matches: list[MonitoredEntityFilter] | None = [
-            MonitoredEntityFilter(raw_element=m) for m in raw_element.get("matches")
+        self.entities: list[str] = raw_element.get("entities", [])
+        self.matches: list[MonitoredEntityFilter] = [
+            MonitoredEntityFilter(raw_element=m) for m in raw_element.get("matches", [])
         ]
 
     def to_json(self) -> dict[str, Any]:
@@ -77,8 +83,9 @@ class Recurrence(DynatraceObject):
         day_of_week: str | None = None,
         day_of_month: int | None = None,
     ):
+        day_of_week_value = day_of_week.upper() if day_of_week is not None else None
         raw_element = {
-            "dayOfWeek": day_of_week.upper(),
+            "dayOfWeek": day_of_week_value,
             "dayOfMonth": day_of_month,
             "startTime": start_time,
             "durationMinutes": duration,
@@ -86,10 +93,10 @@ class Recurrence(DynatraceObject):
         return Recurrence(raw_element=raw_element)
 
     def _create_from_raw_data(self, raw_element):
-        self.day_of_week: str = raw_element.get("dayOfWeek")
-        self.day_of_month: str = raw_element.get("dayOfMonth")
-        self.start_time: str | None = raw_element.get("startTime")
-        self.duration: int | None = raw_element.get("durationMinutes")
+        self.day_of_week: str | None = raw_optional_str(raw_element, "dayOfWeek")
+        self.day_of_month: int | None = raw_element.get("dayOfMonth")
+        self.start_time: str = raw_required_str(raw_element, "startTime")
+        self.duration: int = raw_required_int(raw_element, "durationMinutes")
 
 
 class Schedule(DynatraceObject):
@@ -169,7 +176,7 @@ class Schedule(DynatraceObject):
 
 class MaintenanceWindow(DynatraceObject):
     def _create_from_raw_data(self, raw_element):
-        self.id: str = raw_element.get("id")
+        self.id: str | None = raw_optional_str(raw_element, "id")
         self.name: str = raw_element.get("name")
         self.description: str = raw_element.get("description")
         self.type: str = raw_element.get("type")
@@ -177,7 +184,9 @@ class MaintenanceWindow(DynatraceObject):
         self.suppress_synthetic_monitors_execution: bool = raw_element.get(
             "suppressSyntheticMonitorsExecution"
         )
-        self.scope: Scope = Scope(raw_element=raw_element.get("scope"))
+        self.scope: Scope | None = raw_optional_object(
+            raw_element, "scope", lambda value: Scope(raw_element=value)
+        )
         self.schedule: Schedule = Schedule(raw_element=raw_element.get("schedule"))
 
     async def post(self) -> EntityShortRepresentation:
@@ -210,7 +219,7 @@ class MaintenanceWindow(DynatraceObject):
             "suppression": self.suppression,
             "suppressSyntheticMonitorsExecution": self.suppress_synthetic_monitors_execution,
             "schedule": self.schedule.schedule_snippet,
-            "scope": self.scope.to_json(),
+            "scope": self.scope.to_json() if self.scope else None,
         }
         return mw
 
@@ -274,6 +283,8 @@ class MaintenanceWindowService:
                 recurrence_day_of_month,
             )
             if recurrence_type != "ONCE"
+            and recurrence_start_time is not None
+            and recurrence_duration is not None
             else None
         )
         return Schedule.create(recurrence_type, start, end, zone_id, recurrence)
@@ -295,6 +306,14 @@ class MaintenanceWindowService:
         Create a maintenance window with the specified parameters.
         You must first use create_schedule() to create a schedule with optional recurrence.
         """
+        scope_body = (
+            {
+                "entities": scope.entities,
+                "matches": [s.to_json() for s in scope.matches],
+            }
+            if scope is not None
+            else None
+        )
         body = {
             "id": maintenance_window_id,
             "name": name,
@@ -303,10 +322,7 @@ class MaintenanceWindowService:
             "suppression": suppression,
             "suppressSyntheticMonitorsExecution": suppress_synthetic,
             "schedule": schedule.schedule_snippet,
-            "scope": {
-                "entities": scope.entities,
-                "matches": [s.to_json() for s in scope.matches],
-            },
+            "scope": scope_body,
         }
 
         response = (
