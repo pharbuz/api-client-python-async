@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from typing import Any
 
 import httpx
+from httpx._client import UseClientDefault
+from httpx._types import AuthTypes
 
 
 @dataclass(frozen=True)
@@ -31,8 +33,8 @@ class DynatraceOAuthClient(httpx.AsyncClient):
         resource: str,
         verify_ssl: bool,
         token_timeout: int = 30,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         kwargs.setdefault("verify", verify_ssl)
         super().__init__(**kwargs)
         self._token_url = token_url
@@ -44,7 +46,7 @@ class DynatraceOAuthClient(httpx.AsyncClient):
         self._token: dict[str, Any] | None = None
         self._token_refresh_lock = asyncio.Lock()
 
-    async def _refetch_token(self):
+    async def _refetch_token(self) -> dict[str, Any]:
         response = await super().request(
             "POST",
             self._token_url,
@@ -60,6 +62,8 @@ class DynatraceOAuthClient(httpx.AsyncClient):
         response.raise_for_status()
 
         token = response.json()
+        if not isinstance(token, dict):
+            raise RuntimeError("OAuth token response is not a JSON object")
         if "access_token" not in token:
             raise RuntimeError("OAuth token response does not contain access_token")
         if "expires_at" not in token and "expires_in" in token:
@@ -85,24 +89,25 @@ class DynatraceOAuthClient(httpx.AsyncClient):
         url: httpx.URL | str,
         *,
         withhold_token: bool = False,
-        auth: (
-            httpx.AuthTypes | httpx.UseClientDefault | None
-        ) = httpx.USE_CLIENT_DEFAULT,
-        **kwargs,
-    ):
+        auth: AuthTypes | UseClientDefault | None = httpx.USE_CLIENT_DEFAULT,
+        **kwargs: Any,
+    ) -> httpx.Response:
         manage_token = not withhold_token and auth is httpx.USE_CLIENT_DEFAULT
 
         if manage_token:
             await self._ensure_active_token()
+            token = self._token
+            if token is None:
+                raise RuntimeError("OAuth token was not initialized")
             headers = httpx.Headers(kwargs.pop("headers", None))
-            headers["Authorization"] = f"Bearer {self._token['access_token']}"
+            headers["Authorization"] = f"Bearer {token['access_token']}"
             kwargs["headers"] = headers
 
         response = await super().request(method, url, auth=auth, **kwargs)
         if manage_token and response.status_code == 401:
-            await self._refetch_token()
+            token = await self._refetch_token()
             headers = httpx.Headers(kwargs.pop("headers", None))
-            headers["Authorization"] = f"Bearer {self._token['access_token']}"
+            headers["Authorization"] = f"Bearer {token['access_token']}"
             kwargs["headers"] = headers
             response = await super().request(method, url, auth=auth, **kwargs)
 
