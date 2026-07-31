@@ -16,7 +16,7 @@ from dynatrace.pagination import PaginatedList
 from test.async_utils import collect
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     extensions = await dt.extensions.list()
     assert isinstance(extensions, PaginatedList)
 
@@ -30,7 +30,7 @@ async def test_list(dt: DynatraceAsync):
     assert first.type == ExtensionType.ACTIVEGATE
 
 
-async def test_get(dt: DynatraceAsync):
+async def test_get(dt: DynatraceAsync) -> None:
     extension = await dt.extensions.get("custom.python.citrixAgent")
     assert isinstance(extension, Extension)
     assert extension.id == "custom.python.citrixAgent"
@@ -46,7 +46,7 @@ async def test_get(dt: DynatraceAsync):
     assert first_property.type == "BOOLEAN"
 
 
-async def test_get_global_configuration(dt: DynatraceAsync):
+async def test_get_global_configuration(dt: DynatraceAsync) -> None:
     global_config = await dt.extensions.get_global_configuration(
         "custom.python.citrixAgent"
     )
@@ -58,7 +58,7 @@ async def test_get_global_configuration(dt: DynatraceAsync):
     assert global_config.properties["log_level"] == "INFO"
 
 
-async def test_get_state(dt: DynatraceAsync):
+async def test_get_state(dt: DynatraceAsync) -> None:
     states = await dt.extensions.list_states(
         "custom.remote.python.salesforce_eventstream"
     )
@@ -79,7 +79,7 @@ async def test_get_state(dt: DynatraceAsync):
     assert first.process_id is None
 
 
-async def test_get_instance_configuration(dt: DynatraceAsync):
+async def test_get_instance_configuration(dt: DynatraceAsync) -> None:
     config = await dt.extensions.get_instance_configuration(
         "custom.remote.python.salesforce_eventstream", "5649014104314746667"
     )
@@ -99,7 +99,7 @@ async def test_get_instance_configuration(dt: DynatraceAsync):
     )
 
 
-async def test_list_activegate_extension_modules(dt: DynatraceAsync):
+async def test_list_activegate_extension_modules(dt: DynatraceAsync) -> None:
     modules = await dt.extensions.list_activegate_extension_modules()
     assert isinstance(modules, PaginatedList)
 

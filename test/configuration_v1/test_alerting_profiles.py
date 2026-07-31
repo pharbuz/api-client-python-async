@@ -25,7 +25,7 @@ ID = "b1f379d9-98b4-4efe-be38-0289609c9295"
 NAME = "deployment_change_autoremediation"
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     alert_profiles = await dt.alerting_profiles.list()
     assert isinstance(alert_profiles, PaginatedList)
 
@@ -39,7 +39,7 @@ async def test_list(dt: DynatraceAsync):
     assert first.name == NAME
 
 
-async def test_get_full_configuration(dt: DynatraceAsync):
+async def test_get_full_configuration(dt: DynatraceAsync) -> None:
     alert_profiles = await dt.alerting_profiles.list()
     list_alert_profiles = await collect(alert_profiles)
     first = list_alert_profiles[0]
@@ -52,7 +52,7 @@ async def test_get_full_configuration(dt: DynatraceAsync):
     assert isinstance(full.rules[0], AlertingProfileSeverityRule)
 
 
-async def test_get(dt: DynatraceAsync):
+async def test_get(dt: DynatraceAsync) -> None:
     ap = await dt.alerting_profiles.get(profile_id=ID)
 
     # type checks
@@ -110,7 +110,7 @@ async def test_get(dt: DynatraceAsync):
     assert not predefined_event_filter.negate
 
 
-async def test_post(dt: DynatraceAsync):
+async def test_post(dt: DynatraceAsync) -> None:
     response = await dt.alerting_profiles.post(
         AlertingProfile(
             raw_element={

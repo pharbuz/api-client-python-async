@@ -17,7 +17,7 @@ ID = "b6376a12-0b82-4069-9a41-0e55ef9a1f44"
 NAME = "Example Window"
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     mw = await dt.maintenance_windows.list()
     assert isinstance(mw, PaginatedList)
 
@@ -31,7 +31,7 @@ async def test_list(dt: DynatraceAsync):
     assert first.name == NAME
 
 
-async def test_get(dt: DynatraceAsync):
+async def test_get(dt: DynatraceAsync) -> None:
     mw = await dt.maintenance_windows.get(mw_id=ID)
 
     # type checks
@@ -74,7 +74,7 @@ async def test_get(dt: DynatraceAsync):
     assert mw.schedule.zone_id == "Europe/Vienna"
 
 
-async def test_post(dt: DynatraceAsync):
+async def test_post(dt: DynatraceAsync) -> None:
     response = await dt.maintenance_windows.post(
         MaintenanceWindow(
             raw_element={
