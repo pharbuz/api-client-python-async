@@ -18,6 +18,8 @@ import builtins
 from pathlib import Path
 from typing import Any, cast
 
+from httpx import Response
+
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
@@ -104,7 +106,9 @@ class ExtensionsServiceV2:
         ).json()
         return Extension(raw_element=response)
 
-    async def post(self, zip_file_path: str | Path, validate_only: bool | None = False):
+    async def post(
+        self, zip_file_path: str | Path, validate_only: bool | None = False
+    ) -> "Extension":
         """Post the specified version of the extension 2.0
 
         :param zip_file_path: path to zipped extension 2.0
@@ -126,7 +130,7 @@ class ExtensionsServiceV2:
             ).json()
             return Extension(raw_element=response)
 
-    async def delete(self, extension_name: str, extension_version: str):
+    async def delete(self, extension_name: str, extension_version: str) -> Response:
         """Deletes the specified version of the extension 2.0
 
         :param extension_name: the name of the requested extension 2.0
@@ -154,7 +158,9 @@ class ExtensionsServiceV2:
         ).json()
         return ExtensionEnvironmentConfigurationVersion(raw_element=response)
 
-    async def put_environment_config(self, extension_name: str, extension_version: str):
+    async def put_environment_config(
+        self, extension_name: str, extension_version: str
+    ) -> Response:
         """Updates an existing active environment configuration version of the extension 2.0
 
         :param extension_name: the name of the requested extension 2.0
@@ -169,7 +175,7 @@ class ExtensionsServiceV2:
             params=params,
         )
 
-    async def delete_environment_config(self, extension_name: str):
+    async def delete_environment_config(self, extension_name: str) -> Response:
         """Deactivates the environment configuration of the specified extension 2.0
 
         :param extension_name: the name of the requested extension 2.0 to deactivate
@@ -243,7 +249,7 @@ class ExtensionsServiceV2:
 
     async def delete_monitoring_configuration(
         self, extension_name: str, config_id: str
-    ):
+    ) -> Response:
         url = f"{self.ENDPOINT}/{extension_name}/monitoringConfigurations/{config_id}"
         return await self.__http_client.make_request(url, method="DELETE")
 
@@ -287,7 +293,7 @@ class ExtensionEnvironmentConfigurationVersion(DynatraceObject):
         """Translates an ExtensionEnvironmentConfigurationVersion to a JSON dict."""
         return {"version": self.version}
 
-    async def put(self, extension_name: str):
+    async def put(self, extension_name: str) -> Response:
         """Updates an existing extension environment config's version in Dynatrace
 
         :param extension_name: the name of the extension required for making the API call
@@ -337,7 +343,7 @@ class MinimalExtension(DynatraceObject):
         ).initialize()
 
     async def list_monitoring_config_events(
-        self, config_id
+        self, config_id: str
     ) -> PaginatedList["ExtensionEventDTO"]:
         """Gets the list of the events linked to specific monitoring configuration
 
@@ -358,7 +364,7 @@ class MonitoringConfigurationDto:
         self.scope = scope
         self.configuration = configuration
 
-    def to_json(self):
+    def to_json(self) -> dict[str, Any]:
         return {"scope": self.scope, "value": self.configuration}
 
 

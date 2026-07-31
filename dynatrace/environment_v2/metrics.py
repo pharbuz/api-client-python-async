@@ -17,7 +17,7 @@ limitations under the License.
 import builtins
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import Any, cast
 
 from httpx import Response
 
@@ -64,7 +64,7 @@ class MetricService:
         fields: str | None = None,
         written_since: str | datetime | None = None,
         metadata_selector: str | None = None,
-        page_size=100,
+        page_size: int = 100,
     ) -> PaginatedList["MetricDescriptor"]:
         params = {
             "pageSize": page_size,
@@ -88,14 +88,14 @@ class MetricService:
         ).json()
         return MetricDescriptor(http_client=self.__http_client, raw_element=response)
 
-    async def delete(self, metric_id) -> Response:
+    async def delete(self, metric_id: str) -> Response:
         return await self.__http_client.make_request(
             f"/api/v2/metrics/{metric_id}", method="DELETE"
         )
 
-    async def ingest(self, lines: builtins.list[str]):
+    async def ingest(self, lines: builtins.list[str]) -> dict[str, Any]:
         payload = "\n".join(lines).encode("utf-8")
-        return (
+        response = (
             await self.__http_client.make_request(
                 "/api/v2/metrics/ingest",
                 method="POST",
@@ -103,6 +103,7 @@ class MetricService:
                 headers={"Content-Type": "text/plain; charset=utf-8"},
             )
         ).json()
+        return cast(dict[str, Any], response)
 
 
 class MetricSeries(DynatraceObject):
@@ -121,7 +122,7 @@ class MetricSeries(DynatraceObject):
 
 
 class MetricSeriesCollection(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.metric_id: str = raw_required_str(raw_element, "metricId")
         self.data: list[MetricSeries] = [
             MetricSeries(self._http_client, self._headers, metric_serie)

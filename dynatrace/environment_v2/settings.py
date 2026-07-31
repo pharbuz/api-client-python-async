@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
+from httpx import Response
+
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
@@ -99,7 +101,7 @@ class SettingService:
         validate_only: bool | None = False,
         body: list[SettingsObjectCreate] | SettingsObjectCreate | None = None,
         admin_access: bool | None = None,
-    ):
+    ) -> Any:
         """
         Creates a new settings object or validates the provided settigns object
 
@@ -123,7 +125,9 @@ class SettingService:
         ).json()
         return response
 
-    async def get_object(self, object_id: str, admin_access: bool | None = None):
+    async def get_object(
+        self, object_id: str, admin_access: bool | None = None
+    ) -> SettingsObject:
         """Gets parameters of specified settings object
 
         :param object_id: the ID of the object
@@ -143,7 +147,7 @@ class SettingService:
         body: SettingsObjectUpdate | None = None,
         validate_only: bool | None = None,
         admin_access: bool | None = None,
-    ):
+    ) -> Response:
         """Updates an existing settings object
 
         :param object_id: the ID of the object
@@ -163,7 +167,7 @@ class SettingService:
         object_id: str,
         update_token: str | None = None,
         admin_access: bool | None = None,
-    ):
+    ) -> Response:
         """Deletes the specified object
 
         :param object_id: the ID of the object
@@ -215,7 +219,7 @@ class SettingsObjectCreate:
     def __init__(
         self,
         schema_id: str,
-        value: dict,
+        value: dict[str, Any],
         scope: str,
         external_id: str | None = None,
         insert_after: str | None = None,
@@ -230,7 +234,7 @@ class SettingsObjectCreate:
         self.object_id = object_id
         self.schema_version = schema_version
 
-    def json(self) -> dict:
+    def json(self) -> dict[str, Any]:
         body: dict[str, Any] = {
             "schemaId": self.schema_id,
             "value": self.value,
@@ -250,7 +254,7 @@ class SettingsObjectCreate:
 class SettingsObjectUpdate:
     def __init__(
         self,
-        value: dict,
+        value: dict[str, Any],
         insert_after: str | None = None,
         insert_before: str | None = None,
         schema_version: str | None = None,
@@ -262,7 +266,7 @@ class SettingsObjectUpdate:
         self.schema_version = schema_version
         self.update_token = update_token
 
-    def json(self) -> dict:
+    def json(self) -> dict[str, Any]:
         body: dict[str, Any] = {"value": self.value}
         if self.insert_after:
             body["insertAfter"] = self.insert_after

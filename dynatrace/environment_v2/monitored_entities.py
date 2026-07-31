@@ -367,7 +367,7 @@ class CustomDeviceCreation(DynatraceObject):
 
 
 class EntityType(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.type: str = raw_element["type"]
         self.display_name: str = raw_element["displayName"]
         self.entity_limit_exceeded: bool = raw_element.get("entityLimitExceeded", False)

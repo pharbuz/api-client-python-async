@@ -17,6 +17,8 @@ limitations under the License.
 import builtins
 from typing import Any
 
+from httpx import Response
+
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
@@ -43,7 +45,7 @@ class NetworkZoneService:
             list_item="networkZones",
         ).initialize()
 
-    async def get(self, networkzone_id: str):
+    async def get(self, networkzone_id: str) -> "NetworkZone":
         """Gets parameters of specified network zone
 
         :param networkzone_id: the ID of the network zone
@@ -72,7 +74,7 @@ class NetworkZoneService:
         networkzone_id: str,
         alternate_zones: builtins.list[str] | None = None,
         description: str | None = None,
-    ):
+    ) -> Response:
         """Updates an existing network zone or creates a new one
 
         :param networkzone_id: the ID of the network zone, if none exists, will create
@@ -85,7 +87,7 @@ class NetworkZoneService:
             path=f"{self.ENDPOINT}/{networkzone_id}", params=params, method="PUT"
         )
 
-    async def delete(self, networkzone_id: str):
+    async def delete(self, networkzone_id: str) -> Response:
         """Deletes the specified network zone
 
         :param networkzone_id: the ID of the network zone
@@ -104,7 +106,7 @@ class NetworkZoneService:
         ).json()
         return NetworkZoneSettings(raw_element=response)
 
-    async def update_global_config(self, configuration: bool):
+    async def update_global_config(self, configuration: bool) -> Response:
         """Updates the global configuration of network zones.
 
         :param configuration: boolean setting to enable/disable NZs
@@ -115,10 +117,10 @@ class NetworkZoneService:
             path=self.ENDPOINT_GLOBALSETTINGS, method="PUT", params=params
         )
 
-    async def getGlobalConfig(self):
+    async def getGlobalConfig(self) -> "NetworkZoneSettings":
         return await self.get_global_config()
 
-    async def updateGlobalConfig(self, configuration: bool):
+    async def updateGlobalConfig(self, configuration: bool) -> Response:
         return await self.update_global_config(configuration)
 
 

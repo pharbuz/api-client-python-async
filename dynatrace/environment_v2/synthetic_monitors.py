@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Any
 
+from httpx import Response
+
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.utils import raw_optional_datetime
@@ -60,7 +62,7 @@ class SyntheticMonitorService:
         ).json()
         return MonitorEntityId(raw_element=response)
 
-    async def update(self, monitor_id: str, body: dict[str, Any]):
+    async def update(self, monitor_id: str, body: dict[str, Any]) -> Response:
         """Updates a synthetic monitor definition for the given monitor ID.
 
         :param monitor_id: The identifier of the monitor.
@@ -71,7 +73,7 @@ class SyntheticMonitorService:
             path=f"{self.ENDPOINT}/{monitor_id}", params=body, method="PUT"
         )
 
-    async def delete(self, monitor_id: str):
+    async def delete(self, monitor_id: str) -> Response:
         """Deletes a synthetic monitor definition for the given monitor ID.
 
         :param monitor_id: The identifier of the monitor.
@@ -100,12 +102,12 @@ class SyntheticBrowserMonitor(DynatraceObject):
         self.automatically_assigned_entities: list[str] = raw_element.get(
             "automaticallyAssignedEntities", []
         )
-        self.configuration: dict = raw_element.get("configuration", {})
+        self.configuration: dict[str, Any] = raw_element.get("configuration", {})
         self.description: str | None = raw_element.get("description")
         self.enabled: bool = raw_element.get("enabled", True)
         self.entity_id: str = raw_element["entityId"]
         self.frequency_min: int = raw_element["frequencyMin"]
-        self.key_performance_metrics: dict = raw_element.get(
+        self.key_performance_metrics: dict[str, Any] = raw_element.get(
             "keyPerformanceMetrics", {}
         )
         self.locations: list[str] = raw_element.get("locations", [])
@@ -116,15 +118,19 @@ class SyntheticBrowserMonitor(DynatraceObject):
             raw_element, "modificationTimestamp"
         )
         self.name: str = raw_element.get("name", "")
-        self.performance_thresholds: dict = raw_element.get("performanceThresholds", {})
-        self.primary_grail_tags: list[dict] = raw_element.get("primaryGrailTags", [])
-        self.steps: list[dict] = raw_element.get("steps", [])
-        self.synthetic_monitor_outage_handling_settings: dict = raw_element.get(
-            "syntheticMonitorOutageHandlingSettings", {}
+        self.performance_thresholds: dict[str, Any] = raw_element.get(
+            "performanceThresholds", {}
         )
-        self.tags: list[dict] = raw_element.get("tags", [])
+        self.primary_grail_tags: list[dict[str, Any]] = raw_element.get(
+            "primaryGrailTags", []
+        )
+        self.steps: list[dict[str, Any]] = raw_element.get("steps", [])
+        self.synthetic_monitor_outage_handling_settings: dict[str, Any] = (
+            raw_element.get("syntheticMonitorOutageHandlingSettings", {})
+        )
+        self.tags: list[dict[str, Any]] = raw_element.get("tags", [])
         self.type: str = raw_element["type"]
-        self.cookies: list[dict] = raw_element.get("cookies", [])
+        self.cookies: list[dict[str, Any]] = raw_element.get("cookies", [])
 
 
 class SyntheticMultiProtocolMonitor(DynatraceObject):
@@ -138,11 +144,15 @@ class SyntheticMultiProtocolMonitor(DynatraceObject):
             raw_element, "modificationTimestamp"
         )
         self.name: str = raw_element.get("name", "")
-        self.performance_thresholds: dict = raw_element.get("performanceThresholds", {})
-        self.primary_grail_tags: list[dict] = raw_element.get("primaryGrailTags", [])
-        self.steps: list[dict] = raw_element.get("steps", [])
-        self.synthetic_monitor_outage_handling_settings: dict = raw_element.get(
-            "syntheticMonitorOutageHandlingSettings", {}
+        self.performance_thresholds: dict[str, Any] = raw_element.get(
+            "performanceThresholds", {}
         )
-        self.tags: list[dict] = raw_element.get("tags", [])
+        self.primary_grail_tags: list[dict[str, Any]] = raw_element.get(
+            "primaryGrailTags", []
+        )
+        self.steps: list[dict[str, Any]] = raw_element.get("steps", [])
+        self.synthetic_monitor_outage_handling_settings: dict[str, Any] = (
+            raw_element.get("syntheticMonitorOutageHandlingSettings", {})
+        )
+        self.tags: list[dict[str, Any]] = raw_element.get("tags", [])
         self.type: str = raw_element["type"]

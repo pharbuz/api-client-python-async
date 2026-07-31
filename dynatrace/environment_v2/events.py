@@ -20,7 +20,7 @@ limitations under the License.
 
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import Any, cast
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.custom_tags import METag
@@ -167,7 +167,7 @@ class EventServiceV2:
         timeout: int = 15,
         entity_selector: str | None = None,
         properties: dict[str, str] | None = None,
-    ):
+    ) -> dict[str, Any]:
         """
         Ingests a custom event to Dynatrace
 
@@ -190,11 +190,12 @@ class EventServiceV2:
             "properties": properties,
         }
 
-        return (
+        response = (
             await self.__http_client.make_request(
                 f"{self.ENDPOINT_INGEST}", method="POST", params=params
             )
         ).json()
+        return cast(dict[str, Any], response)
 
 
 class Event(DynatraceObject):

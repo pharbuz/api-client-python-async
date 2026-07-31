@@ -18,6 +18,8 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any
 
+from httpx import Response
+
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.schemas import VersionCompareType
 from dynatrace.http_client import HttpClient
@@ -97,7 +99,7 @@ class ActiveGateAutoUpdateJobsService:
             ).json()
         )
 
-    async def post(self, activegate_id: str, target_version: str):
+    async def post(self, activegate_id: str, target_version: str) -> "UpdateJob":
         params = {"targetVersion": target_version}
         return UpdateJob(
             raw_element=(
@@ -109,7 +111,7 @@ class ActiveGateAutoUpdateJobsService:
             ).json()
         )
 
-    async def validate(self, activegate_id: str, target_version: str):
+    async def validate(self, activegate_id: str, target_version: str) -> Response:
         params = {"targetVersion": target_version}
         return await self.__http_client.make_request(
             f"/api/v2/activeGates/{activegate_id}/updateJobs/validator",
@@ -117,7 +119,7 @@ class ActiveGateAutoUpdateJobsService:
             method="POST",
         )
 
-    async def get_job(self, activegate_id: str, job_id: str):
+    async def get_job(self, activegate_id: str, job_id: str) -> "UpdateJob":
         return UpdateJob(
             raw_element=(
                 await self.__http_client.make_request(
@@ -126,7 +128,7 @@ class ActiveGateAutoUpdateJobsService:
             ).json()
         )
 
-    async def delete_job(self, activegate_id: str, job_id: str):
+    async def delete_job(self, activegate_id: str, job_id: str) -> Response:
         return await self.__http_client.make_request(
             f"/api/v2/activeGates/{activegate_id}/updateJobs/{job_id}", method="DELETE"
         )
