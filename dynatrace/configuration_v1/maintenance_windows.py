@@ -40,7 +40,7 @@ class TagCombination(Enum):
 
 
 class MonitoredEntityFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.type: str | None = raw_optional_str(raw_element, "type")
         self.mz_id: str | None = raw_optional_str(raw_element, "mzId")
         self.tags: list[METag] = [
@@ -60,7 +60,7 @@ class MonitoredEntityFilter(DynatraceObject):
 
 
 class Scope(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.entities: list[str] = raw_element.get("entities", [])
         self.matches: list[MonitoredEntityFilter] = [
             MonitoredEntityFilter(raw_element=m) for m in raw_element.get("matches", [])
@@ -80,7 +80,7 @@ class Recurrence(DynatraceObject):
         duration: int,
         day_of_week: str | None = None,
         day_of_month: int | None = None,
-    ):
+    ) -> "Recurrence":
         day_of_week_value = day_of_week.upper() if day_of_week is not None else None
         raw_element = {
             "dayOfWeek": day_of_week_value,
@@ -90,7 +90,7 @@ class Recurrence(DynatraceObject):
         }
         return Recurrence(raw_element=raw_element)
 
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.day_of_week: str | None = raw_optional_str(raw_element, "dayOfWeek")
         self.day_of_month: int | None = raw_element.get("dayOfMonth")
         self.start_time: str | None = raw_optional_str(raw_element, "startTime")
@@ -162,7 +162,7 @@ class Schedule(DynatraceObject):
             }
         return representation
 
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.recurrence_type: str = raw_element.get("recurrenceType")
         self.recurrence: Recurrence = Recurrence(
             raw_element=raw_element.get("recurrence")
@@ -173,7 +173,7 @@ class Schedule(DynatraceObject):
 
 
 class MaintenanceWindow(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str | None = raw_optional_str(raw_element, "id")
         self.name: str = raw_element.get("name")
         self.description: str = raw_element.get("description")
@@ -340,14 +340,14 @@ class MaintenanceWindowService:
 
 
 class MaintenanceWindowCreated(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.description: str = raw_element.get("description")
 
 
 class MaintenanceWindowStub(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.description: str = raw_element.get("description")

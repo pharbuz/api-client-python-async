@@ -89,7 +89,7 @@ class OneAgentEnvironmentWideConfigService:
 
 
 class EnvironmentAutoUpdateConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.metadata: ConfigurationMetadata = ConfigurationMetadata(
             raw_element=raw_element.get("metadata")
         )

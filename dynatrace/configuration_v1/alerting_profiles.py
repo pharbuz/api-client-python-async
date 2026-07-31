@@ -31,7 +31,7 @@ from dynatrace.pagination import PaginatedList
 
 
 class AlertingProfileTagFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.include_mode: TagFilterIncludeMode = TagFilterIncludeMode(
             raw_element["includeMode"]
         )
@@ -47,7 +47,7 @@ class AlertingProfileTagFilter(DynatraceObject):
 
 
 class AlertingProfileSeverityRule(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.severity_level: SeverityLevel = SeverityLevel(raw_element["severityLevel"])
         self.tag_filter: AlertingProfileTagFilter = AlertingProfileTagFilter(
             raw_element=raw_element["tagFilter"]
@@ -63,7 +63,7 @@ class AlertingProfileSeverityRule(DynatraceObject):
 
 
 class AlertingPredefinedEventFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.event_type: AlertingPredefinedEvent = AlertingPredefinedEvent(
             raw_element["eventType"]
         )
@@ -74,7 +74,7 @@ class AlertingPredefinedEventFilter(DynatraceObject):
 
 
 class AlertingCustomTextFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.enabled: bool = raw_element["enabled"]
         self.value: str = raw_element["value"]
         self.operator: StringComparisonOperator = StringComparisonOperator(
@@ -94,7 +94,7 @@ class AlertingCustomTextFilter(DynatraceObject):
 
 
 class AlertingCustomEventFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.custom_title_filter: AlertingCustomTextFilter | None = (
             AlertingCustomTextFilter(raw_element=raw_element.get("customTitleFilter"))
             if "customTitleFilter" in raw_element.keys()
@@ -120,7 +120,7 @@ class AlertingCustomEventFilter(DynatraceObject):
 
 
 class AlertingEventTypeFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.predefined_event_filter: AlertingPredefinedEventFilter | None = (
             AlertingPredefinedEventFilter(
                 raw_element=raw_element.get("predefinedEventFilter")
@@ -144,7 +144,7 @@ class AlertingEventTypeFilter(DynatraceObject):
 
 
 class AlertingProfile(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.metadata: ConfigurationMetadata | None = ConfigurationMetadata(
             raw_element=raw_element.get("metadata")
         )

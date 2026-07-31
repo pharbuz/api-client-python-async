@@ -31,7 +31,7 @@ class Method(Enum):
 
 
 class AvailabilityMonitoringPG(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.method: Method = Method(raw_required_str(raw_element, "method"))
         self.minimum_threshold: int | None = raw_optional_int(
             raw_element, "minimumThreshold"
@@ -40,7 +40,9 @@ class AvailabilityMonitoringPG(DynatraceObject):
 
 class AnomalyDetectionPG(DynatraceObject):
     @staticmethod
-    def create(method: str | Method, minimum_threshold: int | None = None):
+    def create(
+        method: str | Method, minimum_threshold: int | None = None
+    ) -> "AnomalyDetectionPG":
         method = Method(method)
         if method == Method.MINIMUM_THRESHOLD:
             raw_element = {
@@ -53,7 +55,7 @@ class AnomalyDetectionPG(DynatraceObject):
             raw_element = {"availabilityMonitoring": {"method": method.value}}
         return AnomalyDetectionPG(raw_element=raw_element)
 
-    def json(self):
+    def json(self) -> dict[str, Any]:
         """
         Get the json representation of this process group anomaly detection config.
         """
@@ -72,7 +74,7 @@ class AnomalyDetectionPG(DynatraceObject):
             }
         return json
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.availability_monitoring: AvailabilityMonitoringPG = (
             AvailabilityMonitoringPG(
                 self._http_client, raw_element=raw_element.get("availabilityMonitoring")

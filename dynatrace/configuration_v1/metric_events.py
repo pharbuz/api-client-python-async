@@ -153,20 +153,20 @@ class WarningReason(Enum):
 
 
 class MetricEventTextFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.value: str | None = raw_optional_str(raw_element, "value")
         self.operator: str | None = raw_optional_str(raw_element, "operator")
 
 
 class TagFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.context: str = raw_required_str(raw_element, "context")
         self.key: str = raw_required_str(raw_element, "key")
         self.value: str | None = raw_optional_str(raw_element, "value")
 
 
 class MetricEventAlertingScope(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.filter_type: MetricEventAlertingScopeFilterType = (
             MetricEventAlertingScopeFilterType(
                 raw_required_str(raw_element, "filterType")
@@ -184,7 +184,7 @@ class MetricEventAlertingScope(DynatraceObject):
 
 
 class MetricEventDimension(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.filter_type: MetricEventDimensionsFilterType = (
             MetricEventDimensionsFilterType(raw_required_str(raw_element, "filterType"))
         )
@@ -198,14 +198,14 @@ class MetricEventDimension(DynatraceObject):
 
 
 class MetricEventMonitoringStrategy(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.type: MetricEventMonitoringStrategyType = (
             MetricEventMonitoringStrategyType(raw_required_str(raw_element, "type"))
         )
 
 
 class MetricEventAutoAdaptiveBaselineMonitoringStrategy(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.type: MetricEventMonitoringStrategyType = (
             MetricEventMonitoringStrategyType(raw_required_str(raw_element, "type"))
         )
@@ -226,7 +226,7 @@ class MetricEventAutoAdaptiveBaselineMonitoringStrategy(DynatraceObject):
 
 
 class MetricEventStaticThresholdMonitoringStrategy(MetricEventMonitoringStrategy):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.type: MetricEventMonitoringStrategyType = (
             MetricEventMonitoringStrategyType(raw_required_str(raw_element, "type"))
         )
@@ -248,7 +248,7 @@ class MetricEventStaticThresholdMonitoringStrategy(MetricEventMonitoringStrategy
 
 
 class MetricEvent(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.metadata: ConfigurationMetadata = ConfigurationMetadata(
             raw_element=raw_element.get("metadata")
         )
@@ -294,7 +294,13 @@ class MetricEvent(DynatraceObject):
             raw_element, "primaryDimensionKey"
         )
 
-    def _create_specific_monitoring_strategy(self, raw_element: dict[str, Any]):
+    def _create_specific_monitoring_strategy(
+        self, raw_element: dict[str, Any]
+    ) -> (
+        MetricEventMonitoringStrategy
+        | MetricEventStaticThresholdMonitoringStrategy
+        | MetricEventAutoAdaptiveBaselineMonitoringStrategy
+    ):
         strategy_type = MetricEventMonitoringStrategyType(raw_element.get("type"))
         if strategy_type == MetricEventMonitoringStrategyType.AUTO_ADAPTIVE_BASELINE:
             return MetricEventAutoAdaptiveBaselineMonitoringStrategy(

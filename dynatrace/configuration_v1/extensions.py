@@ -198,7 +198,7 @@ class ExtensionService:
 
 
 class ExtensionProperty(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.key: str = raw_element.get("key")
         self.type: str = raw_element.get("type")
         self.default_value: str = raw_element.get("defaultValue")
@@ -233,7 +233,7 @@ class ExtensionConfigurationDto(DynatraceObject):
             "endpointName": self.endpoint_name,
         }
 
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.extension_id: str = raw_element.get("extensionId")
         self.enabled: bool = raw_element.get("enabled")
         self.use_global: bool = raw_element.get("useGlobal", True)
@@ -262,7 +262,7 @@ class ExtensionShortRepresentation(EntityShortRepresentation):
 
 
 class Extension(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.type: ExtensionType = ExtensionType(raw_element.get("type"))
@@ -287,7 +287,7 @@ class ExtensionType(Enum):
 
 
 class ExtensionDto(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.type: ExtensionType = ExtensionType(raw_element.get("type"))
@@ -328,7 +328,7 @@ class ExtensionDto(DynatraceObject):
 
 
 class GlobalExtensionConfiguration(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.enabled: bool = raw_required_bool(raw_element, "enabled")
         self.extension_id: str | None = raw_element.get("extensionId")
         self.infraOnlyEnabled: bool | None = raw_element.get("infraOnlyEnabled")
@@ -352,7 +352,7 @@ class ExtensionStateEnum(Enum):
 
 
 class ExtensionState(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.extension_id: str | None = raw_element.get("extensionId")
         self.version: str | None = raw_element.get("version")
         self.endpoint_id: str | None = raw_element.get("endpointId")

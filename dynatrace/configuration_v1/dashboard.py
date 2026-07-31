@@ -78,7 +78,7 @@ class DashboardService:
 
 
 class DashboardFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         if raw_element is None:
             raw_element = {}
         self.timeframe: str = raw_element.get("timeframe")
@@ -92,7 +92,7 @@ class DashboardFilter(DynatraceObject):
 
 
 class DashboardMetadata(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         # TODO - Schema changed, add extra fields dynamicFilters
         self.name: str = raw_element.get("name")
         self.shared: bool = raw_element.get("shared")
@@ -105,7 +105,7 @@ class DashboardMetadata(DynatraceObject):
 
 
 class Dashboard(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         if raw_element is None:
             raw_element = {}
         self.id: str = raw_element.get("id")
@@ -128,7 +128,7 @@ class DashboardStub(DynatraceObject):
             f"/api/config/v1/dashboards/{self.id}", method="DELETE"
         )
 
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.owner: str = raw_element.get("owner")

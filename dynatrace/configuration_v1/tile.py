@@ -14,11 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import Any
+
 from dynatrace.dynatrace_object import DynatraceObject
 
 
 class Tile(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name = raw_element.get("name")
         self.tile_type = raw_element.get(
             "tileType"

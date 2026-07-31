@@ -111,7 +111,7 @@ class OneAgentInAHostGroupService:
 
 
 class OneAgentHostGroupConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str | None = raw_element.get("id")
         self.auto_update_config: HostGroupAutoUpdateConfig = HostGroupAutoUpdateConfig(
             raw_element=raw_element.get("autoUpdateConfig"),
@@ -120,7 +120,7 @@ class OneAgentHostGroupConfig(DynatraceObject):
 
 
 class HostGroupAutoUpdateConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.metadata: ConfigurationMetadata = ConfigurationMetadata(
             raw_element=raw_element.get("metadata")
         )

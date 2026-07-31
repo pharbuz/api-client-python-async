@@ -179,7 +179,7 @@ class OneAgentOnAHostService:
 
 
 class HostConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str = raw_element.get("id", "")
         self.monitoring_config: MonitoringConfig = MonitoringConfig(
             raw_element=raw_element.get("monitoringConfig"),
@@ -195,7 +195,7 @@ class HostConfig(DynatraceObject):
 
 
 class MonitoringConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str = raw_element.get("id", "")
         self.monitoring_enabled: bool = raw_element.get("monitoringEnabled", False)
         self.monitoring_mode: MonitoringMode = MonitoringMode(
@@ -220,7 +220,7 @@ class MonitoringConfig(DynatraceObject):
 
 
 class HostAutoUpdateConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str = raw_element.get("id", "")
         self.setting: AutoUpdateSetting = AutoUpdateSetting(raw_element.get("setting"))
         self.version: str | None = raw_element.get("version")
@@ -258,5 +258,5 @@ class MonitoringMode(Enum):
     CLOUD_INFRASTRUCTURE = "CLOUD_INFRASTRUCTURE"
     FULL_STACK = "FULL_STACK"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value

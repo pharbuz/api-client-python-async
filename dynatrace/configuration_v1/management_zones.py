@@ -124,7 +124,7 @@ class ManagementZoneService:
 
 
 class ComparisonBasic(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.operator: str = raw_required_str(raw_element, "operator")
         self.value: dict[str, Any] | None = raw_element.get("value")
         self.negate: bool = raw_required_bool(raw_element, "negate")
@@ -137,7 +137,7 @@ class ComparisonBasic(DynatraceObject):
 
 
 class ConditionKey(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.attribute: ConditionKeyAttribute = ConditionKeyAttribute(
             raw_element.get("attribute")
         )
@@ -145,7 +145,7 @@ class ConditionKey(DynatraceObject):
 
 
 class EntityRuleEngineCondition(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.key: ConditionKey = ConditionKey(raw_element=raw_element.get("key"))
         self.comparison_info: ComparisonBasic = ComparisonBasic(
             raw_element=raw_element.get("comparisonInfo")
@@ -153,14 +153,14 @@ class EntityRuleEngineCondition(DynatraceObject):
 
 
 class EntitySelectorBasedManagementZoneRule(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.enabled: bool | None = raw_optional_bool(raw_element, "enabled")
         self.entity_selector: str = raw_required_str(raw_element, "entitySelector")
         self.value_format: str | None = raw_optional_str(raw_element, "valueFormat")
 
 
 class ManagementZoneRule(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.type: RuleType = RuleType(raw_required_str(raw_element, "type"))
         self.enabled: bool = raw_required_bool(raw_element, "enabled")
         self.value_format: str | None = raw_optional_str(raw_element, "valueFormat")
@@ -175,7 +175,7 @@ class ManagementZoneRule(DynatraceObject):
 
 
 class ManagementZone(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.metadata: ConfigurationMetadata = ConfigurationMetadata(
             self._http_client, None, raw_element.get("metadata")
         )
