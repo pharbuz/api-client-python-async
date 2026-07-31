@@ -1,4 +1,5 @@
 import time
+from urllib.parse import parse_qs
 
 import httpx
 
@@ -40,6 +41,51 @@ async def test_oauth_client_fetches_token_before_first_request(monkeypatch):
     assert fetch_calls[0][0] == "https://sso.example.com/sso/oauth2/token"
     assert fetch_calls[0][1]["data"]["resource"] == "urn:dtaccount:account-uuid"
     assert request_calls[0][2]["headers"]["Authorization"] == "Bearer token-1"
+
+
+async def test_oauth_client_fetches_token_as_form_urlencoded_request():
+    token_requests = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        if str(request.url) == "https://sso.example.com/sso/oauth2/token":
+            token_requests.append(request)
+            return httpx.Response(
+                200,
+                json={
+                    "access_token": "token-1",
+                    "token_type": "Bearer",
+                    "expires_in": 300,
+                    "scope": "account-uac-read account-env-read",
+                    "resource": "urn:dtaccount:account-uuid",
+                },
+                request=request,
+            )
+
+        return httpx.Response(200, request=request)
+
+    client = DynatraceOAuthClient(
+        token_url="https://sso.example.com/sso/oauth2/token",
+        client_id="client-id",
+        client_secret="client-secret",
+        scope="account-uac-read account-env-read",
+        resource="urn:dtaccount:account-uuid",
+        verify_ssl=False,
+        transport=httpx.MockTransport(handler),
+    )
+
+    response = await client.request("GET", "https://api.example.com/resources")
+
+    assert response.status_code == 200
+    assert len(token_requests) == 1
+    token_request = token_requests[0]
+    assert token_request.headers["Content-Type"] == "application/x-www-form-urlencoded"
+    assert parse_qs(token_request.content.decode()) == {
+        "grant_type": ["client_credentials"],
+        "client_id": ["client-id"],
+        "client_secret": ["client-secret"],
+        "scope": ["account-uac-read account-env-read"],
+        "resource": ["urn:dtaccount:account-uuid"],
+    }
 
 
 async def test_oauth_client_refetches_token_after_401(monkeypatch):
