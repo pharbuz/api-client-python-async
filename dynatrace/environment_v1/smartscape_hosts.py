@@ -76,7 +76,9 @@ class AgentVersion(DynatraceObject):
         self.minor: int | None = raw_optional_int(raw_element, "minor")
         self.revision: int | None = raw_optional_int(raw_element, "revision")
         self.timestamp: str | None = raw_optional_str(raw_element, "timestamp")
-        self.source_revision: str | None = raw_optional_str(raw_element, "sourceRevision")
+        self.source_revision: str | None = raw_optional_str(
+            raw_element, "sourceRevision"
+        )
 
 
 class HostGroup(DynatraceObject):
@@ -89,11 +91,21 @@ class Host(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.entity_id: str | None = raw_optional_str(raw_element, "entityId")
         self.display_name: str | None = raw_optional_str(raw_element, "displayName")
-        self.customized_name: str | None = raw_optional_str(raw_element, "customizedName")
-        self.discovered_name: str | None = raw_optional_str(raw_element, "discoveredName")
-        self.first_seen_timestamp: int | None = raw_optional_int(raw_element, "firstSeenTimestamp")
-        self.last_seen_timestamp: int | None = raw_optional_int(raw_element, "lastSeenTimestamp")
-        self.tags: list[TagInfo] = [TagInfo(raw_element=tag) for tag in raw_element.get("tags", [])]
+        self.customized_name: str | None = raw_optional_str(
+            raw_element, "customizedName"
+        )
+        self.discovered_name: str | None = raw_optional_str(
+            raw_element, "discoveredName"
+        )
+        self.first_seen_timestamp: int | None = raw_optional_int(
+            raw_element, "firstSeenTimestamp"
+        )
+        self.last_seen_timestamp: int | None = raw_optional_int(
+            raw_element, "lastSeenTimestamp"
+        )
+        self.tags: list[TagInfo] = [
+            TagInfo(raw_element=tag) for tag in raw_element.get("tags", [])
+        ]
         self.os_type: str | None = raw_optional_str(raw_element, "osType")
         self.consumed_host_units: str | float | None = raw_optional_str_or_float(
             raw_element, "consumedHostUnits"
@@ -106,7 +118,9 @@ class Host(DynatraceObject):
             if raw_element.get("monitoringMode")
             else None
         )
-        self.network_zone_id: str | None = raw_optional_str(raw_element, "networkZoneId")
+        self.network_zone_id: str | None = raw_optional_str(
+            raw_element, "networkZoneId"
+        )
         self.host_group: HostGroup | None = raw_optional_object(
             raw_element, "hostGroup", lambda value: HostGroup(raw_element=value)
         )
@@ -146,7 +160,9 @@ class SmartScapeHostsService:
         """
         params = {
             "pageSize": page_size,
-            "relativeTime": (RelativeTime(relative_time).value if not start_timestamp else None),
+            "relativeTime": (
+                RelativeTime(relative_time).value if not start_timestamp else None
+            ),
             "startTimestamp": datetime_to_int64(start_timestamp),
             "endTimestamp": datetime_to_int64(end_timestamp),
             "managementZone": management_zone if management_zone else None,

@@ -82,7 +82,9 @@ class Series(MutableSequence["EntityTimeseriesData"]):
     @overload
     def __getitem__(self, i: slice) -> list["EntityTimeseriesData"]: ...
 
-    def __getitem__(self, i: int | slice) -> "EntityTimeseriesData | list[EntityTimeseriesData]":
+    def __getitem__(
+        self, i: int | slice
+    ) -> "EntityTimeseriesData | list[EntityTimeseriesData]":
         return self.list[i]
 
     def __delitem__(self, i: int | slice) -> None:
@@ -158,7 +160,9 @@ class CustomDevicePushMessage(DynatraceObject):
             "configUrl": self.config_url,
             "properties": self.properties,
             "tags": self.tags,
-            "series": ([s._raw_element for s in self.__series] if self.__series else None),
+            "series": (
+                [s._raw_element for s in self.__series] if self.__series else None
+            ),
             "hostNames": self.host_names,
         }
         super().__init__(http_client, None, raw_element)
@@ -191,9 +195,13 @@ class CustomDevicePushMessage(DynatraceObject):
                         .split('"')[0]
                         .strip()
                     )
-                    max_timestamp = datetime.fromtimestamp(max_timestamp / 1000, tz=timezone.utc)
+                    max_timestamp = datetime.fromtimestamp(
+                        max_timestamp / 1000, tz=timezone.utc
+                    )
                 else:
-                    max_timestamp = datetime.now(tz=timezone.utc) - timedelta(minutes=59)
+                    max_timestamp = datetime.now(tz=timezone.utc) - timedelta(
+                        minutes=59
+                    )
                 self._http_client.log.warning(
                     f"Some data points were invalid, removing data points older than {max_timestamp}"
                 )
@@ -201,7 +209,8 @@ class CustomDevicePushMessage(DynatraceObject):
                     s.data_points = [
                         d
                         for d in s.data_points
-                        if d.timestamp.replace(tzinfo=max_timestamp.tzinfo) >= max_timestamp
+                        if d.timestamp.replace(tzinfo=max_timestamp.tzinfo)
+                        >= max_timestamp
                     ]
                 self._raw_element["series"] = [s._raw_element for s in self.series]
                 return await self.post()
@@ -216,7 +225,9 @@ class CustomDevicePushMessage(DynatraceObject):
         dimensions: dict[str, str] | None = None,
     ):
         data_point = DataPoint(value, timestamp)
-        self.series.append(EntityTimeseriesData(self._http_client, key, [data_point], dimensions))
+        self.series.append(
+            EntityTimeseriesData(self._http_client, key, [data_point], dimensions)
+        )
         self.series = (
             self.series
         )  # Ugly as hell hack because of setter, and I don't want to subclass list
@@ -261,7 +272,9 @@ class EntityTimeseriesData(DynatraceObject):
 
 class DataPoint:
     def __init__(self, value: float, timestamp: datetime | None = None):
-        self.timestamp: datetime = timestamp if timestamp is not None else datetime.now()
+        self.timestamp: datetime = (
+            timestamp if timestamp is not None else datetime.now()
+        )
         self.value = value
 
     def __repr__(self) -> str:

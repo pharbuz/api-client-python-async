@@ -55,7 +55,9 @@ def timestamp_to_string(timestamp: datetime | str | None) -> str | None:
     if not isinstance(timestamp, datetime):
         return timestamp
     return (
-        timestamp.astimezone(timezone.utc).replace(tzinfo=None).isoformat(timespec="milliseconds")
+        timestamp.astimezone(timezone.utc)
+        .replace(tzinfo=None)
+        .isoformat(timespec="milliseconds")
     )
 
 
@@ -91,7 +93,9 @@ def raw_optional_str(raw_element: dict[str, Any], key: str) -> str | None:
     return value
 
 
-def raw_optional_str_or_float(raw_element: dict[str, Any], key: str) -> str | float | None:
+def raw_optional_str_or_float(
+    raw_element: dict[str, Any], key: str
+) -> str | float | None:
     value = raw_element.get(key)
     if value is None:
         return None

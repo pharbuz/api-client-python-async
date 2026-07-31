@@ -25,7 +25,9 @@ class SettingService(DtSettingsService):
         page_size: int | None = None,
     ) -> "FieldValuesPage":
         """Lists all possible values for the costcenter field."""
-        return await self._list_field_values(account_uuid, "costcenters", page, page_size)
+        return await self._list_field_values(
+            account_uuid, "costcenters", page, page_size
+        )
 
     async def add_costcenters(
         self,
@@ -33,7 +35,9 @@ class SettingService(DtSettingsService):
         values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
     ) -> Response:
         """Adds the provided values to the costcenter field."""
-        return await self._write_field_values(account_uuid, "costcenters", values, method="POST")
+        return await self._write_field_values(
+            account_uuid, "costcenters", values, method="POST"
+        )
 
     async def replace_costcenters(
         self,
@@ -41,7 +45,9 @@ class SettingService(DtSettingsService):
         values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
     ) -> Response:
         """Replaces the current values of the costcenter field."""
-        return await self._write_field_values(account_uuid, "costcenters", values, method="PUT")
+        return await self._write_field_values(
+            account_uuid, "costcenters", values, method="PUT"
+        )
 
     async def delete_costcenter(self, account_uuid: str, key: str) -> Response:
         """Deletes a value by key on the costcenter field."""
@@ -65,7 +71,9 @@ class SettingService(DtSettingsService):
         values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
     ) -> Response:
         """Adds the provided values to the product field."""
-        return await self._write_field_values(account_uuid, "products", values, method="POST")
+        return await self._write_field_values(
+            account_uuid, "products", values, method="POST"
+        )
 
     async def replace_products(
         self,
@@ -73,7 +81,9 @@ class SettingService(DtSettingsService):
         values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
     ) -> Response:
         """Replaces the current values of the product field."""
-        return await self._write_field_values(account_uuid, "products", values, method="PUT")
+        return await self._write_field_values(
+            account_uuid, "products", values, method="PUT"
+        )
 
     async def delete_product(self, account_uuid: str, key: str) -> Response:
         """Deletes a value by key on the product field."""
@@ -215,7 +225,9 @@ class FieldValuesRequest(DynatraceObject):
             ]
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.values = [FieldValue(raw_element=value) for value in raw_element.get("values", [])]
+        self.values = [
+            FieldValue(raw_element=value) for value in raw_element.get("values", [])
+        ]
 
     def to_json(self) -> dict[str, Any]:
         return {"values": [value.to_json() for value in self.values]}
