@@ -50,6 +50,7 @@ class DynatraceOAuthClient(httpx.AsyncClient):
         response = await super().request(
             "POST",
             self._token_url,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
             data={
                 "grant_type": "client_credentials",
                 "client_id": self._client_id,
