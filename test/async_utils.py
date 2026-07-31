@@ -1,20 +1,30 @@
 import hashlib
 import json
 import os
+from collections.abc import AsyncIterable
 from pathlib import Path
+from typing import Any, TypeVar
 
 from dynatrace.utils import slugify
 
+T = TypeVar("T")
+
 
 class MockResponse:
-    def __init__(self, json_data):
+    json_data: Any
+    headers: dict[str, str]
+    text: str
+    content: bytes | None
+    status_code: int
+
+    def __init__(self, json_data: Any) -> None:
         self.json_data = json_data
         self.headers = {}
         self.text = json.dumps(json_data) if json_data is not None else ""
         self.content = self.text.encode() if self.text else None
         self.status_code = 200
 
-    def json(self):
+    def json(self) -> Any:
         return self.json_data
 
 
@@ -22,25 +32,25 @@ current_file_path = os.path.dirname(os.path.realpath(__file__))
 
 
 async def local_make_request(
-    self,
+    self: Any,
     path: str,
-    params: dict | None = None,
-    headers: dict | None = None,
-    method="GET",
-    data=None,
-    query_params=None,
-    **kwargs,
+    params: dict[str, Any] | None = None,
+    headers: dict[str, Any] | None = None,
+    method: str = "GET",
+    data: Any = None,
+    query_params: dict[str, Any] | None = None,
+    **kwargs: Any,
 ) -> MockResponse:
 
-    params = f"{params}" if params else ""
+    params_key = f"{params}" if params else ""
     if query_params:
-        params += f"{query_params}"
-    if params:
-        encoded = f"{params}".encode()
-        params = f"_{hashlib.sha256(encoded).hexdigest()}"[:16]
+        params_key += f"{query_params}"
+    if params_key:
+        encoded = f"{params_key}".encode()
+        params_key = f"_{hashlib.sha256(encoded).hexdigest()}"[:16]
 
     path = slugify(path)
-    file_name = f"{method}{path}{params}.json"
+    file_name = f"{method}{path}{params_key}.json"
     file_path = Path(current_file_path, "mock_data", file_name)
     if not file_path.exists():
         candidates = sorted(
@@ -70,11 +80,11 @@ async def local_make_request(
         return MockResponse(json_data)
 
 
-async def collect(async_iterable):
+async def collect(async_iterable: AsyncIterable[T]) -> list[T]:
     return [item async for item in async_iterable]
 
 
-async def first(async_iterable):
+async def first(async_iterable: AsyncIterable[T]) -> T:
     async for item in async_iterable:
         return item
     raise AssertionError("Expected at least one item")
