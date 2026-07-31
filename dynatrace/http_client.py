@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 import asyncio
-import json
+import json as json_lib
 import logging
 from typing import Any
 
@@ -35,9 +35,9 @@ class HttpClient:
         self,
         base_url: str,
         credentials: DynatraceOAuthCredentials | DynatraceAccessToken,
-        log: logging.Logger = None,
+        log: logging.Logger | None = None,
         proxies: dict[str, str] | None = None,
-        too_many_requests_strategy=None,
+        too_many_requests_strategy: str | None = None,
         retries: int = 0,
         retry_delay_ms: int = 0,
         mc_jsession_id: str | None = None,
@@ -67,17 +67,19 @@ class HttpClient:
         self.follow_redirects = follow_redirects
         self.token_timeout = token_timeout
 
-        self.log = log
-        if self.log is None:
-            self.log = logging.getLogger(__name__)
-            self.log.setLevel(logging.WARNING)
+        if log is None:
+            logger = logging.getLogger(__name__)
+            logger.setLevel(logging.WARNING)
             st = logging.StreamHandler()
             fmt = logging.Formatter(
                 "%(asctime)s - %(levelname)s - %(name)s - %(thread)d - "
                 "%(filename)s:%(lineno)d - %(message)s"
             )
             st.setFormatter(fmt)
-            self.log.addHandler(st)
+            logger.addHandler(st)
+        else:
+            logger = log
+        self.log = logger
 
         # Internal Dynatrace cookies
         self.mc_jsession_id = mc_jsession_id
@@ -134,7 +136,7 @@ class HttpClient:
         return params
 
     def _build_mounts(self) -> dict[str, httpx.AsyncBaseTransport]:
-        mounts = {}
+        mounts: dict[str, httpx.AsyncBaseTransport] = {}
         for scheme in ("http", "https"):
             proxy = self.proxies.get(scheme)
             if proxy:
@@ -145,7 +147,7 @@ class HttpClient:
                 )
         return mounts
 
-    def _create_client(self):
+    def _create_client(self) -> httpx.AsyncClient:
         mounts = self._build_mounts()
         if isinstance(self.credentials, DynatraceAccessToken):
             self.auth_header = {"Authorization": f"Api-Token {self.credentials.token}"}
@@ -240,14 +242,16 @@ class HttpClient:
         data: Any = None,
         files: Any = None,
         query_params: Any = None,
+        json: Any = None,
     ) -> httpx.Response:
         url = f"{self.base_url}{path}"
 
-        body = None
+        body = json
         request_params = self._sanitize_params(params)
 
         if method in ["POST", "PUT"]:
-            body = params
+            if body is None:
+                body = params
             request_params = self._sanitize_params(query_params)
 
         request_headers = self._build_headers(headers=headers, files=files)
@@ -264,7 +268,7 @@ class HttpClient:
         if self.print_bodies:
             print(method, url)
             if body:
-                print(json.dumps(body, indent=2))
+                print(json_lib.dumps(body, indent=2))
 
         try:
             response = await self._request_with_retries(
