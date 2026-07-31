@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import logging
+from types import TracebackType
 
 from dynatrace.account.schemas import AccountAPI
 from dynatrace.auth import DynatraceAccessToken, DynatraceOAuthCredentials
@@ -263,7 +264,7 @@ class DynatraceAsync:
             self.platform: PlatformAPI = PlatformAPI(self.__http_client)
             self.account: AccountAPI = AccountAPI(self.__http_client)
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> object:
         if isinstance(self.__credentials, DynatraceOAuthCredentials):
             if name in self._OAUTH_RESTRICTED:
                 raise AttributeError(
@@ -284,5 +285,10 @@ class DynatraceAsync:
     async def __aenter__(self) -> "DynatraceAsync":
         return self
 
-    async def __aexit__(self, exc_type, exc, tb) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: TracebackType | None,
+    ) -> None:
         await self.aclose()
