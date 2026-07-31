@@ -45,6 +45,13 @@ mock = "*"
 tox = "*"
 wrapt = "*"
 
+[tool.mypy]
+python_version = "3.10"
+packages = ["dynatrace"]
+show_error_codes = true
+no_color_output = true
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
