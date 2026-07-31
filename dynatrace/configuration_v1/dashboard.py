@@ -23,6 +23,7 @@ from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.monitored_entities import EntityShortRepresentation
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import raw_optional_bool, raw_optional_str, raw_optional_str_list
 
 
 class DashboardService:
@@ -81,7 +82,7 @@ class DashboardFilter(DynatraceObject):
     def _create_from_raw_data(self, raw_element: Any) -> None:
         if raw_element is None:
             raw_element = {}
-        self.timeframe: str = raw_element.get("timeframe")
+        self.timeframe: str | None = raw_optional_str(raw_element, "timeframe")
         self.management_zone: EntityShortRepresentation | None = (
             EntityShortRepresentation(
                 self._http_client, None, raw_element.get("managementZone")
@@ -91,17 +92,52 @@ class DashboardFilter(DynatraceObject):
         )
 
 
+class DashboardGenericTagFilter(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
+        if raw_element is None:
+            raw_element = {}
+        self.display_name: str | None = raw_optional_str(raw_element, "displayName")
+        self.entity_types: list[str] = raw_optional_str_list(raw_element, "entityTypes")
+        self.suggestions_from_entity_type: str | None = raw_optional_str(
+            raw_element, "suggestionsFromEntityType"
+        )
+        self.tag_key: str | None = raw_optional_str(raw_element, "tagKey")
+
+
+class DynamicFilters(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
+        if raw_element is None:
+            raw_element = {}
+        self.filters: list[str] = raw_optional_str_list(raw_element, "filters")
+        self.generic_tag_filters: list[DashboardGenericTagFilter] = [
+            DashboardGenericTagFilter(self._http_client, None, raw_filter)
+            for raw_filter in raw_element.get("genericTagFilters", [])
+        ]
+
+
 class DashboardMetadata(DynatraceObject):
     def _create_from_raw_data(self, raw_element: Any) -> None:
-        # TODO - Schema changed, add extra fields dynamicFilters
-        self.name: str = raw_element.get("name")
-        self.shared: bool = raw_element.get("shared")
-        self.owner: str = raw_element.get("owner")
+        if raw_element is None:
+            raw_element = {}
+        self.name: str | None = raw_optional_str(raw_element, "name")
+        self.shared: bool | None = raw_optional_bool(raw_element, "shared")
+        self.owner: str | None = raw_optional_str(raw_element, "owner")
         self.dashboard_filter: DashboardFilter = DashboardFilter(
             self._http_client, None, raw_element.get("dashboardFilter")
         )
-        self.tags: list[str] = raw_element.get("tags")
-        self.preset: bool = raw_element.get("preset")
+        self.dynamic_filters: DynamicFilters | None = (
+            DynamicFilters(self._http_client, None, raw_element.get("dynamicFilters"))
+            if raw_element.get("dynamicFilters") is not None
+            else None
+        )
+        self.has_consistent_colors: bool | None = raw_optional_bool(
+            raw_element, "hasConsistentColors"
+        )
+        self.tags: list[str] = raw_optional_str_list(raw_element, "tags")
+        self.preset: bool | None = raw_optional_bool(raw_element, "preset")
+        self.tiles_name_size: str | None = raw_optional_str(
+            raw_element, "tilesNameSize"
+        )
 
 
 class Dashboard(DynatraceObject):

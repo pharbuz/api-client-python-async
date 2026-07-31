@@ -22,7 +22,7 @@ import unicodedata
 import warnings
 from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
-from typing import Any, ParamSpec, Protocol, TypeAlias, TypeVar, runtime_checkable
+from typing import Any, ParamSpec, Protocol, TypeAlias, TypeVar, cast, runtime_checkable
 
 ISO_8601 = "%Y-%m-%dT%H:%M:%S.%fZ"
 ISO_8601_NO_MS = "%Y-%m-%dT%H:%M:%SZ"
@@ -104,6 +104,13 @@ def raw_optional_str(raw_element: JSONMapping, key: str) -> str | None:
     if not isinstance(value, str):
         raise TypeError(f"expected raw field {key!r} to be str")
     return value
+
+
+def raw_optional_str_list(raw_element: JSONMapping, key: str) -> list[str]:
+    value = raw_element.get(key, [])
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise TypeError(f"expected raw field {key!r} to be list[str]")
+    return cast(list[str], value)
 
 
 def raw_optional_str_or_float(raw_element: JSONMapping, key: str) -> str | float | None:
