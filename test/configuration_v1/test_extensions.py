@@ -89,8 +89,7 @@ async def test_get_instance_configuration(dt: DynatraceAsync) -> None:
     )
     assert isinstance(config, ExtensionConfigurationDto)
 
-    # TODO - This is a bug on Dynatrace, watch for the fix, this is the configuration ID
-    assert config.extension_id == "5649014104314746667"
+    assert config.extension_id == "custom.remote.python.salesforce_eventstream"
 
     assert config.enabled
     assert config.active_gate.id == "-7885258652650793909"

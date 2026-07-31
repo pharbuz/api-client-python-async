@@ -1,5 +1,5 @@
 {
-  "extensionId": "5649014104314746667",
+  "extensionId": "custom.remote.python.salesforce_eventstream",
   "enabled": true,
   "useGlobal": null,
   "properties": {
