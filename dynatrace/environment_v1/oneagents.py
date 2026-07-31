@@ -16,15 +16,25 @@ limitations under the License.
 
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import datetime_to_int64
+from dynatrace.utils import (
+    datetime_to_int64,
+    raw_optional_bool,
+    raw_optional_int,
+    raw_optional_object,
+    raw_optional_str,
+    raw_optional_str_or_float,
+    raw_required_str,
+)
 
 
 class ConfiguredMonitoringMode(Enum):
     CLOUD_INFRASTRUCTURE = "CLOUD_INFRASTRUCTURE"
+    DISCOVERY = "DISCOVERY"
     FULL_STACK = "FULL_STACK"
 
 
@@ -43,6 +53,7 @@ class UpdateStatus(Enum):
 
 class MonitoringType(Enum):
     CLOUD_INFRASTRUCTURE = "CLOUD_INFRASTRUCTURE"
+    DISCOVERY = "DISCOVERY"
     FULL_STACK = "FULL_STACK"
     STANDALONE = "STANDALONE"
 
@@ -111,17 +122,11 @@ class OneAgentOnAHostService:
             "hostGroupName": host_group_name,
             "osType": OsType(os_type).value if os_type else None,
             "availabilityState": (
-                AvailabilityState(availability_state).value
-                if availability_state
-                else None
+                AvailabilityState(availability_state).value if availability_state else None
             ),
-            "monitoringType": (
-                MonitoringType(monitoring_type).value if monitoring_type else None
-            ),
+            "monitoringType": (MonitoringType(monitoring_type).value if monitoring_type else None),
             "autoUpdateSetting": AutoUpdate(auto_update).value if auto_update else None,
-            "updateStatus": (
-                UpdateStatus(update_status).value if update_status else None
-            ),
+            "updateStatus": (UpdateStatus(update_status).value if update_status else None),
         }
         return await PaginatedList(
             HostAgentInfo,
@@ -134,55 +139,71 @@ class OneAgentOnAHostService:
 
 # todo - create class objects for ModuleInfo[] and PluginInfo[]
 class HostAgentInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
-        self.host_info: HostInfo = HostInfo(raw_element=raw_element.get("hostInfo"))
-        self.faulty_version: bool = raw_element.get("faultyVersion")
-        self.active: bool = raw_element.get("active")
-        self.configured_monitoring_mode: ConfiguredMonitoringMode = (
-            ConfiguredMonitoringMode(raw_element.get("configuredMonitoringMode"))
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.host_info: HostInfo | None = raw_optional_object(
+            raw_element, "hostInfo", lambda value: HostInfo(raw_element=value)
         )
-        self.monitoring_type: MonitoringType = MonitoringType(
-            raw_element.get("monitoringType")
+        self.faulty_version: bool | None = raw_optional_bool(raw_element, "faultyVersion")
+        self.active: bool | None = raw_optional_bool(raw_element, "active")
+        self.configured_monitoring_mode: ConfiguredMonitoringMode | None = (
+            ConfiguredMonitoringMode(raw_element["configuredMonitoringMode"])
+            if raw_element.get("configuredMonitoringMode")
+            else None
         )
-        self.auto_update: AutoUpdate = AutoUpdate(raw_element.get("autoUpdateSetting"))
-        self.update_status: UpdateStatus = UpdateStatus(raw_element.get("updateStatus"))
-        self.available_versions: str = raw_element.get("availableVersions", [])
-        self.config_monitoring_enabled: bool = raw_element.get(
-            "configuredMonitoringEnabled"
+        self.monitoring_type: MonitoringType | None = (
+            MonitoringType(raw_element["monitoringType"])
+            if raw_element.get("monitoringType")
+            else None
         )
-        self.availability_state: AvailabilityState = AvailabilityState(
-            raw_element.get("availabilityState")
+        self.auto_update: AutoUpdate | None = (
+            AutoUpdate(raw_element["autoUpdateSetting"])
+            if raw_element.get("autoUpdateSetting")
+            else None
         )
-        self.activegate_id: int = raw_element.get("currentActiveGateId")
-        self.networkzone_id: str = raw_element.get("currentNetworkZoneId")
+        self.update_status: UpdateStatus | None = (
+            UpdateStatus(raw_element["updateStatus"]) if raw_element.get("updateStatus") else None
+        )
+        self.available_versions: list[str] | None = raw_element.get("availableVersions")
+        self.config_monitoring_enabled: bool | None = raw_optional_bool(
+            raw_element, "configuredMonitoringEnabled"
+        )
+        self.availability_state: AvailabilityState | None = (
+            AvailabilityState(raw_element["availabilityState"])
+            if raw_element.get("availabilityState")
+            else None
+        )
+        self.activegate_id: int | None = raw_optional_int(raw_element, "currentActiveGateId")
+        self.networkzone_id: str | None = raw_optional_str(raw_element, "currentNetworkZoneId")
 
 
 # todo - incomplete + firstSeenTimestamp is of type integer, how do we work with that here?
 class HostInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
-        self.entity_id: str = raw_element.get("entityId")
-        self.display_name: str = raw_element.get("displayName")
-        self.discovered_name: str = raw_element.get("discoveredName")
-        self.consumed_host_units: str = raw_element.get("consumedHostUnits")
-        self.os_version: str = raw_element.get("osVersion")
-        self.host_group: HostGroup = HostGroup(raw_element=raw_element.get("hostGroup"))
-        self.tags: list[TagInfo] = [
-            TagInfo(raw_element=t) for t in raw_element.get("tags", [])
-        ]
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.entity_id: str | None = raw_optional_str(raw_element, "entityId")
+        self.display_name: str | None = raw_optional_str(raw_element, "displayName")
+        self.discovered_name: str | None = raw_optional_str(raw_element, "discoveredName")
+        self.consumed_host_units: str | float | None = raw_optional_str_or_float(
+            raw_element, "consumedHostUnits"
+        )
+        self.os_version: str | None = raw_optional_str(raw_element, "osVersion")
+        self.host_group: HostGroup | None = raw_optional_object(
+            raw_element, "hostGroup", lambda value: HostGroup(raw_element=value)
+        )
+        self.tags: list[TagInfo] = [TagInfo(raw_element=t) for t in raw_element.get("tags", [])]
         self.os_type: OsType | None = (
             OsType(raw_element.get("osType")) if raw_element.get("osType") else None
         )
 
 
 class HostGroup(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
-        self.me_id: str = raw_element.get("meId")
-        self.name: str = raw_element.get("name")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.me_id: str | None = raw_optional_str(raw_element, "meId")
+        self.name: str | None = raw_optional_str(raw_element, "name")
 
 
 class TagInfo(DynatraceObject):
     # todo - convert context to Enum
-    def _create_from_raw_data(self, raw_element):
-        self.context: str = raw_element.get("context")
-        self.key: str = raw_element.get("key")
-        self.value: str = raw_element.get("value")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.context: str = raw_required_str(raw_element, "context")
+        self.key: str = raw_required_str(raw_element, "key")
+        self.value: str | None = raw_optional_str(raw_element, "value")

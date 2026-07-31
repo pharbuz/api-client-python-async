@@ -55,9 +55,7 @@ def timestamp_to_string(timestamp: datetime | str | None) -> str | None:
     if not isinstance(timestamp, datetime):
         return timestamp
     return (
-        timestamp.astimezone(timezone.utc)
-        .replace(tzinfo=None)
-        .isoformat(timespec="milliseconds")
+        timestamp.astimezone(timezone.utc).replace(tzinfo=None).isoformat(timespec="milliseconds")
     )
 
 
@@ -91,6 +89,15 @@ def raw_optional_str(raw_element: dict[str, Any], key: str) -> str | None:
     if not isinstance(value, str):
         raise TypeError(f"expected raw field {key!r} to be str")
     return value
+
+
+def raw_optional_str_or_float(raw_element: dict[str, Any], key: str) -> str | float | None:
+    value = raw_element.get(key)
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, str | int | float):
+        raise TypeError(f"expected raw field {key!r} to be str or float")
+    return float(value) if isinstance(value, int | float) else value
 
 
 def raw_required_int(raw_element: dict[str, Any], key: str) -> int:
@@ -161,7 +168,7 @@ def raw_optional_object(
     return factory(value)
 
 
-def datetime_to_int64(timestamp: datetime | None) -> int | None:
+def datetime_to_int64(timestamp: datetime | int | str | None) -> int | str | None:
     if not isinstance(timestamp, datetime):
         return timestamp
     return int(timestamp.replace(tzinfo=timezone.utc).timestamp() * 1000)
