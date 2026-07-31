@@ -105,16 +105,16 @@ async def test_get_types(dt: DynatraceAsync):
     assert isinstance(entity_type.management_zones, str)
     assert isinstance(entity_type.from_relationships, list)
     assert all(isinstance(fr, FromPosition) for fr in entity_type.from_relationships)
-    for rel in entity_type.from_relationships:
-        assert isinstance(rel.id, str)
-        assert isinstance(rel.to_types, list)
-        assert all(isinstance(tt, str) for tt in rel.to_types)
+    for from_relationship in entity_type.from_relationships:
+        assert isinstance(from_relationship.id, str)
+        assert isinstance(from_relationship.to_types, list)
+        assert all(isinstance(tt, str) for tt in from_relationship.to_types)
     assert isinstance(entity_type.to_relationships, list)
     assert all(isinstance(tr, ToPosition) for tr in entity_type.to_relationships)
-    for rel in entity_type.to_relationships:
-        assert isinstance(rel.id, str)
-        assert isinstance(rel.from_types, list)
-        assert all(isinstance(ft, str) for ft in rel.from_types)
+    for to_relationship in entity_type.to_relationships:
+        assert isinstance(to_relationship.id, str)
+        assert isinstance(to_relationship.from_types, list)
+        assert all(isinstance(ft, str) for ft in to_relationship.from_types)
 
     # value checks
     assert entity_type.type == "DISK"
