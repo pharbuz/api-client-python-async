@@ -17,6 +17,8 @@ limitations under the License.
 from datetime import datetime
 from typing import Optional
 
+from httpx import Response
+
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 
@@ -44,7 +46,7 @@ class ThirdPartySyntheticTestsService:
         step_title: str | None = None,
         detailed_steps: list["SyntheticTestStep"] | None = None,
         detailed_step_results: list["SyntheticMonitorStepResult"] | None = None,
-    ):
+    ) -> Response:
 
         location = ThirdPartySyntheticLocation(
             self.__http_client, location_id, location_name
@@ -111,9 +113,9 @@ class ThirdPartySyntheticTestsService:
         event_type: str,
         reason: str,
         engine_name: str,
-    ):
+    ) -> Response | None:
         opened_events: list[ThirdPartyEventOpenNotification] = []
-        resolved_events = []
+        resolved_events: list[ThirdPartyEventResolvedNotification] = []
         event_id = f"{test_id}_event"
         if state == "open":
             opened_events.append(
@@ -140,19 +142,20 @@ class ThirdPartySyntheticTestsService:
                 self.__http_client, engine_name, opened_events, resolved_events
             )
             return await events.post()
+        return None
 
 
 class ThirdPartySyntheticTests(DynatraceObject):
     def __init__(
         self,
-        http_client,
+        http_client: HttpClient,
         synthetic_engine_name: str,
         message_timestamp: datetime,
         locations: list["ThirdPartySyntheticLocation"],
         tests: list["ThirdPartySyntheticMonitor"],
         test_results: list["ThirdPartySyntheticResult"] | None = None,
         synthetic_engine_icon_url: str | None = None,
-    ):
+    ) -> None:
 
         raw_element = {
             "syntheticEngineName": synthetic_engine_name,
@@ -168,14 +171,20 @@ class ThirdPartySyntheticTests(DynatraceObject):
         }
         super().__init__(http_client, None, raw_element)
 
-    async def post(self):
+    async def post(self) -> Response:
         return await self._make_request(
             "/api/v1/synthetic/ext/tests", params=self._raw_element, method="POST"
         )
 
 
 class ThirdPartySyntheticLocation(DynatraceObject):
-    def __init__(self, http_client, location_id: str, name: str, ip: str | None = None):
+    def __init__(
+        self,
+        http_client: HttpClient,
+        location_id: str,
+        name: str,
+        ip: str | None = None,
+    ) -> None:
 
         raw_element = {"id": location_id, "name": name, "ip": ip}
         super().__init__(http_client, None, raw_element)
@@ -184,7 +193,7 @@ class ThirdPartySyntheticLocation(DynatraceObject):
 class ThirdPartySyntheticMonitor(DynatraceObject):
     def __init__(
         self,
-        http_client,
+        http_client: HttpClient,
         test_id: str,
         title: str,
         locations: list["SyntheticTestLocation"],
@@ -197,7 +206,7 @@ class ThirdPartySyntheticMonitor(DynatraceObject):
         deleted: bool | None = None,
         steps: list["SyntheticTestStep"] | None = None,
         no_data_timeout: int | None = None,
-    ):
+    ) -> None:
 
         raw_element = {
             "id": test_id,
@@ -217,14 +226,18 @@ class ThirdPartySyntheticMonitor(DynatraceObject):
 
 
 class SyntheticTestLocation(DynatraceObject):
-    def __init__(self, http_client, location_id: str, enabled: bool | None = None):
+    def __init__(
+        self, http_client: HttpClient, location_id: str, enabled: bool | None = None
+    ) -> None:
 
         raw_element = {"id": location_id, "enabled": enabled}
         super().__init__(http_client, None, raw_element)
 
 
 class SyntheticTestStep(DynatraceObject):
-    def __init__(self, http_client, step_id: int, title: str | None):
+    def __init__(
+        self, http_client: HttpClient, step_id: int, title: str | None
+    ) -> None:
         self.step_id = step_id
         self.title = title
 
@@ -235,12 +248,12 @@ class SyntheticTestStep(DynatraceObject):
 class ThirdPartySyntheticResult(DynatraceObject):
     def __init__(
         self,
-        http_client,
+        http_client: HttpClient,
         test_id: str,
         total_step_count: int,
         location_results: list["ThirdPartySyntheticLocationTestResult"],
         schedule_interval_in_seconds: int | None = None,
-    ):
+    ) -> None:
 
         raw_element = {
             "id": test_id,
@@ -256,14 +269,14 @@ class ThirdPartySyntheticResult(DynatraceObject):
 class ThirdPartySyntheticLocationTestResult(DynatraceObject):
     def __init__(
         self,
-        http_client,
+        http_client: HttpClient,
         location_id: str,
         start_timestamp: datetime,
         success: bool,
         success_rate: float | None = None,
         response_time_millis: int | None = None,
         step_results: list["SyntheticMonitorStepResult"] | None = None,
-    ):
+    ) -> None:
 
         raw_element = {
             "id": location_id,
@@ -283,12 +296,12 @@ class ThirdPartySyntheticLocationTestResult(DynatraceObject):
 class SyntheticMonitorStepResult(DynatraceObject):
     def __init__(
         self,
-        http_client,
+        http_client: HttpClient,
         step_id: int,
         start_timestamp: datetime,
         response_time_millis: int | None = None,
         error: Optional["SyntheticMonitorError"] = None,
-    ):
+    ) -> None:
 
         raw_element = {
             "id": step_id,
@@ -300,7 +313,7 @@ class SyntheticMonitorStepResult(DynatraceObject):
 
 
 class SyntheticMonitorError(DynatraceObject):
-    def __init__(self, http_client, code: int, message: str):
+    def __init__(self, http_client: HttpClient, code: int, message: str) -> None:
 
         raw_element = {"code": code, "message": message}
         super().__init__(http_client, None, raw_element)
@@ -309,11 +322,11 @@ class SyntheticMonitorError(DynatraceObject):
 class ThirdPartySyntheticEvents(DynatraceObject):
     def __init__(
         self,
-        http_client,
+        http_client: HttpClient,
         synthetic_engine_name: str,
         open_events: list["ThirdPartyEventOpenNotification"] | None,
         resolved_events: list["ThirdPartyEventResolvedNotification"] | None,
-    ):
+    ) -> None:
 
         raw_element = {
             "syntheticEngineName": synthetic_engine_name,
@@ -330,7 +343,7 @@ class ThirdPartySyntheticEvents(DynatraceObject):
         }
         super().__init__(http_client, None, raw_element)
 
-    async def post(self):
+    async def post(self) -> Response:
         return await self._make_request(
             "/api/v1/synthetic/ext/events", params=self._raw_element, method="POST"
         )
@@ -339,7 +352,7 @@ class ThirdPartySyntheticEvents(DynatraceObject):
 class ThirdPartyEventOpenNotification(DynatraceObject):
     def __init__(
         self,
-        http_client,
+        http_client: HttpClient,
         test_id: str,
         event_id: str,
         name: str,
@@ -347,7 +360,7 @@ class ThirdPartyEventOpenNotification(DynatraceObject):
         reason: str,
         start_timestamp: datetime,
         location_ids: list[str],
-    ):
+    ) -> None:
 
         raw_element = {
             "testId": test_id,
@@ -363,8 +376,12 @@ class ThirdPartyEventOpenNotification(DynatraceObject):
 
 class ThirdPartyEventResolvedNotification(DynatraceObject):
     def __init__(
-        self, http_client, test_id: str, event_id: str, end_timestamp: datetime
-    ):
+        self,
+        http_client: HttpClient,
+        test_id: str,
+        event_id: str,
+        end_timestamp: datetime,
+    ) -> None:
 
         raw_element = {
             "testId": test_id,

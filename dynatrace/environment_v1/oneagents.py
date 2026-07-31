@@ -145,7 +145,7 @@ class OneAgentOnAHostService:
 
 # todo - create class objects for ModuleInfo[] and PluginInfo[]
 class HostAgentInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.host_info: HostInfo | None = raw_optional_object(
             raw_element, "hostInfo", lambda value: HostInfo(raw_element=value)
         )
@@ -192,7 +192,7 @@ class HostAgentInfo(DynatraceObject):
 
 # todo - incomplete + firstSeenTimestamp is of type integer, how do we work with that here?
 class HostInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.entity_id: str | None = raw_optional_str(raw_element, "entityId")
         self.display_name: str | None = raw_optional_str(raw_element, "displayName")
         self.discovered_name: str | None = raw_optional_str(
@@ -214,14 +214,14 @@ class HostInfo(DynatraceObject):
 
 
 class HostGroup(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.me_id: str | None = raw_optional_str(raw_element, "meId")
         self.name: str | None = raw_optional_str(raw_element, "name")
 
 
 class TagInfo(DynatraceObject):
     # todo - convert context to Enum
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.context: str = raw_required_str(raw_element, "context")
         self.key: str = raw_required_str(raw_element, "key")
         self.value: str | None = raw_optional_str(raw_element, "value")

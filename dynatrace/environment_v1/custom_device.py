@@ -18,6 +18,8 @@ from collections.abc import Iterable, MutableSequence
 from datetime import datetime, timedelta, timezone
 from typing import cast, overload
 
+from httpx import Response
+
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 
@@ -118,7 +120,7 @@ class Series(MutableSequence["EntityTimeseriesData"]):
 class CustomDevicePushMessage(DynatraceObject):
     def __init__(
         self,
-        http_client,
+        http_client: HttpClient,
         device_id: str,
         display_name: str | None = None,
         group: str | None = None,
@@ -131,7 +133,7 @@ class CustomDevicePushMessage(DynatraceObject):
         tags: list[str] | None = None,
         series: Series | list["EntityTimeseriesData"] | None = None,
         host_names: list[str] | None = None,
-    ):
+    ) -> None:
         self.device_id = device_id
         self.display_name: str | None = display_name
         self.group: str | None = group
@@ -172,11 +174,11 @@ class CustomDevicePushMessage(DynatraceObject):
         return self.__series
 
     @series.setter
-    def series(self, series: Series):
+    def series(self, series: Series) -> None:
         self.__series = series
         self._raw_element["series"] = [s._raw_element for s in self.__series]
 
-    async def post(self, only_valid_data_points=False):
+    async def post(self, only_valid_data_points: bool = False) -> Response:
         try:
             response = await self._make_request(
                 f"/api/v1/entity/infrastructure/custom/{self.device_id}",
@@ -223,7 +225,7 @@ class CustomDevicePushMessage(DynatraceObject):
         value: float,
         timestamp: datetime | None = None,
         dimensions: dict[str, str] | None = None,
-    ):
+    ) -> None:
         data_point = DataPoint(value, timestamp)
         self.series.append(
             EntityTimeseriesData(self._http_client, key, [data_point], dimensions)
@@ -236,11 +238,11 @@ class CustomDevicePushMessage(DynatraceObject):
 class EntityTimeseriesData(DynatraceObject):
     def __init__(
         self,
-        http_client,
+        http_client: HttpClient | None,
         timeseries_id: str,
         data_points: list["DataPoint"],
         dimensions: dict[str, str] | None = None,
-    ):
+    ) -> None:
         self.timeseries_id: str = timeseries_id
         self.dimensions = dimensions
         self.__data_points: list[DataPoint] = data_points
@@ -254,7 +256,7 @@ class EntityTimeseriesData(DynatraceObject):
         }
         super().__init__(http_client, None, raw_element)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Series(id={self.timeseries_id}, data_points={self.data_points})"
 
     @property
@@ -262,7 +264,7 @@ class EntityTimeseriesData(DynatraceObject):
         return self.__data_points
 
     @data_points.setter
-    def data_points(self, data_points: list["DataPoint"]):
+    def data_points(self, data_points: list["DataPoint"]) -> None:
         self.__data_points = data_points
         self._raw_element["dataPoints"] = [
             [int(data_point.timestamp.timestamp() * 1000), data_point.value]
@@ -271,7 +273,7 @@ class EntityTimeseriesData(DynatraceObject):
 
 
 class DataPoint:
-    def __init__(self, value: float, timestamp: datetime | None = None):
+    def __init__(self, value: float, timestamp: datetime | None = None) -> None:
         self.timestamp: datetime = (
             timestamp if timestamp is not None else datetime.now()
         )

@@ -64,7 +64,7 @@ class TagContext(Enum):
 
 
 class MonitorCollectionElement(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name: str = raw_required_str(raw_element, "name")
         self.entity_id: str = raw_required_str(raw_element, "entityId")
         self.monitor_type: str = raw_required_str(raw_element, "type")
@@ -72,7 +72,7 @@ class MonitorCollectionElement(DynatraceObject):
 
 
 class LocalOutagePolicy(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.affected_locations: int = raw_required_int(
             raw_element, "affectedLocations"
         )
@@ -80,7 +80,7 @@ class LocalOutagePolicy(DynatraceObject):
 
 
 class OutageHandlingPolicy(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.global_outage: bool = raw_required_bool(raw_element, "globalOutage")
         self.local_outage: bool = raw_required_bool(raw_element, "localOutage")
         self.local_outage_policy: LocalOutagePolicy = LocalOutagePolicy(
@@ -92,7 +92,7 @@ class OutageHandlingPolicy(DynatraceObject):
 
 
 class LoadingTimeThreshold(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.type: LoadingTimeThresholdType = LoadingTimeThresholdType(
             raw_element["type"]
         )
@@ -102,7 +102,7 @@ class LoadingTimeThreshold(DynatraceObject):
 
 
 class LoadingTimeThresholdsPolicyDto(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.enabled: bool = raw_required_bool(raw_element, "enabled")
         self.thresholds: list[LoadingTimeThreshold] = [
             LoadingTimeThreshold(raw_element=threshold)
@@ -111,7 +111,7 @@ class LoadingTimeThresholdsPolicyDto(DynatraceObject):
 
 
 class AnomalyDetection(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.outage_handling: OutageHandlingPolicy | None = raw_optional_object(
             raw_element,
             "outageHandling",
@@ -127,7 +127,7 @@ class AnomalyDetection(DynatraceObject):
 
 
 class TagWithSourceInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.source: TagSource | None = (
             TagSource(raw_element["source"]) if raw_element.get("source") else None
         )
@@ -137,13 +137,13 @@ class TagWithSourceInfo(DynatraceObject):
 
 
 class ManagementZone(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str = raw_required_str(raw_element, "id")
         self.name: str = raw_required_str(raw_element, "name")
 
 
 class SyntheticMonitor(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.entity_id: str = raw_required_str(raw_element, "entityId")
         self.name: str = raw_required_str(raw_element, "name")
         self.frequency_min: int = raw_required_int(raw_element, "frequencyMin")

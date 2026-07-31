@@ -64,14 +64,14 @@ class MonitoringMode(Enum):
 
 
 class TagInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.context: str = raw_required_str(raw_element, "context")
         self.key: str = raw_required_str(raw_element, "key")
         self.value: str | None = raw_optional_str(raw_element, "value")
 
 
 class AgentVersion(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.major: int | None = raw_optional_int(raw_element, "major")
         self.minor: int | None = raw_optional_int(raw_element, "minor")
         self.revision: int | None = raw_optional_int(raw_element, "revision")
@@ -82,13 +82,13 @@ class AgentVersion(DynatraceObject):
 
 
 class HostGroup(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.me_id: str | None = raw_optional_str(raw_element, "meId")
         self.name: str | None = raw_optional_str(raw_element, "name")
 
 
 class Host(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.entity_id: str | None = raw_optional_str(raw_element, "entityId")
         self.display_name: str | None = raw_optional_str(raw_element, "displayName")
         self.customized_name: str | None = raw_optional_str(

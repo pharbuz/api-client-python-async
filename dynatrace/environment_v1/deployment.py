@@ -382,7 +382,7 @@ class DeploymentService:
 
 
 class ConnectionInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.tenant_uuid: str = raw_element["tenantUUID"]
         self.tenant_token: str = raw_element["tenantToken"]
         self.communication_endpoints: list[str] = raw_element.get(
@@ -394,39 +394,39 @@ class ConnectionInfo(DynatraceObject):
 
 
 class InstallerMetaInfoDto(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.latest_agent_version: str = raw_element["latestAgentVersion"]
 
 
 class AgentInstallerVersions(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.available_versions: list[str] = raw_element["availableVersions"]
 
 
 class ActiveGateConnectionInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.tenant_uuid: str = raw_element["tenantUUID"]
         self.tenant_token: str = raw_element["tenantToken"]
         self.communication_endpoints: str = raw_element["communicationEndpoints"]
 
 
 class ActiveGateInstallerVersions(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.available_versions: list[str] = raw_element["availableVersions"]
 
 
 class BoshReleaseChecksum(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.sha_256: str = raw_element["sha256"]
 
 
 class BoshReleaseAvailableVersions(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.available_versions: list[str] = raw_element["availableVersions"]
 
 
 class LatestLambdaLayerNames(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.java: str = raw_element["java"]
         self.python: str = raw_element["python"]
         self.nodejs: str = raw_element["nodejs"]
