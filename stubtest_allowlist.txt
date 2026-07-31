@@ -1,0 +1,2 @@
+dynatrace.auth.DynatraceOAuthCredentials.__replace__
+dynatrace.auth.DynatraceAccessToken.__replace__

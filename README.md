@@ -13,6 +13,14 @@ This project is a modified fork of the original library released by Dynatrace.
 $ pip install dt-async
 ```
 
+## Development
+
+Run the type completeness check with the Python 3.14 dataclass allowlist:
+
+```bash
+.venv/bin/python -m mypy.stubtest dynatrace --mypy-config-file pyproject.toml --allowlist stubtest_allowlist.txt
+```
+
 ## Authentication
 
 This library supports two authentication methods:
