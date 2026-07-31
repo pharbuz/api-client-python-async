@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from unittest import mock
 
 from dynatrace import DynatraceAsync
@@ -13,9 +14,9 @@ from dynatrace.platform.appengine.registry import (
 
 
 class MockResponse:
-    def __init__(self, json_data=None, text=None):
+    def __init__(self, json_data: Any = None, text: str | None = None) -> None:
         self._json_data = json_data
-        self.headers = {}
+        self.headers: dict[str, str] = {}
         self.text = (
             text
             if text is not None
@@ -23,27 +24,28 @@ class MockResponse:
         )
         self.status_code = 200
 
-    def json(self):
+    def json(self) -> Any:
         return self._json_data
 
 
-async def test_appengine_registry_service_is_exposed(dt: DynatraceAsync):
+async def test_appengine_registry_service_is_exposed(dt: DynatraceAsync) -> None:
     assert isinstance(dt.platform.appengine_registry, AppEngineRegistryService)
 
 
-async def test_appengine_registry_endpoints(dt: DynatraceAsync):
+async def test_appengine_registry_endpoints(dt: DynatraceAsync) -> None:
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == ("GET", "/platform/app-engine/registry/v1/apps"):
+            assert params is not None
             assert params["include-all-app-versions"] is True
             return MockResponse(
                 {
@@ -67,6 +69,7 @@ async def test_appengine_registry_endpoints(dt: DynatraceAsync):
             )
 
         if (method, path) == ("POST", "/platform/app-engine/registry/v1/apps"):
+            assert headers is not None
             assert headers["Content-Type"] == "application/zip"
             assert data == b"zip-bundle"
             return MockResponse({"id": "my.example.appid", "warnings": []})
@@ -75,6 +78,7 @@ async def test_appengine_registry_endpoints(dt: DynatraceAsync):
             "GET",
             "/platform/app-engine/registry/v1/apps:search-actions",
         ):
+            assert params is not None
             assert params["query"] == "example"
             return MockResponse(
                 {
@@ -98,6 +102,7 @@ async def test_appengine_registry_endpoints(dt: DynatraceAsync):
             method,
             path,
         ) == ("GET", "/platform/app-engine/registry/v1/apps/my.example.appid"):
+            assert params is not None
             assert params["latest-app-version"] is True
             return MockResponse(
                 {

@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from unittest import mock
 
 from httpx import Response
@@ -12,7 +13,9 @@ from dynatrace.platform.grail_dql_query.query_execution import (
 
 
 class MockResponse:
-    def __init__(self, json_data=None, text=None, raise_json: bool = False):
+    def __init__(
+        self, json_data: Any = None, text: str | None = None, raise_json: bool = False
+    ) -> None:
         self._json_data = json_data
         self.headers: dict[str, str] = {}
         self.text = (
@@ -23,28 +26,28 @@ class MockResponse:
         self.status_code = 200
         self._raise_json = raise_json
 
-    def json(self):
+    def json(self) -> Any:
         if self._raise_json:
             raise ValueError("No JSON payload")
         return self._json_data
 
 
-async def test_query_execution_service_is_exposed(dt: DynatraceAsync):
+async def test_query_execution_service_is_exposed(dt: DynatraceAsync) -> None:
     assert isinstance(dt.platform.grail_query_execution, QueryExecutionService)
 
 
-async def test_query_execution_execute_and_cancel(dt: DynatraceAsync):
+async def test_query_execution_execute_and_cancel(dt: DynatraceAsync) -> None:
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse | Response:
         if (method, path) == ("POST", "/platform/storage/query/v1/query:execute"):
             return MockResponse(
                 {

@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from unittest import mock
 
 from dynatrace import DynatraceAsync
@@ -15,32 +16,32 @@ from test.async_utils import collect
 
 
 class MockResponse:
-    def __init__(self, json_data=None):
+    def __init__(self, json_data: Any = None) -> None:
         self._json_data = json_data
-        self.headers = {}
+        self.headers: dict[str, str] = {}
         self.text = json.dumps(json_data) if json_data is not None else ""
         self.status_code = 200
 
-    def json(self):
+    def json(self) -> Any:
         return self._json_data
 
 
-async def test_env_v2_settings_service_is_exposed(dt: DynatraceAsync):
+async def test_env_v2_settings_service_is_exposed(dt: DynatraceAsync) -> None:
     assert isinstance(dt.account.settings, SettingService)
 
 
-async def test_env_v2_settings_list_effective_values(dt: DynatraceAsync):
+async def test_env_v2_settings_list_effective_values(dt: DynatraceAsync) -> None:
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == ("GET", "/api/v2/settings/effectiveValues"):
             return MockResponse(
                 {
@@ -78,21 +79,21 @@ async def test_env_v2_settings_list_effective_values(dt: DynatraceAsync):
     assert effective_values_list[0].schema_id == "builtin:test"
 
 
-async def test_account_settings_costcenters_and_products(dt: DynatraceAsync):
+async def test_account_settings_costcenters_and_products(dt: DynatraceAsync) -> None:
     account_uuid = "account-123"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        json=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        json: Any = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == (
             "GET",
             f"/v1/accounts/{account_uuid}/settings/costcenters",
