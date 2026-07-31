@@ -111,6 +111,13 @@ def raw_required_int(raw_element: dict[str, Any], key: str) -> int:
     return value
 
 
+def raw_required_float(raw_element: dict[str, Any], key: str) -> float:
+    value = raw_element[key]
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        raise TypeError(f"expected raw field {key!r} to be float")
+    return float(value)
+
+
 def raw_optional_int(raw_element: dict[str, Any], key: str) -> int | None:
     value = raw_element.get(key)
     if value is None:

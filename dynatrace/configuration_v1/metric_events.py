@@ -28,6 +28,7 @@ from dynatrace.utils import (
     raw_optional_bool,
     raw_optional_str,
     raw_required_bool,
+    raw_required_float,
     raw_required_int,
     raw_required_str,
 )
@@ -153,8 +154,8 @@ class WarningReason(Enum):
 
 class MetricEventTextFilter(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.value: str = raw_required_str(raw_element, "value")
-        self.operator: str = raw_required_str(raw_element, "operator")
+        self.value: str | None = raw_optional_str(raw_element, "value")
+        self.operator: str | None = raw_optional_str(raw_element, "operator")
 
 
 class TagFilter(DynatraceObject):
@@ -219,7 +220,7 @@ class MetricEventAutoAdaptiveBaselineMonitoringStrategy(DynatraceObject):
         self.alerting_on_missing_data: bool | None = raw_optional_bool(
             raw_element, "alertingOnMissingData"
         )
-        self.number_of_signal_fluctuations: int = raw_required_int(
+        self.number_of_signal_fluctuations: float = raw_required_float(
             raw_element, "numberOfSignalFluctuations"
         )
 
@@ -240,7 +241,7 @@ class MetricEventStaticThresholdMonitoringStrategy(MetricEventMonitoringStrategy
         self.alerting_on_missing_data: bool | None = raw_optional_bool(
             raw_element, "alertingOnMissingData"
         )
-        self.threshold: int = raw_required_int(raw_element, "threshold")
+        self.threshold: float = raw_required_float(raw_element, "threshold")
         self.unit: Unit | None = (
             Unit(raw_element.get("unit")) if raw_element.get("unit") else None
         )

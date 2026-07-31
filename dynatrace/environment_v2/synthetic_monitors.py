@@ -3,7 +3,7 @@ from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
-from dynatrace.utils import int64_to_datetime
+from dynatrace.utils import raw_optional_datetime
 
 
 class SyntheticMonitorService:
@@ -112,10 +112,8 @@ class SyntheticBrowserMonitor(DynatraceObject):
         self.manually_assigned_entities: list[str] = raw_element.get(
             "manuallyAssignedEntities", []
         )
-        self.modification_timestamp: datetime | None = (
-            int64_to_datetime(int(raw_element.get("modificationTimestamp")))
-            if raw_element.get("modificationTimestamp")
-            else None
+        self.modification_timestamp: datetime | None = raw_optional_datetime(
+            raw_element, "modificationTimestamp"
         )
         self.name: str = raw_element.get("name", "")
         self.performance_thresholds: dict = raw_element.get("performanceThresholds", {})
@@ -136,10 +134,8 @@ class SyntheticMultiProtocolMonitor(DynatraceObject):
         self.entity_id: str = raw_element["entityId"]
         self.frequency_min: int = raw_element["frequencyMin"]
         self.locations: list[str] = raw_element.get("locations", [])
-        self.modification_timestamp: datetime | None = (
-            int64_to_datetime(int(raw_element.get("modificationTimestamp")))
-            if raw_element.get("modificationTimestamp")
-            else None
+        self.modification_timestamp: datetime | None = raw_optional_datetime(
+            raw_element, "modificationTimestamp"
         )
         self.name: str = raw_element.get("name", "")
         self.performance_thresholds: dict = raw_element.get("performanceThresholds", {})

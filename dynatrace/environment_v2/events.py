@@ -28,7 +28,12 @@ from dynatrace.environment_v2.monitored_entities import EntityStub
 from dynatrace.environment_v2.schemas import ManagementZone
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import datetime_to_int64, int64_to_datetime, timestamp_to_string
+from dynatrace.utils import (
+    datetime_to_int64,
+    int64_to_datetime,
+    raw_required_datetime,
+    timestamp_to_string,
+)
 
 
 class EventServiceV2:
@@ -197,7 +202,7 @@ class Event(DynatraceObject):
         # Mandatory
         self.event_id: str = raw_element["eventId"]
         self.event_type: str = raw_element["eventType"]
-        self.start_time: datetime = int64_to_datetime(int(raw_element["startTime"]))
+        self.start_time: datetime = raw_required_datetime(raw_element, "startTime")
         # Optional
         self.entity_tags: list[METag] | None = [
             METag(raw_element=et) for et in raw_element.get("entityTags", [])

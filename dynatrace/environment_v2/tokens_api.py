@@ -229,8 +229,8 @@ class ApiTokenUpdate:
         self.enabled = enabled
         self.scopes = scopes
 
-    def json(self) -> dict:
-        body = {}
+    def json(self) -> dict[str, object]:
+        body: dict[str, object] = {}
         if self.name is not None:
             body["name"] = self.name
         if self.enabled is not None:

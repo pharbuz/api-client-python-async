@@ -18,7 +18,7 @@ from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
-from dynatrace.utils import raw_optional_object, raw_required_str
+from dynatrace.utils import raw_optional_object, raw_optional_str
 
 
 class TenantTokenService:
@@ -65,4 +65,4 @@ class TenantTokenConfig(DynatraceObject):
 
 class TenantToken(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.value: str = raw_required_str(raw_element, "value")
+        self.value: str | None = raw_optional_str(raw_element, "value")

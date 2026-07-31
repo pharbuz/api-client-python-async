@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from typing import Any
 
@@ -23,7 +23,7 @@ from httpx import Response
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import timestamp_to_string
+from dynatrace.utils import raw_required_datetime, raw_required_str, timestamp_to_string
 
 
 class LogService:
@@ -146,13 +146,12 @@ class LogService:
 
 class LogRecord(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.additional_columns: dict = raw_element.get("additionalColumns")
-        self.event_type: EventType = EventType(raw_element.get("eventType"))
-        self.timestamp: datetime = datetime.fromtimestamp(
-            raw_element.get("timestamp") / 1000,
-            timezone.utc,
+        self.additional_columns: dict[str, Any] = (
+            raw_element.get("additionalColumns") or {}
         )
-        self.content: str = raw_element.get("content")
+        self.event_type: EventType = EventType(raw_element["eventType"])
+        self.timestamp: datetime = raw_required_datetime(raw_element, "timestamp")
+        self.content: str = raw_required_str(raw_element, "content")
         self.status: LogRecordStatus = LogRecordStatus(raw_element.get("status"))
 
 
