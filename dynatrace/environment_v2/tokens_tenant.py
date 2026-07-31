@@ -18,6 +18,7 @@ from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
+from dynatrace.utils import raw_optional_object, raw_required_str
 
 
 class TenantTokenService:
@@ -54,12 +55,14 @@ class TenantTokenService:
 
 class TenantTokenConfig(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.active: TenantToken | None = TenantToken(
-            raw_element=raw_element.get("active")
+        self.active: TenantToken | None = raw_optional_object(
+            raw_element, "active", lambda value: TenantToken(raw_element=value)
         )
-        self.old: TenantToken | None = TenantToken(raw_element=raw_element.get("old"))
+        self.old: TenantToken | None = raw_optional_object(
+            raw_element, "old", lambda value: TenantToken(raw_element=value)
+        )
 
 
 class TenantToken(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.value: str = raw_element.get("value")
+        self.value: str = raw_required_str(raw_element, "value")

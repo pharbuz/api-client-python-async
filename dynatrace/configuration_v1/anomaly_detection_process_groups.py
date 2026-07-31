@@ -19,6 +19,7 @@ from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
+from dynatrace.utils import raw_optional_int, raw_required_str
 
 
 class Method(Enum):
@@ -29,8 +30,10 @@ class Method(Enum):
 
 class AvailabilityMonitoringPG(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.method: Method = Method(raw_element.get("method"))
-        self.minimum_threshold: int = raw_element.get("minimumThreshold")
+        self.method: Method = Method(raw_required_str(raw_element, "method"))
+        self.minimum_threshold: int | None = raw_optional_int(
+            raw_element, "minimumThreshold"
+        )
 
 
 class AnomalyDetectionPG(DynatraceObject):
