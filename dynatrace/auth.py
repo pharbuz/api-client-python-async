@@ -67,6 +67,9 @@ class DynatraceOAuthClient(httpx.AsyncClient):
             raise RuntimeError("OAuth token response is not a JSON object")
         if "access_token" not in token:
             raise RuntimeError("OAuth token response does not contain access_token")
+        token_type = token.get("token_type", "Bearer")
+        if not isinstance(token_type, str) or token_type.lower() != "bearer":
+            raise RuntimeError("OAuth token response contains unsupported token_type")
         if "expires_at" not in token and "expires_in" in token:
             token["expires_at"] = time.time() + int(token["expires_in"])
 

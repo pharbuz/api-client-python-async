@@ -88,6 +88,83 @@ async def test_oauth_client_fetches_token_as_form_urlencoded_request():
     }
 
 
+async def test_oauth_client_handles_dynatrace_token_response_with_expires_in():
+    token_requests = []
+    resource_requests = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        if str(request.url) == "https://sso.example.com/sso/oauth2/token":
+            token_requests.append(request)
+            return httpx.Response(
+                200,
+                json={
+                    "scope": "account-uac-read account-env-read",
+                    "token_type": "Bearer",
+                    "expires_in": 300,
+                    "access_token": "dynatrace-access-token",
+                    "resource": "urn:dtaccount:account-uuid",
+                },
+                request=request,
+            )
+
+        resource_requests.append(request)
+        return httpx.Response(200, request=request)
+
+    client = DynatraceOAuthClient(
+        token_url="https://sso.example.com/sso/oauth2/token",
+        client_id="client-id",
+        client_secret="client-secret",
+        scope="account-uac-read account-env-read",
+        resource="urn:dtaccount:account-uuid",
+        verify_ssl=False,
+        transport=httpx.MockTransport(handler),
+    )
+
+    first_response = await client.request("GET", "https://api.example.com/resources")
+    second_response = await client.request("GET", "https://api.example.com/resources")
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+    assert len(token_requests) == 1
+    assert len(resource_requests) == 2
+    assert (
+        resource_requests[0].headers["Authorization"] == "Bearer dynatrace-access-token"
+    )
+    assert (
+        resource_requests[1].headers["Authorization"] == "Bearer dynatrace-access-token"
+    )
+
+
+async def test_oauth_client_rejects_unsupported_token_type():
+    async def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "access_token": "token-1",
+                "token_type": "MAC",
+                "expires_in": 300,
+            },
+            request=request,
+        )
+
+    client = DynatraceOAuthClient(
+        token_url="https://sso.example.com/sso/oauth2/token",
+        client_id="client-id",
+        client_secret="client-secret",
+        scope="account-uac-read account-env-read",
+        resource="urn:dtaccount:account-uuid",
+        verify_ssl=False,
+        transport=httpx.MockTransport(handler),
+    )
+
+    try:
+        await client.request("GET", "https://api.example.com/resources")
+    except RuntimeError as err:
+        assert str(err) == "OAuth token response contains unsupported token_type"
+    else:
+        raise AssertionError("expected unsupported token_type to raise RuntimeError")
+
+
 async def test_oauth_client_refetches_token_after_401(monkeypatch):
     fetch_calls = []
     request_calls = []
