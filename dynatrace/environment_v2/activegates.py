@@ -15,11 +15,18 @@ limitations under the License.
 """
 
 from enum import Enum
+from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.schemas import VersionCompareType
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import (
+    raw_optional_int,
+    raw_optional_str,
+    raw_required_bool,
+    raw_required_str,
+)
 
 
 class OsType(Enum):
@@ -124,29 +131,33 @@ class ActiveGateService:
 
 
 class ActiveGate(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict):
-        self.id: str = raw_element.get("id")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.id: str = raw_required_str(raw_element, "id")
         self.network_addresses = raw_element.get("networkAddresses", [])
-        self.os_type: str = raw_element.get("osType")
-        self.auto_update_status: str = raw_element.get("autoUpdateStatus")
-        self.offline_since: int = raw_element.get("offlineSince")
-        self.version: str = raw_element.get("version")
-        self.type: str = raw_element.get("type")
-        self.hostname: str = raw_element.get("hostname")
-        self.main_environment: str = raw_element.get("mainEnvironment")
-        self.environments: str = raw_element.get("environments", [])
-        self.network_zone: str = raw_element.get("networkZone")
-        self.group: str = raw_element.get("group")
+        self.os_type: str | None = raw_optional_str(raw_element, "osType")
+        self.auto_update_status: str | None = raw_optional_str(
+            raw_element, "autoUpdateStatus"
+        )
+        self.offline_since: int | None = raw_optional_int(raw_element, "offlineSince")
+        self.version: str | None = raw_optional_str(raw_element, "version")
+        self.type: str | None = raw_optional_str(raw_element, "type")
+        self.hostname: str | None = raw_optional_str(raw_element, "hostname")
+        self.main_environment: str | None = raw_optional_str(
+            raw_element, "mainEnvironment"
+        )
+        self.environments: list[str] = raw_element.get("environments", [])
+        self.network_zone: str | None = raw_optional_str(raw_element, "networkZone")
+        self.group: str | None = raw_optional_str(raw_element, "group")
         self.modules: list[ActiveGateModule] = [
             ActiveGateModule(raw_element=module)
-            for module in raw_element.get("modules")
+            for module in raw_element.get("modules", [])
         ]
 
 
 class ActiveGateModule(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict):
-        self.misconfigured: bool = raw_element.get("misconfigured")
-        self.type: str = raw_element.get("type")
-        self.attributes: bool = raw_element.get("attributes")
-        self.enabled: bool = raw_element.get("enabled")
-        self.version: str = raw_element.get("version")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+        self.misconfigured: bool = raw_required_bool(raw_element, "misconfigured")
+        self.type: str = raw_required_str(raw_element, "type")
+        self.attributes: dict[str, Any] | None = raw_element.get("attributes")
+        self.enabled: bool = raw_required_bool(raw_element, "enabled")
+        self.version: str | None = raw_optional_str(raw_element, "version")

@@ -20,6 +20,7 @@ from typing import Any
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import raw_required_bool, raw_required_int, raw_required_str
 
 
 class NetworkZoneService:
@@ -123,22 +124,28 @@ class NetworkZoneService:
 
 class NetworkZone(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.id: str = raw_element.get("id")
-        self.description: str = raw_element.get("description")
-        self.alternative_zones: list[str] = raw_element.get("alternativeZones")
-        self.num_oneagents_using: int = raw_element.get("numOfOneAgentsUsing")
-        self.num_oneagents_configured: int = raw_element.get("numOfConfiguredOneAgents")
-        self.num_oneagents_from_other_zones: int = raw_element.get(
-            "numOfOneAgentsFromOtherZones"
+        self.id: str = raw_required_str(raw_element, "id")
+        self.description: str = raw_required_str(raw_element, "description")
+        self.alternative_zones: list[str] = raw_element.get("alternativeZones", [])
+        self.num_oneagents_using: int = raw_required_int(
+            raw_element, "numOfOneAgentsUsing"
         )
-        self.num_configured_activegates: int = raw_element.get(
-            "numOfConfiguredActiveGates"
+        self.num_oneagents_configured: int = raw_required_int(
+            raw_element, "numOfConfiguredOneAgents"
+        )
+        self.num_oneagents_from_other_zones: int = raw_required_int(
+            raw_element, "numOfOneAgentsFromOtherZones"
+        )
+        self.num_configured_activegates: int = raw_required_int(
+            raw_element, "numOfConfiguredActiveGates"
         )
 
 
 class NetworkZoneSettings(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, bool]):
-        self.network_zones_enabled: bool = raw_element.get("networkZonesEnabled")
+        self.network_zones_enabled: bool = raw_required_bool(
+            raw_element, "networkZonesEnabled"
+        )
 
 
 class NetworkZoneConnectionStatistics(DynatraceObject):

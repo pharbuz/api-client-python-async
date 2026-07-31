@@ -6,7 +6,12 @@ from typing import Any
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import int64_to_datetime
+from dynatrace.utils import (
+    raw_optional_bool,
+    raw_optional_datetime,
+    raw_optional_object,
+    raw_optional_str,
+)
 
 
 class SettingService:
@@ -105,12 +110,12 @@ class SettingService:
         if isinstance(body, SettingsObjectCreate):
             body = [body]
 
-        body = [] if body is None else [o.json() for o in body]
+        request_body = [] if body is None else [o.json() for o in body]
 
         response = (
             await self.__http_client.make_request(
                 self.OBJECTS_ENDPOINT,
-                params=body,
+                params=request_body,
                 method="POST",
                 query_params=query_params,
             )
@@ -144,9 +149,10 @@ class SettingService:
         :param value: the JSON body of the request. Contains updated parameters of the settings object.
         """
         query_params = {"validateOnly": validate_only, "adminAccess": admin_access}
+        params = body.json() if body else None
         return await self.__http_client.make_request(
             f"{self.OBJECTS_ENDPOINT}/{object_id}",
-            params=body.json(),
+            params=params,
             method="PUT",
             query_params=query_params,
         )
@@ -173,11 +179,11 @@ class SettingService:
 
 class ModificationInfo(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.deleteable: bool = raw_element.get("deleteable")
-        self.first: bool = raw_element.get("first")
-        self.modifiable: bool = raw_element.get("modifiable")
+        self.deleteable: bool | None = raw_optional_bool(raw_element, "deleteable")
+        self.first: bool | None = raw_optional_bool(raw_element, "first")
+        self.modifiable: bool | None = raw_optional_bool(raw_element, "modifiable")
         self.modifiable_paths: list[str] = raw_element.get("modifiablePaths", [])
-        self.movable: bool = raw_element.get("movable")
+        self.movable: bool | None = raw_optional_bool(raw_element, "movable")
         self.non_modifiable_paths: list[str] = raw_element.get("nonModifiablePaths", [])
 
 
@@ -187,33 +193,23 @@ class SettingsObject(DynatraceObject):
         self.object_id: str = raw_element["objectId"]
         self.value: dict = raw_element["value"]
         # Optional
-        self.author: str = raw_element.get("author")
-        self.created: datetime = (
-            int64_to_datetime(int(raw_element.get("created")))
-            if raw_element.get("created")
-            else None
+        self.author: str | None = raw_optional_str(raw_element, "author")
+        self.created: datetime | None = raw_optional_datetime(raw_element, "created")
+        self.created_by: str | None = raw_optional_str(raw_element, "createdBy")
+        self.external_id: str | None = raw_optional_str(raw_element, "externalId")
+        self.modification_info: ModificationInfo | None = raw_optional_object(
+            raw_element,
+            "modificationInfo",
+            lambda value: ModificationInfo(self._http_client, self._headers, value),
         )
-        self.created_by: str = raw_element.get("createdBy")
-        self.external_id: str = raw_element.get("externalId")
-        self.modification_info: ModificationInfo = (
-            ModificationInfo(
-                self._http_client, self._headers, raw_element.get("modificationInfo")
-            )
-            if raw_element.get("modificationInfo")
-            else None
-        )
-        self.modified: datetime = (
-            int64_to_datetime(int(raw_element.get("modified")))
-            if raw_element.get("modified")
-            else None
-        )
-        self.modified_by: str = raw_element.get("modifiedBy")
-        self.schema_id: str = raw_element.get("schemaId")
-        self.schema_version: str = raw_element.get("schemaVersion")
-        self.scope: str = raw_element.get("scope")
-        self.search_summary: str = raw_element.get("searchSummary")
-        self.summary: str = raw_element.get("summary")
-        self.update_token: str = raw_element.get("updateToken")
+        self.modified: datetime | None = raw_optional_datetime(raw_element, "modified")
+        self.modified_by: str | None = raw_optional_str(raw_element, "modifiedBy")
+        self.schema_id: str | None = raw_optional_str(raw_element, "schemaId")
+        self.schema_version: str | None = raw_optional_str(raw_element, "schemaVersion")
+        self.scope: str | None = raw_optional_str(raw_element, "scope")
+        self.search_summary: str | None = raw_optional_str(raw_element, "searchSummary")
+        self.summary: str | None = raw_optional_str(raw_element, "summary")
+        self.update_token: str | None = raw_optional_str(raw_element, "updateToken")
 
 
 class SettingsObjectCreate:
@@ -236,7 +232,11 @@ class SettingsObjectCreate:
         self.schema_version = schema_version
 
     def json(self) -> dict:
-        body = {"schemaId": self.schema_id, "value": self.value, "scope": self.scope}
+        body: dict[str, Any] = {
+            "schemaId": self.schema_id,
+            "value": self.value,
+            "scope": self.scope,
+        }
         if self.external_id:
             body["externalId"] = self.external_id
         if self.insert_after:
@@ -264,7 +264,7 @@ class SettingsObjectUpdate:
         self.update_token = update_token
 
     def json(self) -> dict:
-        body = {"value": self.value}
+        body: dict[str, Any] = {"value": self.value}
         if self.insert_after:
             body["insertAfter"] = self.insert_after
         if self.insert_before:
@@ -286,18 +286,10 @@ class SchemaStub(DynatraceObject):
 class EffectiveSettingsValue(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.author: str | None = raw_element.get("author")
-        self.created: datetime | None = (
-            int64_to_datetime(int(raw_element.get("created")))
-            if raw_element.get("created")
-            else None
-        )
+        self.created: datetime | None = raw_optional_datetime(raw_element, "created")
         self.created_by: str | None = raw_element.get("createdBy")
         self.external_id: str | None = raw_element.get("externalId")
-        self.modified: datetime | None = (
-            int64_to_datetime(int(raw_element.get("modified")))
-            if raw_element.get("modified")
-            else None
-        )
+        self.modified: datetime | None = raw_optional_datetime(raw_element, "modified")
         self.modified_by: str | None = raw_element.get("modifiedBy")
         self.origin: str | None = raw_element.get("origin")
         self.schema_id: str | None = raw_element.get("schemaId")

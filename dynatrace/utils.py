@@ -126,7 +126,14 @@ def raw_optional_bool(raw_element: dict[str, Any], key: str) -> bool | None:
 
 
 def raw_optional_datetime(raw_element: dict[str, Any], key: str) -> datetime | None:
-    return int64_to_datetime(raw_optional_int(raw_element, key))
+    value = raw_element.get(key)
+    if value is None:
+        return None
+    if isinstance(value, int) and not isinstance(value, bool):
+        return int64_to_datetime(value)
+    if isinstance(value, str):
+        return int64_to_datetime(int(value))
+    raise TypeError(f"expected raw field {key!r} to be timestamp")
 
 
 def raw_optional_object(

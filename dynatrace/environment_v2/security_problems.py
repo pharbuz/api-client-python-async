@@ -16,6 +16,7 @@ limitations under the License.
 
 from __future__ import annotations
 
+import builtins
 from datetime import datetime
 from enum import Enum
 from typing import Any
@@ -127,7 +128,7 @@ class SecurityProblemService:
     async def bulk_mute(
         self,
         reason: str,
-        security_problem_ids: list[str],
+        security_problem_ids: builtins.list[str],
         comment: str | None = None,
     ) -> BulkMuteResponse:
         params = {
@@ -145,7 +146,7 @@ class SecurityProblemService:
     async def bulk_unmute(
         self,
         reason: str,
-        security_problem_ids: list[str],
+        security_problem_ids: builtins.list[str],
         comment: str | None = None,
     ) -> BulkMuteResponse:
         params = {
@@ -162,7 +163,7 @@ class SecurityProblemService:
 
     async def list_remediation_items(
         self, security_problem_id: str, remediation_item_selector: str | None = None
-    ) -> list[RemediationItem]:
+    ) -> builtins.list[RemediationItem]:
         params = {"remediationItemSelector": remediation_item_selector}
         response = (
             await self.__http_client.make_request(
@@ -205,7 +206,7 @@ class SecurityProblemService:
         security_problem_id: str,
         remediation_item_id: str,
         remediation_progress_entity_selector: str | None = None,
-    ) -> list[RemediationProgressEntity]:
+    ) -> builtins.list[RemediationProgressEntity]:
         params = {
             "remediationProgressEntitySelector": remediation_progress_entity_selector
         }
@@ -224,7 +225,7 @@ class SecurityProblemService:
         self,
         security_problem_id: str,
         reason: str,
-        remediation_item_ids: list[str],
+        remediation_item_ids: builtins.list[str],
         comment: str | None = None,
     ) -> BulkMuteResponse:
         params = {
@@ -245,7 +246,7 @@ class SecurityProblemService:
         self,
         security_problem_id: str,
         reason: str,
-        remediation_item_ids: list[str],
+        remediation_item_ids: builtins.list[str],
         comment: str | None = None,
     ) -> BulkMuteResponse:
         params = {
@@ -265,10 +266,13 @@ class SecurityProblemService:
     async def update_remediation_items_tracking_links(
         self,
         security_problem_id: str,
-        updates: list[dict[str, Any]] | None = None,
-        deletes: list[str] | None = None,
+        updates: builtins.list[dict[str, Any]] | None = None,
+        deletes: builtins.list[str] | None = None,
     ) -> Response:
-        params = {"updates": updates or [], "deletes": deletes or []}
+        params: dict[str, builtins.list[dict[str, Any]] | builtins.list[str]] = {
+            "updates": updates or [],
+            "deletes": deletes or [],
+        }
         return await self.__http_client.make_request(
             path=f"{self.ENDPOINT}/{security_problem_id}/remediationItems/trackingLinks",
             method="POST",
