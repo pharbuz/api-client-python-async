@@ -29,6 +29,17 @@ from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.schemas import ConfigurationMetadata
 from dynatrace.http_client import HttpClient
 
+__all__ = [
+    "AutoUpdateSetting",
+    "EffectiveSetting",
+    "HostAutoUpdateConfig",
+    "HostConfig",
+    "MonitoringConfig",
+    "MonitoringMode",
+    "OneAgentOnAHostService",
+    "TechMonitoringList",
+]
+
 
 class OneAgentOnAHostService:
     ENDPOINT = "/api/config/v1/hosts"
