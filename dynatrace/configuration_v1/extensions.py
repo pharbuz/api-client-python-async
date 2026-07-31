@@ -26,7 +26,17 @@ from dynatrace.environment_v2.monitored_entities import EntityShortRepresentatio
 from dynatrace.environment_v2.schemas import ConfigurationMetadata
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import raw_optional_int, raw_required_bool
+from dynatrace.utils import (
+    raw_optional_bool,
+    raw_optional_dict,
+    raw_optional_enum_or_str,
+    raw_optional_int,
+    raw_optional_object,
+    raw_optional_object_list,
+    raw_optional_str,
+    raw_optional_str_list_or_none,
+    raw_required_bool,
+)
 
 
 class ExtensionService:
@@ -186,8 +196,8 @@ class ExtensionService:
         self,
         extension_id: str,
         properties: dict[str, Any] | None = None,
-        enabled: bool | None = True,
-        use_global: bool | None = True,
+        enabled: bool = True,
+        use_global: bool = True,
         host_id: str | None = None,
         activegate: EntityShortRepresentation | None = None,
         endpoint_id: str | None = None,
@@ -211,11 +221,13 @@ class ExtensionService:
 
 
 class ExtensionProperty(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Any) -> None:
-        self.key: str = raw_element.get("key")
-        self.type: str = raw_element.get("type")
-        self.default_value: str = raw_element.get("defaultValue")
-        self.dropdown_values: list[str] = raw_element.get("dropdownValues")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.key: str | None = raw_optional_str(raw_element, "key")
+        self.type: str | None = raw_optional_str(raw_element, "type")
+        self.default_value: str | None = raw_optional_str(raw_element, "defaultValue")
+        self.dropdown_values: list[str] | None = raw_optional_str_list_or_none(
+            raw_element, "dropdownValues"
+        )
 
 
 class ExtensionConfigurationDto(DynatraceObject):
@@ -248,22 +260,26 @@ class ExtensionConfigurationDto(DynatraceObject):
             "useGlobal": self.use_global,
             "properties": self.properties,
             "hostId": self.host_id,
-            "activeGate": self.active_gate.to_json(),
+            "activeGate": self.active_gate.to_json() if self.active_gate else None,
             "endpointId": self.endpoint_id,
             "endpointName": self.endpoint_name,
         }
 
-    def _create_from_raw_data(self, raw_element: Any) -> None:
-        self.extension_id: str = raw_element.get("extensionId")
-        self.enabled: bool = raw_element.get("enabled")
-        self.use_global: bool = raw_element.get("useGlobal", True)
-        self.properties: dict[str, Any] = raw_element.get("properties")
-        self.host_id: str = raw_element.get("hostId")
-        self.active_gate: EntityShortRepresentation = EntityShortRepresentation(
-            self._http_client, None, raw_element.get("activeGate")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.extension_id: str | None = raw_optional_str(raw_element, "extensionId")
+        self.enabled: bool = raw_required_bool(raw_element, "enabled")
+        self.use_global: bool = raw_required_bool(raw_element, "useGlobal")
+        self.properties: dict[str, Any] | None = raw_optional_dict(
+            raw_element, "properties"
         )
-        self.endpoint_id: str = raw_element.get("endpointId")
-        self.endpoint_name: str = raw_element.get("endpointName")
+        self.host_id: str | None = raw_optional_str(raw_element, "hostId")
+        self.active_gate: EntityShortRepresentation | None = raw_optional_object(
+            raw_element,
+            "activeGate",
+            lambda value: EntityShortRepresentation(self._http_client, None, value),
+        )
+        self.endpoint_id: str | None = raw_optional_str(raw_element, "endpointId")
+        self.endpoint_name: str | None = raw_optional_str(raw_element, "endpointName")
 
 
 class ExtensionShortRepresentation(EntityShortRepresentation):
@@ -282,19 +298,24 @@ class ExtensionShortRepresentation(EntityShortRepresentation):
 
 
 class Extension(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Any) -> None:
-        self.id: str = raw_element.get("id")
-        self.name: str = raw_element.get("name")
-        self.type: ExtensionType = ExtensionType(raw_element.get("type"))
-        self.version: str = raw_element.get("version")
-        self.metric_group: str = raw_element.get("metricGroup")
-        self.metadata: ConfigurationMetadata = ConfigurationMetadata(
-            self._http_client, None, raw_element.get("metadata")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.id: str | None = raw_optional_str(raw_element, "id")
+        self.name: str | None = raw_optional_str(raw_element, "name")
+        self.type: ExtensionType | str | None = raw_optional_enum_or_str(
+            ExtensionType, raw_element.get("type")
         )
-        self.properties: list[ExtensionProperty] = [
-            ExtensionProperty(self._http_client, None, prop)
-            for prop in raw_element.get("properties")
-        ]
+        self.version: str | None = raw_optional_str(raw_element, "version")
+        self.metric_group: str | None = raw_optional_str(raw_element, "metricGroup")
+        self.metadata: ConfigurationMetadata | None = raw_optional_object(
+            raw_element,
+            "metadata",
+            lambda value: ConfigurationMetadata(self._http_client, None, value),
+        )
+        self.properties: list[ExtensionProperty] | None = raw_optional_object_list(
+            raw_element,
+            "properties",
+            lambda value: ExtensionProperty(self._http_client, None, value),
+        )
 
 
 class ExtensionType(Enum):
@@ -307,10 +328,12 @@ class ExtensionType(Enum):
 
 
 class ExtensionDto(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Any) -> None:
-        self.id: str = raw_element.get("id")
-        self.name: str = raw_element.get("name")
-        self.type: ExtensionType = ExtensionType(raw_element.get("type"))
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.id: str | None = raw_optional_str(raw_element, "id")
+        self.name: str | None = raw_optional_str(raw_element, "name")
+        self.type: ExtensionType | str | None = raw_optional_enum_or_str(
+            ExtensionType, raw_element.get("type")
+        )
 
     async def get_full_extension(self) -> Extension:
         """
@@ -359,15 +382,19 @@ class GlobalExtensionConfiguration(DynatraceObject):
         return {
             "enabled": self.enabled,
             "extensionId": self.extension_id,
-            "infraOnlyEnabled": self.infraOnlyEnabled,
+            "infraOnlyEnabled": self.infra_only_enabled,
             "properties": self.properties,
         }
 
-    def _create_from_raw_data(self, raw_element: Any) -> None:
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.enabled: bool = raw_required_bool(raw_element, "enabled")
-        self.extension_id: str | None = raw_element.get("extensionId")
-        self.infraOnlyEnabled: bool | None = raw_element.get("infraOnlyEnabled")
-        self.properties: dict[str, Any] | None = raw_element.get("properties")
+        self.extension_id: str | None = raw_optional_str(raw_element, "extensionId")
+        self.infra_only_enabled: bool | None = raw_optional_bool(
+            raw_element, "infraOnlyEnabled"
+        )
+        self.properties: dict[str, Any] | None = raw_optional_dict(
+            raw_element, "properties"
+        )
 
 
 class ExtensionStateEnum(Enum):
@@ -387,16 +414,18 @@ class ExtensionStateEnum(Enum):
 
 
 class ExtensionState(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: Any) -> None:
-        self.extension_id: str | None = raw_element.get("extensionId")
-        self.version: str | None = raw_element.get("version")
-        self.endpoint_id: str | None = raw_element.get("endpointId")
-        self.state: ExtensionStateEnum | None = ExtensionStateEnum(
-            raw_element.get("state")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.extension_id: str | None = raw_optional_str(raw_element, "extensionId")
+        self.version: str | None = raw_optional_str(raw_element, "version")
+        self.endpoint_id: str | None = raw_optional_str(raw_element, "endpointId")
+        self.state: ExtensionStateEnum | str | None = raw_optional_enum_or_str(
+            ExtensionStateEnum, raw_element.get("state")
         )
-        self.state_description: str | None = raw_element.get("stateDescription")
-        self.host_id: str | None = raw_element.get("hostId")
-        self.process_id: str | None = raw_element.get("processId")
+        self.state_description: str | None = raw_optional_str(
+            raw_element, "stateDescription"
+        )
+        self.host_id: str | None = raw_optional_str(raw_element, "hostId")
+        self.process_id: str | None = raw_optional_str(raw_element, "processId")
         timestamp = raw_optional_int(raw_element, "timestamp")
         self.timestamp: datetime | None = (
             datetime.fromtimestamp(timestamp / 1000, timezone.utc)

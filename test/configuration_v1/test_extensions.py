@@ -57,7 +57,7 @@ async def test_get_global_configuration(dt: DynatraceAsync) -> None:
     assert isinstance(global_config, GlobalExtensionConfiguration)
     assert global_config.extension_id == "custom.python.citrixAgent"
     assert global_config.enabled
-    assert not global_config.infraOnlyEnabled
+    assert not global_config.infra_only_enabled
     assert global_config.properties is not None
     assert global_config.properties["log_level"] == "INFO"
 
@@ -92,10 +92,12 @@ async def test_get_instance_configuration(dt: DynatraceAsync) -> None:
     assert config.extension_id == "custom.remote.python.salesforce_eventstream"
 
     assert config.enabled
+    assert config.active_gate is not None
     assert config.active_gate.id == "-7885258652650793909"
     assert config.active_gate.name == "arch-david"
     assert config.endpoint_id == "5649014104314746667"
     assert config.endpoint_name == "curious-hawk"
+    assert config.properties is not None
     assert (
         config.properties["openkit_application_id"]
         == "87eee414-9338-446b-988b-bbdbf495c4f4"
