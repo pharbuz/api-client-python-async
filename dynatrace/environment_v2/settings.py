@@ -11,6 +11,7 @@ from dynatrace.utils import (
     raw_optional_datetime,
     raw_optional_object,
     raw_optional_str,
+    raw_required_bool,
 )
 
 
@@ -179,20 +180,18 @@ class SettingService:
 
 class ModificationInfo(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.deleteable: bool | None = raw_optional_bool(raw_element, "deleteable")
+        self.deleteable: bool = raw_required_bool(raw_element, "deletable")
         self.first: bool | None = raw_optional_bool(raw_element, "first")
-        self.modifiable: bool | None = raw_optional_bool(raw_element, "modifiable")
+        self.modifiable: bool = raw_required_bool(raw_element, "modifiable")
         self.modifiable_paths: list[str] = raw_element.get("modifiablePaths", [])
-        self.movable: bool | None = raw_optional_bool(raw_element, "movable")
+        self.movable: bool = raw_required_bool(raw_element, "movable")
         self.non_modifiable_paths: list[str] = raw_element.get("nonModifiablePaths", [])
 
 
 class SettingsObject(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        # Mandatory
-        self.object_id: str = raw_element["objectId"]
-        self.value: dict = raw_element["value"]
-        # Optional
+        self.object_id: str | None = raw_optional_str(raw_element, "objectId")
+        self.value: dict[str, Any] | None = raw_element.get("value")
         self.author: str | None = raw_optional_str(raw_element, "author")
         self.created: datetime | None = raw_optional_datetime(raw_element, "created")
         self.created_by: str | None = raw_optional_str(raw_element, "createdBy")

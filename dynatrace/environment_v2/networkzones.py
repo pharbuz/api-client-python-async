@@ -20,7 +20,7 @@ from typing import Any
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import raw_required_bool, raw_required_int, raw_required_str
+from dynatrace.utils import raw_optional_bool, raw_optional_int, raw_optional_str
 
 
 class NetworkZoneService:
@@ -124,26 +124,26 @@ class NetworkZoneService:
 
 class NetworkZone(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.id: str = raw_required_str(raw_element, "id")
-        self.description: str = raw_required_str(raw_element, "description")
+        self.id: str | None = raw_optional_str(raw_element, "id")
+        self.description: str | None = raw_optional_str(raw_element, "description")
         self.alternative_zones: list[str] = raw_element.get("alternativeZones", [])
-        self.num_oneagents_using: int = raw_required_int(
+        self.num_oneagents_using: int | None = raw_optional_int(
             raw_element, "numOfOneAgentsUsing"
         )
-        self.num_oneagents_configured: int = raw_required_int(
+        self.num_oneagents_configured: int | None = raw_optional_int(
             raw_element, "numOfConfiguredOneAgents"
         )
-        self.num_oneagents_from_other_zones: int = raw_required_int(
+        self.num_oneagents_from_other_zones: int | None = raw_optional_int(
             raw_element, "numOfOneAgentsFromOtherZones"
         )
-        self.num_configured_activegates: int = raw_required_int(
+        self.num_configured_activegates: int | None = raw_optional_int(
             raw_element, "numOfConfiguredActiveGates"
         )
 
 
 class NetworkZoneSettings(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, bool]):
-        self.network_zones_enabled: bool = raw_required_bool(
+        self.network_zones_enabled: bool | None = raw_optional_bool(
             raw_element, "networkZonesEnabled"
         )
 
