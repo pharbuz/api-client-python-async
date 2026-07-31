@@ -21,11 +21,7 @@ from typing import Any
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import (
-    raw_optional_str,
-    raw_required_int,
-    raw_required_str,
-)
+from dynatrace.utils import raw_required_int, raw_required_str
 
 
 class ExtensionsServiceV2:
@@ -260,10 +256,10 @@ class Extension(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.version: str = raw_required_str(raw_element, "version")
         self.extension_name: str = raw_required_str(raw_element, "extensionName")
-        self.min_dynatrace_version: str | None = raw_optional_str(
+        self.min_dynatrace_version: str = raw_required_str(
             raw_element, "minDynatraceVersion"
         )
-        self.file_hash: str | None = raw_optional_str(raw_element, "fileHash")
+        self.file_hash: str = raw_required_str(raw_element, "fileHash")
         self.author: AuthorDTO = AuthorDTO(raw_element=raw_element.get("author"))
         self.data_sources: list[str] = raw_element.get("dataSources", [])
         self.variables: list[str] = raw_element.get("variables", [])
@@ -272,14 +268,14 @@ class Extension(DynatraceObject):
 
 class AuthorDTO(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.name: str | None = raw_optional_str(raw_element, "name")
+        self.name: str | None = raw_element.get("name")
 
 
 class ExtensionEventDTO(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.timestamp: str | None = raw_optional_str(raw_element, "timestamp")
-        self.severity: str | None = raw_optional_str(raw_element, "severity")
-        self.message: str | None = raw_optional_str(raw_element, "message")
+        self.timestamp: str | None = raw_element.get("timestamp")
+        self.severity: str | None = raw_element.get("severity")
+        self.message: str | None = raw_element.get("message")
 
 
 class ExtensionEnvironmentConfigurationVersion(DynatraceObject):
@@ -369,10 +365,10 @@ class ExtensionMonitoringConfiguration(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.objectId: str = raw_required_str(raw_element, "objectId")
         self.scope: str = raw_required_str(raw_element, "scope")
-        self.configuration: dict[str, Any] | None = raw_element.get("value")
+        self.configuration: dict[str, Any] = raw_element["value"]
 
 
 class MonitoringConfigurationResponse(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.objectId: str | None = raw_optional_str(raw_element, "objectId")
+        self.objectId: str = raw_required_str(raw_element, "objectId")
         self.code: int = raw_required_int(raw_element, "code")

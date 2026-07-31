@@ -29,11 +29,9 @@ from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
 from dynatrace.utils import (
     int64_to_datetime,
-    raw_optional_bool,
-    raw_optional_datetime,
-    raw_optional_int,
     raw_optional_object,
     raw_required_bool,
+    raw_required_datetime,
     raw_required_int,
     raw_required_str,
     timestamp_to_string,
@@ -196,9 +194,7 @@ class Problem(DynatraceObject):
         self.impact_level: ImpactLevel = ImpactLevel(
             raw_required_str(raw_element, "impactLevel")
         )
-        self.start_time: datetime | None = raw_optional_datetime(
-            raw_element, "startTime"
-        )
+        self.start_time: datetime = raw_required_datetime(raw_element, "startTime")
         self.end_time: datetime | None = (
             int64_to_datetime(raw_element.get("endTime"))
             if raw_element.get("endTime") != -1
@@ -252,7 +248,7 @@ class ProblemCloseResult(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.problem_id: str = raw_required_str(raw_element, "problemId")
         self.closing: bool = raw_required_bool(raw_element, "closing")
-        self.close_timestamp: datetime | None = raw_optional_datetime(
+        self.close_timestamp: datetime = raw_required_datetime(
             raw_element, "closeTimestamp"
         )
         self.comment: Comment | None = raw_optional_object(
@@ -276,7 +272,7 @@ class CommentList(DynatraceObject):
 
 class Comment(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.created_at: datetime | None = raw_optional_datetime(
+        self.created_at: datetime = raw_required_datetime(
             raw_element, "createdAtTimestamp"
         )
         self.author: str | None = raw_element.get("authorName")
@@ -325,12 +321,10 @@ class Evidence(DynatraceObject):
         )
         self.display_name: str = raw_required_str(raw_element, "displayName")
         self.entity: EntityStub = EntityStub(raw_element=raw_element.get("entity"))
-        self.root_cause_relevant: bool | None = raw_optional_bool(
+        self.root_cause_relevant: bool = raw_required_bool(
             raw_element, "rootCauseRelevant"
         )
-        self.start_time: datetime | None = raw_optional_datetime(
-            raw_element, "startTime"
-        )
+        self.start_time: datetime = raw_required_datetime(raw_element, "startTime")
         self.grouping_entity: EntityStub | None = (
             EntityStub(raw_element=raw_element.get("groupingEntity"))
             if raw_element.get("groupingEntity")
@@ -402,7 +396,7 @@ class Impact(DynatraceObject):
         self.impacted_entity: EntityStub = EntityStub(
             raw_element=raw_element.get("impactedEntity")
         )
-        self.estimated_affected_users: int | None = raw_optional_int(
+        self.estimated_affected_users: int = raw_required_int(
             raw_element, "estimatedAffectedUsers"
         )
 

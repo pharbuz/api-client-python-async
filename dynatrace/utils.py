@@ -129,10 +129,24 @@ def raw_optional_datetime(raw_element: dict[str, Any], key: str) -> datetime | N
     value = raw_element.get(key)
     if value is None:
         return None
+    return _raw_datetime(value, key)
+
+
+def raw_required_datetime(raw_element: dict[str, Any], key: str) -> datetime:
+    return _raw_datetime(raw_element[key], key)
+
+
+def _raw_datetime(value: Any, key: str) -> datetime:
     if isinstance(value, int) and not isinstance(value, bool):
-        return int64_to_datetime(value)
+        converted = int64_to_datetime(value)
+        if converted is None:
+            raise ValueError(f"expected raw field {key!r} to be a non-zero timestamp")
+        return converted
     if isinstance(value, str):
-        return int64_to_datetime(int(value))
+        converted = int64_to_datetime(int(value))
+        if converted is None:
+            raise ValueError(f"expected raw field {key!r} to be a non-zero timestamp")
+        return converted
     raise TypeError(f"expected raw field {key!r} to be timestamp")
 
 

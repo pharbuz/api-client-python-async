@@ -21,12 +21,7 @@ from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.schemas import VersionCompareType
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import (
-    raw_optional_int,
-    raw_optional_str,
-    raw_required_bool,
-    raw_required_str,
-)
+from dynatrace.utils import raw_optional_bool, raw_optional_int, raw_optional_str
 
 
 class OsType(Enum):
@@ -132,7 +127,7 @@ class ActiveGateService:
 
 class ActiveGate(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.id: str = raw_required_str(raw_element, "id")
+        self.id: str | None = raw_optional_str(raw_element, "id")
         self.network_addresses = raw_element.get("networkAddresses", [])
         self.os_type: str | None = raw_optional_str(raw_element, "osType")
         self.auto_update_status: str | None = raw_optional_str(
@@ -156,8 +151,10 @@ class ActiveGate(DynatraceObject):
 
 class ActiveGateModule(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.misconfigured: bool = raw_required_bool(raw_element, "misconfigured")
-        self.type: str = raw_required_str(raw_element, "type")
+        self.misconfigured: bool | None = raw_optional_bool(
+            raw_element, "misconfigured"
+        )
+        self.type: str | None = raw_optional_str(raw_element, "type")
         self.attributes: dict[str, Any] | None = raw_element.get("attributes")
-        self.enabled: bool = raw_required_bool(raw_element, "enabled")
+        self.enabled: bool | None = raw_optional_bool(raw_element, "enabled")
         self.version: str | None = raw_optional_str(raw_element, "version")
