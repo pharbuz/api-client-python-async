@@ -7,7 +7,7 @@ from typing import Any, Union
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
-from dynatrace.utils import timestamp_to_string
+from dynatrace.utils import raw_required_str, timestamp_to_string
 
 
 class SubscriptionService:
@@ -30,15 +30,11 @@ class SubscriptionService:
     # Subscription listing and detail endpoints.
     async def list(self, account_uuid: str) -> builtins.list["SubscriptionSummary"]:
         resp = (
-            await self.__http_client.make_request(
-                f"/sub/v2/accounts/{account_uuid}/subscriptions"
-            )
+            await self.__http_client.make_request(f"/sub/v2/accounts/{account_uuid}/subscriptions")
         ).json()
         return [SubscriptionSummary(raw_element=e) for e in resp.get("data", [])]
 
-    async def get(
-        self, account_uuid: str, subscription_uuid: str
-    ) -> "SubscriptionDetail":
+    async def get(self, account_uuid: str, subscription_uuid: str) -> "SubscriptionDetail":
         # Response models.
         resp = (
             await self.__http_client.make_request(
@@ -158,9 +154,7 @@ class SubscriptionService:
             "startTime": timestamp_to_string(start_time),
             "endTime": timestamp_to_string(end_time),
             "eventType": (
-                event_type.value
-                if isinstance(event_type, SubscriptionEventType)
-                else event_type
+                event_type.value if isinstance(event_type, SubscriptionEventType) else event_type
             ),
         }
         resp = (
@@ -181,7 +175,7 @@ class SubscriptionService:
 
 class SubscriptionSummary(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.uuid: str = raw_element.get("uuid")
+        self.uuid: str = raw_required_str(raw_element, "uuid")
         self.type: str | None = raw_element.get("type")
         self.sub_type: str | None = raw_element.get("subType")
         self.name: str | None = raw_element.get("name")
@@ -192,7 +186,7 @@ class SubscriptionSummary(DynatraceObject):
 
 class SubscriptionDetail(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.uuid: str = raw_element.get("uuid")
+        self.uuid: str = raw_required_str(raw_element, "uuid")
         self.type: str | None = raw_element.get("type")
         self.sub_type: str | None = raw_element.get("subType")
         self.name: str | None = raw_element.get("name")
@@ -213,8 +207,7 @@ class SubscriptionDetail(DynatraceObject):
             SubscriptionPeriod(raw_element=p) for p in raw_element.get("periods", [])
         ]
         self.capabilities: builtins.list[SubscriptionCapability] = [
-            SubscriptionCapability(raw_element=c)
-            for c in raw_element.get("capabilities", [])
+            SubscriptionCapability(raw_element=c) for c in raw_element.get("capabilities", [])
         ]
 
 
@@ -276,8 +269,7 @@ class SubscriptionEnvironmentUsage(DynatraceObject):
 class SubscriptionEnvironmentUsageResponse(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.data: builtins.list[SubscriptionEnvironmentUsage] = [
-            SubscriptionEnvironmentUsage(raw_element=e)
-            for e in raw_element.get("data", [])
+            SubscriptionEnvironmentUsage(raw_element=e) for e in raw_element.get("data", [])
         ]
         self.last_modified_time: str | None = raw_element.get("lastModifiedTime")
 
@@ -296,16 +288,14 @@ class SubscriptionEnvironmentCost(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.environment_id: str | None = raw_element.get("environmentId")
         self.cost: builtins.list[SubscriptionEnvironmentCostItem] = [
-            SubscriptionEnvironmentCostItem(raw_element=e)
-            for e in raw_element.get("cost", [])
+            SubscriptionEnvironmentCostItem(raw_element=e) for e in raw_element.get("cost", [])
         ]
 
 
 class SubscriptionEnvironmentCostResponse(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.data: builtins.list[SubscriptionEnvironmentCost] = [
-            SubscriptionEnvironmentCost(raw_element=e)
-            for e in raw_element.get("data", [])
+            SubscriptionEnvironmentCost(raw_element=e) for e in raw_element.get("data", [])
         ]
         self.last_modified_time: str | None = raw_element.get("lastModifiedTime")
 

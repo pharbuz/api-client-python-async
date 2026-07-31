@@ -37,7 +37,7 @@ class AccountPoliciesService:
         name: str | None = None,
     ) -> "PolicyList":
         """List all native policies of a level."""
-        params = {}
+        params: dict[str, Any] = {}
         if categories:
             params["categories"] = categories
         if name:
@@ -107,9 +107,7 @@ class AccountPoliciesService:
             params={"force": force},
         )
 
-    async def list_aggregate(
-        self, level_type: str, level_id: str
-    ) -> "PolicyOverviewList":
+    async def list_aggregate(self, level_type: str, level_id: str) -> "PolicyOverviewList":
         """List all policies for a level, including inherited from higher levels."""
         resp = (
             await self.__http_client.make_request(
@@ -121,9 +119,7 @@ class AccountPoliciesService:
     async def list_bindings(self, level_type: str, level_id: str) -> "PolicyBindings":
         """List all policy bindings of a level."""
         resp = (
-            await self.__http_client.make_request(
-                f"/iam/v1/repo/{level_type}/{level_id}/bindings"
-            )
+            await self.__http_client.make_request(f"/iam/v1/repo/{level_type}/{level_id}/bindings")
         ).json()
         return PolicyBindings(raw_element=resp)
 
@@ -258,8 +254,7 @@ class PolicyOverviewList(DynatraceObject):
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.policy_overview_list: list[PolicyOverview] = [
-            PolicyOverview(raw_element=e)
-            for e in raw_element.get("policyOverviewList", [])
+            PolicyOverview(raw_element=e) for e in raw_element.get("policyOverviewList", [])
         ]
 
 
@@ -305,8 +300,7 @@ class EffectivePermissions(DynatraceObject):
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.effective_permissions: list[EffectivePermission] = [
-            EffectivePermission(raw_element=e)
-            for e in raw_element.get("effectivePermissions", [])
+            EffectivePermission(raw_element=e) for e in raw_element.get("effectivePermissions", [])
         ]
 
 
@@ -323,10 +317,10 @@ class PolicyCreateRequest(DynatraceObject):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self.name = name
-        self.description = description
-        self.statement_query = statement_query
-        self.tags = tags or []
+        self.name: str | None = name
+        self.description: str | None = description
+        self.statement_query: str | None = statement_query
+        self.tags: list[str] = tags or []
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.name = raw_element.get("name")

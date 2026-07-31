@@ -1,16 +1,14 @@
 """Account settings API wrappers."""
 
-from datetime import datetime
 from typing import Any
 
 from httpx import Response
 
 from dynatrace.dynatrace_object import DynatraceObject
+from dynatrace.environment_v2.settings import EffectiveSettingsValue, SettingsObject
 from dynatrace.environment_v2.settings import SettingService as DtSettingsService
-from dynatrace.environment_v2.settings import SettingsObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import int64_to_datetime
 
 
 class SettingService(DtSettingsService):
@@ -27,9 +25,7 @@ class SettingService(DtSettingsService):
         page_size: int | None = None,
     ) -> "FieldValuesPage":
         """Lists all possible values for the costcenter field."""
-        return await self._list_field_values(
-            account_uuid, "costcenters", page, page_size
-        )
+        return await self._list_field_values(account_uuid, "costcenters", page, page_size)
 
     async def add_costcenters(
         self,
@@ -37,9 +33,7 @@ class SettingService(DtSettingsService):
         values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
     ) -> Response:
         """Adds the provided values to the costcenter field."""
-        return await self._write_field_values(
-            account_uuid, "costcenters", values, method="POST"
-        )
+        return await self._write_field_values(account_uuid, "costcenters", values, method="POST")
 
     async def replace_costcenters(
         self,
@@ -47,9 +41,7 @@ class SettingService(DtSettingsService):
         values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
     ) -> Response:
         """Replaces the current values of the costcenter field."""
-        return await self._write_field_values(
-            account_uuid, "costcenters", values, method="PUT"
-        )
+        return await self._write_field_values(account_uuid, "costcenters", values, method="PUT")
 
     async def delete_costcenter(self, account_uuid: str, key: str) -> Response:
         """Deletes a value by key on the costcenter field."""
@@ -73,9 +65,7 @@ class SettingService(DtSettingsService):
         values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
     ) -> Response:
         """Adds the provided values to the product field."""
-        return await self._write_field_values(
-            account_uuid, "products", values, method="POST"
-        )
+        return await self._write_field_values(account_uuid, "products", values, method="POST")
 
     async def replace_products(
         self,
@@ -83,9 +73,7 @@ class SettingService(DtSettingsService):
         values: list[str] | list["FieldValue"] | "FieldValuesRequest" | dict[str, Any],
     ) -> Response:
         """Replaces the current values of the product field."""
-        return await self._write_field_values(
-            account_uuid, "products", values, method="PUT"
-        )
+        return await self._write_field_values(account_uuid, "products", values, method="PUT")
 
     async def delete_product(self, account_uuid: str, key: str) -> Response:
         """Deletes a value by key on the product field."""
@@ -103,7 +91,7 @@ class SettingService(DtSettingsService):
         fields: str | None = None,
         filter: str | None = None,
         sort: str | None = None,
-        page_size: int | None = None,
+        page_size: str | None = None,
         admin_access: bool | None = None,
     ) -> PaginatedList[SettingsObject]:
         params = {
@@ -131,7 +119,7 @@ class SettingService(DtSettingsService):
         fields: str | None = None,
         page_size: int | None = None,
         admin_access: bool | None = None,
-    ) -> PaginatedList["EffectiveSettingsValue"]:
+    ) -> PaginatedList[EffectiveSettingsValue]:
         """Lists effective settings values for selected schemas at a selected scope."""
 
         params = {
@@ -200,12 +188,13 @@ class SettingService(DtSettingsService):
 # Response models.
 class FieldValue(DynatraceObject):
     def __init__(self, key: str | None = None, **kwargs: Any) -> None:
+        self.key: str | None = None
         super().__init__(**kwargs)
         if key is not None:
             self.key = key
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.key: str | None = raw_element.get("key")
+        self.key = raw_element.get("key")
 
     def to_json(self) -> dict[str, Any]:
         return {"key": self.key}
@@ -217,6 +206,7 @@ class FieldValuesRequest(DynatraceObject):
         values: list[str] | list[FieldValue] | None = None,
         **kwargs: Any,
     ) -> None:
+        self.values: list[FieldValue] = []
         super().__init__(**kwargs)
         if values is not None:
             self.values = [
@@ -225,9 +215,7 @@ class FieldValuesRequest(DynatraceObject):
             ]
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.values: list[FieldValue] = [
-            FieldValue(raw_element=value) for value in raw_element.get("values", [])
-        ]
+        self.values = [FieldValue(raw_element=value) for value in raw_element.get("values", [])]
 
     def to_json(self) -> dict[str, Any]:
         return {"values": [value.to_json() for value in self.values]}
@@ -239,27 +227,3 @@ class FieldValuesPage(DynatraceObject):
             FieldValue(raw_element=record) for record in raw_element.get("records", [])
         ]
         self.has_next_page: bool | None = raw_element.get("hasNextPage")
-
-
-class EffectiveSettingsValue(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.author: str | None = raw_element.get("author")
-        self.created: datetime | None = (
-            int64_to_datetime(int(raw_element.get("created")))
-            if raw_element.get("created")
-            else None
-        )
-        self.created_by: str | None = raw_element.get("createdBy")
-        self.external_id: str | None = raw_element.get("externalId")
-        self.modified: datetime | None = (
-            int64_to_datetime(int(raw_element.get("modified")))
-            if raw_element.get("modified")
-            else None
-        )
-        self.modified_by: str | None = raw_element.get("modifiedBy")
-        self.origin: str | None = raw_element.get("origin")
-        self.schema_id: str | None = raw_element.get("schemaId")
-        self.schema_version: str | None = raw_element.get("schemaVersion")
-        self.search_summary: str | None = raw_element.get("searchSummary")
-        self.summary: str | None = raw_element.get("summary")
-        self.value: Any | None = raw_element.get("value")

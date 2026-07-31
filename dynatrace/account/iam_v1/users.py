@@ -50,9 +50,7 @@ class AccountUsersService:
     async def get_groups(self, account_uuid: str, email: str) -> "UserGroups":
         """List all groups of a user."""
         resp = (
-            await self.__http_client.make_request(
-                f"/iam/v1/accounts/{account_uuid}/users/{email}"
-            )
+            await self.__http_client.make_request(f"/iam/v1/accounts/{account_uuid}/users/{email}")
         ).json()
         return UserGroups(raw_element=resp)
 
@@ -102,9 +100,7 @@ class UserLoginMetadata(DynatraceObject):
     """User login metadata."""
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.successful_login_counter: int | None = raw_element.get(
-            "successfulLoginCounter"
-        )
+        self.successful_login_counter: int | None = raw_element.get("successfulLoginCounter")
         self.failed_login_counter: int | None = raw_element.get("failedLoginCounter")
         self.last_successful_login: str | None = raw_element.get("lastSuccessfulLogin")
         self.last_failed_login: str | None = raw_element.get("lastFailedLogin")
@@ -124,9 +120,7 @@ class User(DynatraceObject):
         self.emergency_contact: bool | None = raw_element.get("emergencyContact")
         user_login_metadata = raw_element.get("userLoginMetadata")
         self.user_login_metadata: UserLoginMetadata | None = (
-            UserLoginMetadata(raw_element=user_login_metadata)
-            if user_login_metadata
-            else None
+            UserLoginMetadata(raw_element=user_login_metadata) if user_login_metadata else None
         )
 
 
@@ -135,9 +129,7 @@ class UserList(DynatraceObject):
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]):
         self.count: int | None = raw_element.get("count")
-        self.items: list[User] = [
-            User(raw_element=e) for e in raw_element.get("items", [])
-        ]
+        self.items: list[User] = [User(raw_element=e) for e in raw_element.get("items", [])]
 
 
 class UserCreationResponse(DynatraceObject):
@@ -171,6 +163,4 @@ class UserGroups(DynatraceObject):
         self.surname: str | None = raw_element.get("surname")
         self.user_status: str | None = raw_element.get("userStatus")
         self.emergency_contact: bool | None = raw_element.get("emergencyContact")
-        self.groups: list[Group] = [
-            Group(raw_element=e) for e in raw_element.get("groups", [])
-        ]
+        self.groups: list[Group] = [Group(raw_element=e) for e in raw_element.get("groups", [])]
