@@ -1,4 +1,7 @@
 from datetime import datetime, timezone
+from typing import Any
+
+import pytest
 
 from dynatrace import DynatraceAsync
 from dynatrace.environment_v2.custom_tags import METag
@@ -19,7 +22,7 @@ from dynatrace.utils import int64_to_datetime
 from test.async_utils import MockResponse, collect
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     entities = await dt.entities.list(
         'type("HOST")',
         fields="+fromRelationships,+toRelationships,+icon,+properties,+tags,+managementZones,+firstSeenTms,+lastSeenTms",
@@ -34,7 +37,7 @@ async def test_list(dt: DynatraceAsync):
     assert len(entities_list) == 1
 
 
-async def test_get(dt: DynatraceAsync):
+async def test_get(dt: DynatraceAsync) -> None:
     entity = await dt.entities.get(
         "HOST-82F576674F19AC16",
         time_from=datetime.fromtimestamp(1618585701, timezone.utc),
@@ -75,7 +78,7 @@ async def test_get(dt: DynatraceAsync):
     assert entity.to_relationships["runsOn"][0].id == "PROCESS_GROUP-3AD9FB79C914520C"
 
 
-async def test_list_types(dt: DynatraceAsync):
+async def test_list_types(dt: DynatraceAsync) -> None:
     entity_types = await dt.entities.list_types(page_size=3)
     entity_types_list = await collect(entity_types)
 
@@ -87,7 +90,7 @@ async def test_list_types(dt: DynatraceAsync):
     assert len(entity_types_list) == 2
 
 
-async def test_get_types(dt: DynatraceAsync):
+async def test_get_types(dt: DynatraceAsync) -> None:
     entity_type = await dt.entities.get_type(entity_type="DISK")
 
     # type checks
@@ -132,7 +135,7 @@ async def test_get_types(dt: DynatraceAsync):
     assert entity_type.to_relationships[0].from_types[0] == "EBS_VOLUME"
 
 
-async def test_create_custom_device(dt: DynatraceAsync):
+async def test_create_custom_device(dt: DynatraceAsync) -> None:
     device = dt.entities.create_custom_device(
         custom_device_id="device-one",
         display_name="Test Device",
@@ -178,19 +181,21 @@ async def test_create_custom_device(dt: DynatraceAsync):
     assert device.message_type == MessageType.CUSTOM_DEVICE
 
 
-async def test_security_context(dt: DynatraceAsync, monkeypatch):
-    calls = []
+async def test_security_context(
+    dt: DynatraceAsync, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[dict[str, Any]] = []
 
     async def fake_make_request(
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         calls.append(
             {
                 "path": path,
