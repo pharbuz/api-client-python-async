@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 from collections.abc import AsyncIterator
-from typing import Generic, TypeVar
+from typing import Any, Generic, NoReturn, TypeVar, cast
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -26,22 +26,22 @@ T = TypeVar("T", bound=DynatraceObject)
 class PaginatedList(Generic[T]):
     def __init__(
         self,
-        target_class,
-        http_client,
-        target_url,
-        target_params=None,
-        headers=None,
-        list_item="result",
-    ):
+        target_class: type[T],
+        http_client: HttpClient | None,
+        target_url: str,
+        target_params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        list_item: str = "result",
+    ) -> None:
         self.__target_class = target_class
-        self.__http_client: HttpClient = http_client
+        self.__http_client: HttpClient = cast(HttpClient, http_client)
         self.__target_url = target_url
         self.__target_params = target_params
         self.__headers = headers
         self.__list_item = list_item
         self._has_next_page = True
-        self.__total_count = None
-        self.__page_size = None
+        self.__total_count: int | None = None
+        self.__page_size: int | None = None
         self.__elements: list[T] = []
         self.__initialized = False
 
@@ -51,15 +51,15 @@ class PaginatedList(Generic[T]):
             self.__initialized = True
         return self
 
-    def __getitem__(self, index):
-        pass
+    def __getitem__(self, index: int) -> T:
+        return self.__elements[index]
 
-    def __iter__(self):
+    def __iter__(self) -> NoReturn:
         raise TypeError(
             "PaginatedList is asynchronous. Use 'async for' or await to_list()."
         )
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.__total_count or len(self.__elements)
 
     async def __aiter__(self) -> AsyncIterator[T]:
@@ -79,12 +79,12 @@ class PaginatedList(Generic[T]):
     async def to_list(self) -> list[T]:
         return [element async for element in self]
 
-    async def _get_next_page(self):
+    async def _get_next_page(self) -> list[T]:
         response = await self.__http_client.make_request(
             self.__target_url, params=self.__target_params, headers=self.__headers
         )
         json_response = response.json()
-        data = []
+        data: list[T] = []
         if json_response.get("nextPageKey", None):
             self._has_next_page = True
             self.__target_params = {"nextPageKey": json_response["nextPageKey"]}
@@ -96,7 +96,7 @@ class PaginatedList(Generic[T]):
             self.__total_count = json_response.get("totalCount") or len(elements)
 
             data = [
-                self.__target_class(self.__http_client, response.headers, element)
+                self.__target_class(self.__http_client, dict(response.headers), element)
                 for element in elements
             ]
         return data
@@ -104,17 +104,22 @@ class PaginatedList(Generic[T]):
 
 class HeaderPaginatedList(Generic[T]):
     def __init__(
-        self, target_class, http_client, target_url, target_params=None, headers=None
-    ):
-        self.__elements = list()
+        self,
+        target_class: type[T],
+        http_client: HttpClient | None,
+        target_url: str,
+        target_params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> None:
+        self.__elements: list[T] = []
         self.__target_class = target_class
-        self.__http_client: HttpClient = http_client
+        self.__http_client: HttpClient = cast(HttpClient, http_client)
         self.__target_url = target_url
         self.__target_params = target_params
         self.__headers = headers
         self._has_next_page = True
-        self.__total_count = None
-        self.__page_size = None
+        self.__total_count: int | None = None
+        self.__page_size: int | None = None
         self.__initialized = False
 
     async def initialize(self) -> "HeaderPaginatedList[T]":
@@ -123,15 +128,15 @@ class HeaderPaginatedList(Generic[T]):
             self.__initialized = True
         return self
 
-    def __getitem__(self, index):
-        pass
+    def __getitem__(self, index: int) -> T:
+        return self.__elements[index]
 
-    def __iter__(self):
+    def __iter__(self) -> NoReturn:
         raise TypeError(
             "HeaderPaginatedList is asynchronous. Use 'async for' or await to_list()."
         )
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.__total_count or len(self.__elements)
 
     async def __aiter__(self) -> AsyncIterator[T]:
@@ -151,7 +156,7 @@ class HeaderPaginatedList(Generic[T]):
     async def to_list(self) -> list[T]:
         return [element async for element in self]
 
-    async def _get_next_page(self):
+    async def _get_next_page(self) -> list[T]:
         response = await self.__http_client.make_request(
             self.__target_url, params=self.__target_params, headers=self.__headers
         )
@@ -164,9 +169,12 @@ class HeaderPaginatedList(Generic[T]):
             self._has_next_page = False
 
         elements = json_response
-        self.__total_count = headers.get("total-count") or len(elements)
+        total_count = headers.get("total-count")
+        self.__total_count = (
+            int(total_count) if total_count is not None else len(elements)
+        )
         data = [
-            self.__target_class(self.__http_client, response.headers, element)
+            self.__target_class(self.__http_client, dict(response.headers), element)
             for element in elements
         ]
         return data
