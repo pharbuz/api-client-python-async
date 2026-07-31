@@ -103,7 +103,7 @@ class SettingService:
         validate_only: bool | None = False,
         body: list[SettingsObjectCreate] | SettingsObjectCreate | None = None,
         admin_access: bool | None = None,
-    ) -> JSONValue:
+    ) -> list[JSONDict]:
         """
         Creates a new settings object or validates the provided settigns object
 
@@ -125,7 +125,7 @@ class SettingService:
                 query_params=query_params,
             )
         ).json()
-        return cast(JSONValue, response)
+        return cast(list[JSONDict], response)
 
     async def get_object(
         self, object_id: str, admin_access: bool | None = None

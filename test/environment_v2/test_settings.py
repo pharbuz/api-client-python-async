@@ -12,9 +12,10 @@ from dynatrace.environment_v2.settings import (
 )
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import JSONDict
 from test.async_utils import MockResponse, collect
 
-settings_dict = {
+settings_dict: JSONDict = {
     "enabled": True,
     "summary": "DT API TEST 22",
     "queryDefinition": {
