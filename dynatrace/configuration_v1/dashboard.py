@@ -28,7 +28,7 @@ class DashboardService:
         self.__http_client = http_client
 
     async def list(
-        self, owner: str = None, tags: list[str] = None
+        self, owner: str | None = None, tags: list[str] | None = None
     ) -> PaginatedList["DashboardStub"]:
         """
         Lists all dashboards of the environment

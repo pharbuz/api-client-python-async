@@ -39,8 +39,8 @@ class ThirdPartySyntheticTestsService:
         schedule_interval: int,
         success: bool,
         response_time: int,
-        icon_url: str = None,
-        edit_link: str = None,
+        icon_url: str | None = None,
+        edit_link: str | None = None,
         step_title: str | None = None,
         detailed_steps: list["SyntheticTestStep"] | None = None,
         detailed_step_results: list["SyntheticMonitorStepResult"] | None = None,
@@ -224,7 +224,7 @@ class SyntheticTestLocation(DynatraceObject):
 
 
 class SyntheticTestStep(DynatraceObject):
-    def __init__(self, http_client, step_id: int, title: str):
+    def __init__(self, http_client, step_id: int, title: str | None):
         self.step_id = step_id
         self.title = title
 

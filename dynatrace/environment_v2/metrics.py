@@ -34,7 +34,7 @@ class MetricService:
     async def query(
         self,
         metric_selector: str,
-        resolution: str = None,
+        resolution: str | None = None,
         time_from: datetime | str | None = None,
         time_to: datetime | str | None = None,
         entity_selector: str | None = None,
