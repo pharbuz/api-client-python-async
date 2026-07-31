@@ -1,6 +1,8 @@
 import json
 from unittest import mock
 
+from httpx import Response
+
 from dynatrace import DynatraceAsync
 from dynatrace.http_client import HttpClient
 from dynatrace.platform.grail_dql_query.query_execution import (
@@ -12,7 +14,7 @@ from dynatrace.platform.grail_dql_query.query_execution import (
 class MockResponse:
     def __init__(self, json_data=None, text=None, raise_json: bool = False):
         self._json_data = json_data
-        self.headers = {}
+        self.headers: dict[str, str] = {}
         self.text = (
             text
             if text is not None
@@ -59,7 +61,7 @@ async def test_query_execution_execute_and_cancel(dt: DynatraceAsync):
             )
 
         if (method, path) == ("POST", "/platform/storage/query/v1/query:cancel"):
-            return MockResponse(text="accepted", raise_json=True)
+            return Response(200, text="accepted")
 
         raise AssertionError(f"Unexpected request: {method} {path}")
 
@@ -73,4 +75,5 @@ async def test_query_execution_execute_and_cancel(dt: DynatraceAsync):
     assert started.result.metadata is not None
     assert started.result.metadata.grail is not None
     assert started.result.metadata.grail.query_id == "query-1"
+    assert isinstance(canceled, Response)
     assert canceled.text == "accepted"

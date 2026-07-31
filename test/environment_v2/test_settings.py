@@ -4,6 +4,7 @@ from dynatrace.environment_v2.settings import (
     SchemaStub,
     SettingsObject,
     SettingsObjectCreate,
+    SettingsObjectUpdate,
 )
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
@@ -43,6 +44,7 @@ settings_dict = {
 settings_object = SettingsObjectCreate(
     "builtin:anomaly-detection.metric-events", settings_dict, "environment"
 )
+settings_object_update = SettingsObjectUpdate(settings_dict)
 test_object_id = "vu9U3hXa3q0AAAABACdidWlsdGluOmFub21hbHktZGV0ZWN0aW9uLm1ldHJpYy1ldmVudHMABnRlbmFudAAGdGVuYW50ACRiYmYzZWNhNy0zMmZmLTM2ZTEtOTFiOS05Y2QxZjE3OTc0YjC-71TeFdrerQ"
 
 
@@ -124,5 +126,5 @@ async def test_post_object(dt: DynatraceAsync):
 
 
 async def test_put_object(dt: DynatraceAsync):
-    response = await dt.settings.update_object(test_object_id, settings_object)
+    response = await dt.settings.update_object(test_object_id, settings_object_update)
     print(response)
