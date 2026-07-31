@@ -1,7 +1,7 @@
 from dynatrace.http_client import HttpClient
 
 
-def test_sanitize_params_removes_none_values():
+def test_sanitize_params_removes_none_values() -> None:
     params = {
         "entitySelector": 'type("HOST")',
         "from": "now-3d",
