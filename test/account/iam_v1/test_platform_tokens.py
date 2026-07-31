@@ -1,6 +1,7 @@
 """Tests for account IAM v1 platform tokens API."""
 
 import json
+from typing import Any
 from unittest import mock
 
 from dynatrace import DynatraceAsync
@@ -13,34 +14,34 @@ from dynatrace.http_client import HttpClient
 
 
 class MockResponse:
-    def __init__(self, json_data=None, status_code=200):
+    def __init__(self, json_data: Any = None, status_code: int = 200) -> None:
         self._json_data = json_data
-        self.headers = {}
+        self.headers: dict[str, str] = {}
         self.text = json.dumps(json_data) if json_data is not None else ""
         self.status_code = status_code
 
-    def json(self):
+    def json(self) -> Any:
         return self._json_data
 
 
-async def test_platform_tokens_service_is_exposed(dt: DynatraceAsync):
+async def test_platform_tokens_service_is_exposed(dt: DynatraceAsync) -> None:
     assert isinstance(dt.account.iam_platform_tokens, AccountPlatformTokensService)
 
 
-async def test_platform_tokens_list(dt: DynatraceAsync):
+async def test_platform_tokens_list(dt: DynatraceAsync) -> None:
     account_uuid = "account-123"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == (
             "GET",
             f"/iam/v1/accounts/{account_uuid}/platform-tokens",
@@ -74,23 +75,23 @@ async def test_platform_tokens_list(dt: DynatraceAsync):
     assert page.items[0].status == "ACTIVE"
 
 
-async def test_platform_tokens_create(dt: DynatraceAsync):
+async def test_platform_tokens_create(dt: DynatraceAsync) -> None:
     account_uuid = "account-123"
     name = "New Token"
     scopes = ["platform-token:tokens:manage"]
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        json=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        json: Any = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == (
             "POST",
             f"/iam/v1/accounts/{account_uuid}/platform-tokens",
@@ -116,21 +117,21 @@ async def test_platform_tokens_create(dt: DynatraceAsync):
     assert token.secret == "secret_token_value"
 
 
-async def test_platform_tokens_delete(dt: DynatraceAsync):
+async def test_platform_tokens_delete(dt: DynatraceAsync) -> None:
     account_uuid = "account-123"
     token_id = "token-123"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (
             method,
             path,
@@ -147,23 +148,23 @@ async def test_platform_tokens_delete(dt: DynatraceAsync):
     assert response.status_code == 200
 
 
-async def test_platform_tokens_set_expiration_date(dt: DynatraceAsync):
+async def test_platform_tokens_set_expiration_date(dt: DynatraceAsync) -> None:
     account_uuid = "account-123"
     token_id = "token-123"
     expiration_date = "2026-05-01T00:00:00Z"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        json=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        json: Any = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (
             method,
             path,
@@ -183,23 +184,23 @@ async def test_platform_tokens_set_expiration_date(dt: DynatraceAsync):
     assert response.status_code == 200
 
 
-async def test_platform_tokens_set_status(dt: DynatraceAsync):
+async def test_platform_tokens_set_status(dt: DynatraceAsync) -> None:
     account_uuid = "account-123"
     token_id = "token-123"
     status = "INACTIVE"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        json=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        json: Any = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (
             method,
             path,
