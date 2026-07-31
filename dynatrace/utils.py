@@ -115,6 +115,13 @@ def raw_optional_str_list(raw_element: JSONMapping, key: str) -> list[str]:
     return cast(list[str], value)
 
 
+def raw_required_str_list(raw_element: JSONMapping, key: str) -> list[str]:
+    value = raw_element[key]
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise TypeError(f"expected raw field {key!r} to be list[str]")
+    return cast(list[str], value)
+
+
 def raw_optional_str_list_or_none(
     raw_element: JSONMapping, key: str
 ) -> list[str] | None:
@@ -166,6 +173,22 @@ def raw_optional_dict(raw_element: JSONMapping, key: str) -> dict[str, Any] | No
     if not isinstance(value, dict):
         raise TypeError(f"expected raw field {key!r} to be object")
     return cast(dict[str, Any], value)
+
+
+def raw_optional_str_dict(raw_element: JSONMapping, key: str) -> dict[str, str] | None:
+    value = raw_element.get(key)
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise TypeError(f"expected raw field {key!r} to be object")
+    result: dict[str, str] = {}
+    for item_key, item_value in value.items():
+        if not isinstance(item_key, str):
+            raise TypeError(f"expected raw field {key!r} keys to be str")
+        if not isinstance(item_value, str):
+            raise TypeError(f"expected raw field {key!r} values to be str")
+        result[item_key] = item_value
+    return result
 
 
 def raw_optional_float_dict(
@@ -261,12 +284,30 @@ def raw_optional_object(
     return factory(value)
 
 
+def raw_required_object(
+    raw_element: JSONMapping, key: str, factory: Callable[[JSONDict], T]
+) -> T:
+    value = raw_element[key]
+    if not isinstance(value, dict):
+        raise TypeError(f"expected raw field {key!r} to be object")
+    return factory(value)
+
+
 def raw_optional_object_list(
     raw_element: JSONMapping, key: str, factory: Callable[[JSONDict], T]
 ) -> list[T] | None:
     value = raw_element.get(key)
     if value is None:
         return None
+    if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
+        raise TypeError(f"expected raw field {key!r} to be list[object]")
+    return [factory(cast(JSONDict, item)) for item in value]
+
+
+def raw_required_object_list(
+    raw_element: JSONMapping, key: str, factory: Callable[[JSONDict], T]
+) -> list[T]:
+    value = raw_element[key]
     if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
         raise TypeError(f"expected raw field {key!r} to be list[object]")
     return [factory(cast(JSONDict, item)) for item in value]
