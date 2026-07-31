@@ -10,7 +10,7 @@ SECURITY_PROBLEM_ID = "12544152654387159360"
 REMEDIATION_ITEM_ID = "ri-1"
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     security_problems = await dt.security_problems.list(time_from="now-30d")
 
     assert isinstance(security_problems, PaginatedList)
@@ -19,7 +19,7 @@ async def test_list(dt: DynatraceAsync):
     assert all(isinstance(p, sp.SecurityProblem) for p in security_problem_list)
 
 
-async def test_get(dt: DynatraceAsync):
+async def test_get(dt: DynatraceAsync) -> None:
     security_problem = await dt.security_problems.get(
         security_problem_id=SECURITY_PROBLEM_ID
     )
@@ -49,7 +49,7 @@ async def test_get(dt: DynatraceAsync):
     )
 
 
-async def test_all_required_endpoints(dt: DynatraceAsync):
+async def test_all_required_endpoints(dt: DynatraceAsync) -> None:
     events = await dt.security_problems.list_events(SECURITY_PROBLEM_ID)
     events_list = await collect(events)
     assert len(events_list) == 1

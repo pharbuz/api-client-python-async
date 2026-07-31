@@ -8,7 +8,7 @@ from dynatrace.environment_v1.synthetic_monitors import (
 from dynatrace.pagination import PaginatedList
 
 
-async def test_list_string(dt: DynatraceAsync):
+async def test_list_string(dt: DynatraceAsync) -> None:
     monitors = await dt.synthetic_monitors.list(monitor_type="BROWSER")
     assert isinstance(monitors, PaginatedList)
     async for monitor in monitors:
@@ -20,7 +20,7 @@ async def test_list_string(dt: DynatraceAsync):
         break
 
 
-async def test_list_enum(dt: DynatraceAsync):
+async def test_list_enum(dt: DynatraceAsync) -> None:
     monitors = await dt.synthetic_monitors.list(monitor_type=MonitorType.BROWSER)
     assert isinstance(monitors, PaginatedList)
     async for monitor in monitors:
@@ -32,7 +32,7 @@ async def test_list_enum(dt: DynatraceAsync):
         break
 
 
-async def test_get_full_synthetic_config(dt: DynatraceAsync):
+async def test_get_full_synthetic_config(dt: DynatraceAsync) -> None:
     config = await dt.synthetic_monitors.get_full_monitor_configuration(
         monitor_id="SYNTHETIC_TEST-7639A3AED66940FA"
     )

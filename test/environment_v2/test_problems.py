@@ -14,7 +14,7 @@ PROBLEM_ID = "-1719139739592062093_1623004451641V2"
 COMMENT_ID = "-7228967546616810529_1623004451641"
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     problems = await dt.problems.list(time_from="now-3d")
 
     assert isinstance(problems, PaginatedList)
@@ -23,7 +23,7 @@ async def test_list(dt: DynatraceAsync):
     assert all(isinstance(p, pb.Problem) for p in problem_list)
 
 
-async def test_get(dt: DynatraceAsync):
+async def test_get(dt: DynatraceAsync) -> None:
     problem = await dt.problems.get(problem_id=PROBLEM_ID)
 
     # type checks
@@ -99,7 +99,7 @@ async def test_get(dt: DynatraceAsync):
     assert len(recent_comments) == 2
 
 
-async def test_close(dt: DynatraceAsync):
+async def test_close(dt: DynatraceAsync) -> None:
     close_result = await dt.problems.close(
         problem_id=PROBLEM_ID, message="Closing this. 1234"
     )
@@ -121,7 +121,7 @@ async def test_close(dt: DynatraceAsync):
     assert close_result.closing
 
 
-async def test_list_comments(dt: DynatraceAsync):
+async def test_list_comments(dt: DynatraceAsync) -> None:
     comments = await dt.problems.list_comments(problem_id=PROBLEM_ID, page_size=20)
 
     assert isinstance(comments, PaginatedList)
@@ -130,7 +130,7 @@ async def test_list_comments(dt: DynatraceAsync):
     assert all(isinstance(c, pb.Comment) for c in comment_list)
 
 
-async def test_get_comment(dt: DynatraceAsync):
+async def test_get_comment(dt: DynatraceAsync) -> None:
     comment = await dt.problems.get_comment(
         problem_id=PROBLEM_ID, comment_id=COMMENT_ID
     )
