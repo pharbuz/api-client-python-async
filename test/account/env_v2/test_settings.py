@@ -175,7 +175,7 @@ async def test_account_settings_costcenters_and_products(dt: DynatraceAsync) -> 
         )
         products = await dt.account.settings.list_products(account_uuid)
         add_products_response = await dt.account.settings.add_products(
-            account_uuid, {"values": [{"key": "product-2"}]}
+            account_uuid, FieldValuesRequest(values=[FieldValue(key="product-2")])
         )
         replace_products_response = await dt.account.settings.replace_products(
             account_uuid, [FieldValue(key="product-3")]

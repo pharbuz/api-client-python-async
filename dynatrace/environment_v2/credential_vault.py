@@ -136,7 +136,7 @@ class Credentials(ABC):
         description: str | None = None,
         owner_access_only: bool | None = False,
         allow_contextless_requests: bool | None = None,
-        allowed_entities: list[CredentialAccessData | dict[str, str]] | None = None,
+        allowed_entities: list[CredentialAccessData] | None = None,
         external_vault: dict[str, Any] | None = None,
         scope: str | None = None,
         credential_type: str | None = None,
@@ -170,8 +170,7 @@ class Credentials(ABC):
             body["externalVault"] = self.external_vault
         if self.allowed_entities:
             body["allowedEntities"] = [
-                entity.to_json() if isinstance(entity, CredentialAccessData) else entity
-                for entity in self.allowed_entities
+                entity.to_json() for entity in self.allowed_entities
             ]
 
         return body
@@ -192,7 +191,7 @@ class CertificateCredentials(Credentials):
         description: str | None = None,
         owner_access_only: bool | None = False,
         allow_contextless_requests: bool | None = None,
-        allowed_entities: list[CredentialAccessData | dict[str, str]] | None = None,
+        allowed_entities: list[CredentialAccessData] | None = None,
         scope: str | None = None,
         encode_values: bool = True,
     ):
@@ -233,7 +232,7 @@ class PublicCertificateCredentials(Credentials):
         description: str | None = None,
         owner_access_only: bool | None = False,
         allow_contextless_requests: bool | None = None,
-        allowed_entities: list[CredentialAccessData | dict[str, str]] | None = None,
+        allowed_entities: list[CredentialAccessData] | None = None,
         scope: str | None = None,
         encode_certificate: bool = True,
     ):
@@ -273,7 +272,7 @@ class UserPasswordCredentials(Credentials):
         description: str | None = None,
         owner_access_only: bool | None = False,
         allow_contextless_requests: bool | None = None,
-        allowed_entities: list[CredentialAccessData | dict[str, str]] | None = None,
+        allowed_entities: list[CredentialAccessData] | None = None,
         external_vault: dict[str, Any] | None = None,
         scope: str | None = None,
     ):
@@ -307,7 +306,7 @@ class TokenCredentials(Credentials):
         description: str | None = None,
         owner_access_only: bool | None = False,
         allow_contextless_requests: bool | None = None,
-        allowed_entities: list[CredentialAccessData | dict[str, str]] | None = None,
+        allowed_entities: list[CredentialAccessData] | None = None,
         external_vault: dict[str, Any] | None = None,
         scope: str | None = None,
     ):
@@ -344,7 +343,7 @@ class SNMPV3Credentials(Credentials):
         description: str | None = None,
         owner_access_only: bool | None = False,
         allow_contextless_requests: bool | None = None,
-        allowed_entities: list[CredentialAccessData | dict[str, str]] | None = None,
+        allowed_entities: list[CredentialAccessData] | None = None,
         scope: str | None = None,
     ):
         super().__init__(
@@ -390,7 +389,7 @@ class AWSKeyBasedCredentials(Credentials):
         description: str | None = None,
         owner_access_only: bool | None = False,
         allow_contextless_requests: bool | None = None,
-        allowed_entities: list[CredentialAccessData | dict[str, str]] | None = None,
+        allowed_entities: list[CredentialAccessData] | None = None,
     ):
         super().__init__(
             name=name,
@@ -423,7 +422,7 @@ class AWSRoleBasedCredentials(Credentials):
         description: str | None = None,
         owner_access_only: bool | None = False,
         allow_contextless_requests: bool | None = None,
-        allowed_entities: list[CredentialAccessData | dict[str, str]] | None = None,
+        allowed_entities: list[CredentialAccessData] | None = None,
     ):
         super().__init__(
             name=name,

@@ -45,7 +45,7 @@ class SettingService(DtSettingsService):
     async def add_costcenters(
         self,
         account_uuid: str,
-        values: list[str] | list[FieldValue] | FieldValuesRequest | dict[str, Any],
+        values: list[str] | list[FieldValue] | FieldValuesRequest,
     ) -> Response:
         """Adds the provided values to the costcenter field."""
         return await self._write_field_values(
@@ -55,7 +55,7 @@ class SettingService(DtSettingsService):
     async def replace_costcenters(
         self,
         account_uuid: str,
-        values: list[str] | list[FieldValue] | FieldValuesRequest | dict[str, Any],
+        values: list[str] | list[FieldValue] | FieldValuesRequest,
     ) -> Response:
         """Replaces the current values of the costcenter field."""
         return await self._write_field_values(
@@ -81,7 +81,7 @@ class SettingService(DtSettingsService):
     async def add_products(
         self,
         account_uuid: str,
-        values: list[str] | list[FieldValue] | FieldValuesRequest | dict[str, Any],
+        values: list[str] | list[FieldValue] | FieldValuesRequest,
     ) -> Response:
         """Adds the provided values to the product field."""
         return await self._write_field_values(
@@ -91,7 +91,7 @@ class SettingService(DtSettingsService):
     async def replace_products(
         self,
         account_uuid: str,
-        values: list[str] | list[FieldValue] | FieldValuesRequest | dict[str, Any],
+        values: list[str] | list[FieldValue] | FieldValuesRequest,
     ) -> Response:
         """Replaces the current values of the product field."""
         return await self._write_field_values(
@@ -183,7 +183,7 @@ class SettingService(DtSettingsService):
         self,
         account_uuid: str,
         field: str,
-        values: list[str] | list[FieldValue] | FieldValuesRequest | dict[str, Any],
+        values: list[str] | list[FieldValue] | FieldValuesRequest,
         method: str,
     ) -> Response:
         return await self.__http_client.make_request(
@@ -194,12 +194,10 @@ class SettingService(DtSettingsService):
 
     @staticmethod
     def _field_values_body(
-        values: list[str] | list[FieldValue] | FieldValuesRequest | dict[str, Any],
+        values: list[str] | list[FieldValue] | FieldValuesRequest,
     ) -> dict[str, Any]:
         if isinstance(values, FieldValuesRequest):
             return values.to_json()
-        if isinstance(values, dict):
-            return values
         return {
             "values": [
                 value.to_json() if isinstance(value, FieldValue) else {"key": value}

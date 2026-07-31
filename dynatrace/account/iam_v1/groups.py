@@ -1,7 +1,7 @@
 """Account group management API wrappers."""
 
 import builtins
-from typing import Any, Union
+from typing import Any
 
 from httpx import Response
 
@@ -58,17 +58,13 @@ class AccountGroupsService:
         self,
         account_uuid: str,
         group_uuid: str,
-        group_config: Union["GroupUpdateRequest", dict[str, Any]],
+        group_config: "GroupUpdateRequest",
     ) -> Response:
         """Edit a user group."""
-        if isinstance(group_config, GroupUpdateRequest):
-            body = group_config.to_json()
-        else:
-            body = group_config
         return await self.__http_client.make_request(
             f"/iam/v1/accounts/{account_uuid}/groups/{group_uuid}",
             method="PUT",
-            json=body,
+            json=group_config.to_json(),
         )
 
     async def delete(self, account_uuid: str, group_uuid: str) -> Response:

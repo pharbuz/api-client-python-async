@@ -1,7 +1,7 @@
 """Account policy management API wrappers."""
 
 import builtins
-from typing import Any, Union
+from typing import Any
 
 from httpx import Response
 
@@ -54,18 +54,14 @@ class AccountPoliciesService:
         self,
         level_type: str,
         level_id: str,
-        policy_config: Union["PolicyCreateRequest", dict[str, Any]],
+        policy_config: "PolicyCreateRequest",
     ) -> "Policy":
         """Create a new policy."""
-        if isinstance(policy_config, PolicyCreateRequest):
-            body = policy_config.to_json()
-        else:
-            body = policy_config
         resp = (
             await self.__http_client.make_request(
                 f"/iam/v1/repo/{level_type}/{level_id}/policies",
                 method="POST",
-                json=body,
+                json=policy_config.to_json(),
             )
         ).json()
         return Policy(raw_element=resp)
@@ -84,17 +80,13 @@ class AccountPoliciesService:
         level_type: str,
         level_id: str,
         policy_uuid: str,
-        policy_config: Union["PolicyCreateRequest", dict[str, Any]],
+        policy_config: "PolicyCreateRequest",
     ) -> Response:
         """Update a policy."""
-        if isinstance(policy_config, PolicyCreateRequest):
-            body = policy_config.to_json()
-        else:
-            body = policy_config
         return await self.__http_client.make_request(
             f"/iam/v1/repo/{level_type}/{level_id}/policies/{policy_uuid}",
             method="PUT",
-            json=body,
+            json=policy_config.to_json(),
         )
 
     async def delete(
@@ -143,17 +135,13 @@ class AccountPoliciesService:
         level_type: str,
         level_id: str,
         policy_uuid: str,
-        bindings_config: Union["PolicyBindingsCreateRequest", dict[str, Any]],
+        bindings_config: "PolicyBindingsCreateRequest",
     ) -> Response:
         """Add policy bindings to a level."""
-        if isinstance(bindings_config, PolicyBindingsCreateRequest):
-            body = bindings_config.to_json()
-        else:
-            body = bindings_config
         return await self.__http_client.make_request(
             f"/iam/v1/repo/{level_type}/{level_id}/bindings/{policy_uuid}",
             method="POST",
-            json=body,
+            json=bindings_config.to_json(),
         )
 
     async def get_group_policies(

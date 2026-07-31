@@ -1,6 +1,6 @@
 """Account environment management API v1 wrappers."""
 
-from typing import Any, Union
+from typing import Any
 
 from httpx import Response
 
@@ -44,16 +44,12 @@ class AccountEnvironmentsV1Service:
         self,
         account_uuid: str,
         environment_uuid: str,
-        config: Union["IpAllowlistConfig", dict[str, Any]],
+        config: "IpAllowlistConfig",
     ) -> Response:
-        if isinstance(config, IpAllowlistConfig):
-            body = config.to_json()
-        else:
-            body = config
         return await self.__http_client.make_request(
             f"/env/v1/accounts/{account_uuid}/environments/{environment_uuid}/ip-allowlist",
             method="PUT",
-            params=body,
+            params=config.to_json(),
         )
 
 
