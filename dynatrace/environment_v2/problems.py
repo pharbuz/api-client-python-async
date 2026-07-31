@@ -285,33 +285,33 @@ class EvidenceDetails(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         raw_details = raw_element.get("details", [])
         self.total_count: int = raw_required_int(raw_element, "totalCount")
-        self.details: list[Evidence] | None = (
-            [
-                EventEvidence(raw_element=e)
-                for e in raw_details
-                if e.get("evidenceType") == EvidenceType.EVENT.value
-            ]
-            + [
-                MetricEvidence(raw_element=e)
-                for e in raw_details
-                if e.get("evidenceType") == EvidenceType.METRIC.value
-            ]
-            + [
-                TransactionalEvidence(raw_element=e)
-                for e in raw_details
-                if e.get("evidenceType") == EvidenceType.TRANSACTIONAL.value
-            ]
-            + [
-                MaintenanceWindowEvidence(raw_element=e)
-                for e in raw_details
-                if e.get("evidenceType") == EvidenceType.MAINTENANCE_WINDOW.value
-            ]
-            + [
-                AvailabilityEvidence(raw_element=e)
-                for e in raw_details
-                if e.get("evidenceType") == EvidenceType.AVAILABILITY.value
-            ]
+        details: list[Evidence] = []
+        details.extend(
+            EventEvidence(raw_element=e)
+            for e in raw_details
+            if e.get("evidenceType") == EvidenceType.EVENT.value
         )
+        details.extend(
+            MetricEvidence(raw_element=e)
+            for e in raw_details
+            if e.get("evidenceType") == EvidenceType.METRIC.value
+        )
+        details.extend(
+            TransactionalEvidence(raw_element=e)
+            for e in raw_details
+            if e.get("evidenceType") == EvidenceType.TRANSACTIONAL.value
+        )
+        details.extend(
+            MaintenanceWindowEvidence(raw_element=e)
+            for e in raw_details
+            if e.get("evidenceType") == EvidenceType.MAINTENANCE_WINDOW.value
+        )
+        details.extend(
+            AvailabilityEvidence(raw_element=e)
+            for e in raw_details
+            if e.get("evidenceType") == EvidenceType.AVAILABILITY.value
+        )
+        self.details = details
 
 
 class Evidence(DynatraceObject):
