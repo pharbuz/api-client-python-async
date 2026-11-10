@@ -5,6 +5,12 @@ from typing import Any
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
+from dynatrace.utils import (
+    raw_optional_float,
+    raw_optional_int,
+    raw_optional_object_list,
+    raw_optional_str,
+)
 
 
 class AccountLimitsService:
@@ -27,19 +33,25 @@ class AccountLimit(DynatraceObject):
     """Account limit entry."""
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
-        self.current_value: float | None = raw_element.get("currentValue")
-        self.limit_type: str | None = raw_element.get("limitType")
-        self.limit_value: float | None = raw_element.get("limitValue")
+        self.current_value: float | None = raw_optional_float(
+            raw_element, "currentValue"
+        )
+        self.limit_type: str | None = raw_optional_str(raw_element, "limitType")
+        self.limit_value: float | None = raw_optional_float(raw_element, "limitValue")
 
 
 class AccountLimitsPage(DynatraceObject):
     """Page of account limits."""
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
-        self.page_size: float | None = raw_element.get("pageSize")
-        self.page_number: float | None = raw_element.get("pageNumber")
-        self.total: float | None = raw_element.get("total")
-        self.results: builtins.list[AccountLimit] = [
-            AccountLimit(raw_element=result)
-            for result in raw_element.get("results", [])
-        ]
+        self.page_size: int | None = raw_optional_int(raw_element, "pageSize")
+        self.page_number: int | None = raw_optional_int(raw_element, "pageNumber")
+        self.total: int | None = raw_optional_int(raw_element, "total")
+        self.results: builtins.list[AccountLimit] = (
+            raw_optional_object_list(
+                raw_element,
+                "results",
+                lambda value: AccountLimit(raw_element=value),
+            )
+            or []
+        )

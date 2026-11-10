@@ -50,7 +50,7 @@ class HttpClient:
         verify_ssl: bool = False,
         token_timeout: int = 30,
         follow_redirects: bool = True,
-    ):
+    ) -> None:
         while base_url.endswith("/"):
             base_url = base_url[:-1]
         self.base_url = base_url

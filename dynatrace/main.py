@@ -131,7 +131,7 @@ class DynatraceAsync:
         headers: dict[str, str] | None = None,
         verify_ssl: bool = False,
         token_timeout: int = 30,
-    ):
+    ) -> None:
         if not base_url:
             raise ValueError("base_url is required")
         if isinstance(credentials, DynatraceOAuthCredentials):

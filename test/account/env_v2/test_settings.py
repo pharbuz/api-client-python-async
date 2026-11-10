@@ -2,6 +2,8 @@ import json
 from typing import Any
 from unittest import mock
 
+import pytest
+
 from dynatrace import DynatraceAsync
 from dynatrace.account.env_v2.settings import (
     EffectiveSettingsValue,
@@ -199,3 +201,11 @@ async def test_account_settings_costcenters_and_products(dt: DynatraceAsync) -> 
     assert add_products_response.status_code == 200
     assert replace_products_response.status_code == 200
     assert delete_product_response.status_code == 200
+
+
+def test_account_settings_rejects_invalid_field_types() -> None:
+    with pytest.raises(TypeError):
+        FieldValue(raw_element={"key": 123})
+
+    with pytest.raises(TypeError):
+        FieldValuesPage(raw_element={"hasNextPage": "false"})

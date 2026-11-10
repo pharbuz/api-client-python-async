@@ -2,6 +2,8 @@ import json
 from typing import Any
 from unittest import mock
 
+import pytest
+
 from dynatrace import DynatraceAsync
 from dynatrace.account.reference_data import (
     Permission,
@@ -80,3 +82,8 @@ async def test_reference_data_lists_expected_models(dt: DynatraceAsync) -> None:
     assert isinstance(permissions[0], Permission)
     assert permissions[0].id == "account-viewer"
     assert permissions[0].description == "View account information"
+
+
+def test_reference_data_rejects_invalid_field_types() -> None:
+    with pytest.raises(TypeError):
+        TimeZone(raw_element={"name": 123})

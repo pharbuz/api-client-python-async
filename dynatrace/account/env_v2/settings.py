@@ -14,6 +14,11 @@ from dynatrace.environment_v2.settings import (
 from dynatrace.environment_v2.settings import SettingService as DtSettingsService
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import (
+    raw_optional_bool,
+    raw_optional_object_list,
+    raw_optional_str,
+)
 
 __all__ = [
     "EffectiveSettingsValue",
@@ -215,7 +220,7 @@ class FieldValue(DynatraceObject):
             self.key = key
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
-        self.key = raw_element.get("key")
+        self.key = raw_optional_str(raw_element, "key")
 
     def to_json(self) -> dict[str, Any]:
         return {"key": self.key}
@@ -236,9 +241,14 @@ class FieldValuesRequest(DynatraceObject):
             ]
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
-        self.values = [
-            FieldValue(raw_element=value) for value in raw_element.get("values", [])
-        ]
+        self.values = (
+            raw_optional_object_list(
+                raw_element,
+                "values",
+                lambda value: FieldValue(raw_element=value),
+            )
+            or []
+        )
 
     def to_json(self) -> dict[str, Any]:
         return {"values": [value.to_json() for value in self.values]}
@@ -246,7 +256,12 @@ class FieldValuesRequest(DynatraceObject):
 
 class FieldValuesPage(DynatraceObject):
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
-        self.records: list[FieldValue] = [
-            FieldValue(raw_element=record) for record in raw_element.get("records", [])
-        ]
-        self.has_next_page: bool | None = raw_element.get("hasNextPage")
+        self.records: list[FieldValue] = (
+            raw_optional_object_list(
+                raw_element,
+                "records",
+                lambda value: FieldValue(raw_element=value),
+            )
+            or []
+        )
+        self.has_next_page: bool | None = raw_optional_bool(raw_element, "hasNextPage")

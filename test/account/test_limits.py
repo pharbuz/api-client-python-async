@@ -2,6 +2,8 @@ import json
 from typing import Any
 from unittest import mock
 
+import pytest
+
 from dynatrace import DynatraceAsync
 from dynatrace.account.limits import (
     AccountLimit,
@@ -75,3 +77,11 @@ async def test_account_limits_list_returns_models(dt: DynatraceAsync) -> None:
     assert limits.results[0].current_value == 12
     assert limits.results[0].limit_type == "GROUPS_PER_ACCOUNT"
     assert limits.results[0].limit_value == 100
+
+
+def test_account_limits_reject_invalid_field_types() -> None:
+    with pytest.raises(TypeError):
+        AccountLimitsPage(raw_element={"pageSize": "2"})
+
+    with pytest.raises(TypeError):
+        AccountLimit(raw_element={"limitType": 123})
