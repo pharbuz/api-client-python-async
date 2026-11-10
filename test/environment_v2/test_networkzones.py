@@ -1,3 +1,7 @@
+from typing import Any
+
+import pytest
+
 import dynatrace.environment_v2.networkzones as nz
 from dynatrace import DynatraceAsync
 from dynatrace.http_client import HttpClient
@@ -7,7 +11,7 @@ from test.async_utils import MockResponse, collect
 NETWORKZONE_ID = "default"
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     network_zones = await dt.network_zones.list()
 
     # type checks
@@ -17,7 +21,7 @@ async def test_list(dt: DynatraceAsync):
     assert all(isinstance(n, nz.NetworkZone) for n in zones)
 
 
-async def test_get(dt: DynatraceAsync):
+async def test_get(dt: DynatraceAsync) -> None:
     network_zone = await dt.network_zones.get(networkzone_id=NETWORKZONE_ID)
 
     # type checks
@@ -36,17 +40,19 @@ async def test_get(dt: DynatraceAsync):
     assert network_zone.num_oneagents_from_other_zones == 0
 
 
-async def test_get_global_config(dt: DynatraceAsync, monkeypatch):
+async def test_get_global_config(
+    dt: DynatraceAsync, monkeypatch: pytest.MonkeyPatch
+) -> None:
     async def make_request(
-        self,
+        self: Any,
         path: str,
-        params: dict | None = None,
-        headers: dict | None = None,
-        method="GET",
-        data=None,
-        query_params=None,
-        **kwargs,
-    ):
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         assert path == "/api/v2/networkZoneSettings"
         return MockResponse({"networkZonesEnabled": True})
 
@@ -58,17 +64,19 @@ async def test_get_global_config(dt: DynatraceAsync, monkeypatch):
     assert settings.network_zones_enabled is True
 
 
-async def test_get_host_statistics(dt: DynatraceAsync, monkeypatch):
+async def test_get_host_statistics(
+    dt: DynatraceAsync, monkeypatch: pytest.MonkeyPatch
+) -> None:
     async def make_request(
-        self,
+        self: Any,
         path: str,
-        params: dict | None = None,
-        headers: dict | None = None,
-        method="GET",
-        data=None,
-        query_params=None,
-        **kwargs,
-    ):
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         assert path == "/api/v2/networkZones/default/hostConnectionStatistics"
         assert params == {"filter": "all"}
         return MockResponse(

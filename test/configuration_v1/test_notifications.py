@@ -12,7 +12,7 @@ NAME = "Service Now Example"
 TYPE = NotificationType.SERVICE_NOW
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     notifications = await dt.notifications.list()
     assert isinstance(notifications, PaginatedList)
 
@@ -27,7 +27,7 @@ async def test_list(dt: DynatraceAsync):
     assert first.type == TYPE
 
 
-async def test_get_full_configuration(dt: DynatraceAsync):
+async def test_get_full_configuration(dt: DynatraceAsync) -> None:
     notifications = await dt.notifications.list()
     list_notifications = await collect(notifications)
     first = list_notifications[0]

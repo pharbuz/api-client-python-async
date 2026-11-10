@@ -47,7 +47,7 @@ class QueryAssistanceService:
             self.ENDPOINT_AUTOCOMPLETE, params=body, headers=headers, method="POST"
         )
         return AutocompleteResponse(
-            self.__http_client, response.headers, response.json()
+            self.__http_client, dict(response.headers), response.json()
         )
 
     async def parse(
@@ -69,7 +69,9 @@ class QueryAssistanceService:
         response = await self.__http_client.make_request(
             self.ENDPOINT_PARSE, params=body, headers=headers, method="POST"
         )
-        return DQLNode.from_dict(response.json(), self.__http_client, response.headers)
+        return DQLNode.from_dict(
+            response.json(), self.__http_client, dict(response.headers)
+        )
 
     async def verify(
         self,
@@ -92,20 +94,22 @@ class QueryAssistanceService:
         response = await self.__http_client.make_request(
             self.ENDPOINT_VERIFY, params=body, headers=headers, method="POST"
         )
-        return VerifyResponse(self.__http_client, response.headers, response.json())
+        return VerifyResponse(
+            self.__http_client, dict(response.headers), response.json()
+        )
 
     # Shared DQL response primitives.
 
 
 class PositionInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.column: int | None = raw_element.get("column")
         self.index: int | None = raw_element.get("index")
         self.line: int | None = raw_element.get("line")
 
 
 class TokenPosition(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.start: PositionInfo | None = (
             PositionInfo(raw_element=raw_element.get("start"))
             if raw_element.get("start")
@@ -119,7 +123,7 @@ class TokenPosition(DynatraceObject):
 
 
 class MetadataNotification(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.arguments: list[str] | None = raw_element.get("arguments")
         self.message: str | None = raw_element.get("message")
         self.message_format: str | None = raw_element.get("messageFormat")
@@ -136,7 +140,7 @@ class MetadataNotification(DynatraceObject):
 
 
 class VerifyResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.valid: bool | None = raw_element.get("valid")
         self.canonical_query: str | None = raw_element.get("canonicalQuery")
         self.notifications: list[MetadataNotification] = [
@@ -146,7 +150,7 @@ class VerifyResponse(DynatraceObject):
 
 
 class AutocompleteSuggestionPart(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.info: str | None = raw_element.get("info")
         self.suggestion: str | None = raw_element.get("suggestion")
         self.synopsis: str | None = raw_element.get("synopsis")
@@ -154,7 +158,7 @@ class AutocompleteSuggestionPart(DynatraceObject):
 
 
 class AutocompleteSuggestion(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.already_typed_characters: int | None = raw_element.get(
             "alreadyTypedCharacters"
         )
@@ -166,7 +170,7 @@ class AutocompleteSuggestion(DynatraceObject):
 
 
 class AutocompleteResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.optional: bool | None = raw_element.get("optional")
         self.suggested_ttl_seconds: int | None = raw_element.get("suggestedTtlSeconds")
         self.suggestions: list[AutocompleteSuggestion] = [
@@ -199,7 +203,7 @@ class DQLNode(DynatraceObject):
             http_client=http_client, headers=headers, raw_element=raw_element
         )
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.is_optional: bool | None = raw_element.get("isOptional")
         self.node_type: str | None = raw_element.get("nodeType")
         self.token_position: TokenPosition | None = (
@@ -210,7 +214,7 @@ class DQLNode(DynatraceObject):
 
 
 class DQLTerminalNode(DQLNode):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.canonical_string: str | None = raw_element.get("canonicalString")
         self.is_mandatory_on_user_order: bool | None = raw_element.get(
@@ -220,7 +224,7 @@ class DQLTerminalNode(DQLNode):
 
 
 class DQLContainerNode(DQLNode):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.type: str | None = raw_element.get("type")
         self.children: list[DQLNode] = [
@@ -230,7 +234,7 @@ class DQLContainerNode(DQLNode):
 
 
 class DQLAlternativeNode(DQLNode):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         alternatives = raw_element.get("alternatives") or {}
         self.alternatives: dict[str, DQLNode] = {

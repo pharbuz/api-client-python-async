@@ -20,7 +20,7 @@ limitations under the License.
 
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import Any, cast
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.custom_tags import METag
@@ -28,7 +28,12 @@ from dynatrace.environment_v2.monitored_entities import EntityStub
 from dynatrace.environment_v2.schemas import ManagementZone
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import datetime_to_int64, int64_to_datetime, timestamp_to_string
+from dynatrace.utils import (
+    datetime_to_int64,
+    int64_to_datetime,
+    raw_required_datetime,
+    timestamp_to_string,
+)
 
 
 class EventServiceV2:
@@ -162,7 +167,7 @@ class EventServiceV2:
         timeout: int = 15,
         entity_selector: str | None = None,
         properties: dict[str, str] | None = None,
-    ):
+    ) -> dict[str, Any]:
         """
         Ingests a custom event to Dynatrace
 
@@ -185,19 +190,20 @@ class EventServiceV2:
             "properties": properties,
         }
 
-        return (
+        response = (
             await self.__http_client.make_request(
                 f"{self.ENDPOINT_INGEST}", method="POST", params=params
             )
         ).json()
+        return cast(dict[str, Any], response)
 
 
 class Event(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         # Mandatory
         self.event_id: str = raw_element["eventId"]
         self.event_type: str = raw_element["eventType"]
-        self.start_time: datetime = int64_to_datetime(int(raw_element["startTime"]))
+        self.start_time: datetime = raw_required_datetime(raw_element, "startTime")
         # Optional
         self.entity_tags: list[METag] | None = [
             METag(raw_element=et) for et in raw_element.get("entityTags", [])
@@ -259,7 +265,7 @@ class Event(DynatraceObject):
 
 
 class EventProperty(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.key: str | None = raw_element.get("key")
         self.value: str | None = raw_element.get("value")
 
@@ -268,7 +274,7 @@ class EventProperty(DynatraceObject):
 
 
 class EventPropertyDetails(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.key: str = raw_element["key"]
         self.display_name: str | None = raw_element.get("displayName")
         self.filterable: bool | None = raw_element.get("filterable")
@@ -286,7 +292,7 @@ class EventPropertyDetails(DynatraceObject):
 
 
 class EventType(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.type: str = raw_element["type"]
         self.display_name: str = raw_element["displayName"]
         self.severity_level: EventSeverity | None = (

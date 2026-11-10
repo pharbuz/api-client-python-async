@@ -14,7 +14,7 @@ HOST_GROUP_ID = "HOST_GROUP-ABC123DEF456GHI7"
 CLUSTER_VERSION = "1.222.47.20210712-162143"
 
 
-async def test_get(dt: DynatraceAsync):
+async def test_get(dt: DynatraceAsync) -> None:
     oa_hostgroup_config = await dt.oneagents_config_hostgroup.get(HOST_GROUP_ID)
 
     # type checks
@@ -26,7 +26,7 @@ async def test_get(dt: DynatraceAsync):
     assert oa_hostgroup_config.id is None
 
 
-async def test_get_audoupdate(dt: DynatraceAsync):
+async def test_get_audoupdate(dt: DynatraceAsync) -> None:
     oa_hostgroup_autoupdate = await dt.oneagents_config_hostgroup.get_autoupdate(
         HOST_GROUP_ID
     )

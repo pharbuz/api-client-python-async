@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timezone
+from typing import Any
 from unittest import mock
 
 from dynatrace import DynatraceAsync
@@ -16,36 +17,36 @@ from dynatrace.http_client import HttpClient
 
 
 class MockResponse:
-    def __init__(self, json_data=None):
+    def __init__(self, json_data: Any = None) -> None:
         self._json_data = json_data
-        self.headers = {}
+        self.headers: dict[str, str] = {}
         self.text = json.dumps(json_data) if json_data is not None else ""
         self.status_code = 200
 
-    def json(self):
+    def json(self) -> Any:
         return self._json_data
 
 
-async def test_notifications_service_is_exposed(dt: DynatraceAsync):
+async def test_notifications_service_is_exposed(dt: DynatraceAsync) -> None:
     assert isinstance(dt.account.notifications, NotificationService)
 
 
-async def test_notifications_list_returns_models(dt: DynatraceAsync):
+async def test_notifications_list_returns_models(dt: DynatraceAsync) -> None:
     account_uuid = "account-123"
     start_date_time = datetime(2025, 12, 1, 10, 0, tzinfo=timezone.utc)
     end_date_time = datetime(2025, 12, 31, 23, 59, tzinfo=timezone.utc)
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         expected_body = {
             "startDateTime": "2025-12-01T10:00:00.000",
             "endDateTime": "2025-12-31T23:59:00.000",
@@ -115,6 +116,8 @@ async def test_notifications_list_returns_models(dt: DynatraceAsync):
     assert isinstance(notifications.records[0], Notification)
     assert isinstance(notifications.records[0].details, NotificationDetails)
     assert notifications.records[0].details.capabilities == ["cap1"]
-    assert notifications.records[1].details.key_name == "key-name"
+    second_details = notifications.records[1].details
+    assert isinstance(second_details, NotificationDetails)
+    assert second_details.key_name == "key-name"
     assert notifications.total_record_count == 2
     assert notifications.has_next_page is False

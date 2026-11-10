@@ -4,7 +4,7 @@ from dynatrace.environment_v2.extensions import MinimalExtension
 from test.async_utils import collect
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     extensions = await collect(await dt.extensions_v2.list())
 
     assert len(extensions) == 2
@@ -16,7 +16,7 @@ async def test_list(dt: DynatraceAsync):
         break
 
 
-async def test_list_name(dt: DynatraceAsync):
+async def test_list_name(dt: DynatraceAsync) -> None:
     extensions = await collect(await dt.extensions_v2.list(name="custom"))
 
     assert len(extensions) == 1
@@ -28,7 +28,7 @@ async def test_list_name(dt: DynatraceAsync):
         break
 
 
-async def test_list_versions(dt: DynatraceAsync):
+async def test_list_versions(dt: DynatraceAsync) -> None:
     extensions = await collect(
         await dt.extensions_v2.list_versions("com.dynatrace.extension.snmp-generic")
     )
@@ -42,7 +42,7 @@ async def test_list_versions(dt: DynatraceAsync):
         break
 
 
-async def test_get(dt: DynatraceAsync):
+async def test_get(dt: DynatraceAsync) -> None:
     extension = await dt.extensions_v2.get(
         "com.dynatrace.extension.snmp-generic", "0.2.5"
     )
@@ -61,7 +61,7 @@ async def test_get(dt: DynatraceAsync):
     assert extension.variables[0] == "ext.activationtag"
 
 
-async def test_get_active_extension_version(dt: DynatraceAsync):
+async def test_get_active_extension_version(dt: DynatraceAsync) -> None:
     environemnt_config = await dt.extensions_v2.get_environment_config("ibmmq")
 
     # type checks

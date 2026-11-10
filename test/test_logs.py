@@ -1,4 +1,7 @@
 from datetime import datetime, timezone
+from typing import Any
+
+import pytest
 
 from dynatrace import DynatraceAsync
 from dynatrace.environment_v2.logs import (
@@ -11,15 +14,16 @@ from dynatrace.pagination import PaginatedList
 from test.async_utils import MockResponse, collect
 
 
-async def test_export(dt: DynatraceAsync):
+async def test_export(dt: DynatraceAsync) -> None:
     logs = await dt.logs.export(time_from="now-10m")
     assert isinstance(logs, PaginatedList)
 
-    logs = await collect(logs)
-    assert len(logs) == 18
+    logs_list = await collect(logs)
+    assert len(logs_list) == 18
 
-    first = logs[0]
+    first = logs_list[0]
     assert isinstance(first, LogRecord)
+    assert first.additional_columns is not None
     assert first.additional_columns["dt.extension.ds"][0] == "python"
     assert first.content.startswith("Failed to assign")
     assert first.event_type == EventType.SFM
@@ -27,8 +31,8 @@ async def test_export(dt: DynatraceAsync):
     assert first.timestamp == datetime.fromtimestamp(1683574915193 / 1000, timezone.utc)
 
 
-async def test_search(dt: DynatraceAsync, monkeypatch):
-    calls = []
+async def test_search(dt: DynatraceAsync, monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[dict[str, Any]] = []
     responses = iter(
         [
             MockResponse(
@@ -62,15 +66,15 @@ async def test_search(dt: DynatraceAsync, monkeypatch):
     )
 
     async def fake_make_request(
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         calls.append({"path": path, "params": params, "method": method})
         return next(responses)
 
@@ -89,17 +93,17 @@ async def test_search(dt: DynatraceAsync, monkeypatch):
     assert calls[1]["params"] == {"nextSliceKey": "slice-2"}
 
 
-async def test_aggregate(dt: DynatraceAsync, monkeypatch):
+async def test_aggregate(dt: DynatraceAsync, monkeypatch: pytest.MonkeyPatch) -> None:
     async def fake_make_request(
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         return MockResponse(
             {
                 "aggregationResult": {
@@ -116,4 +120,5 @@ async def test_aggregate(dt: DynatraceAsync, monkeypatch):
     aggregate = await dt.logs.aggregate(query='content:"slice"', time_buckets=1)
 
     assert isinstance(aggregate, AggregatedLog)
+    assert aggregate.aggregation_result is not None
     assert aggregate.aggregation_result["logLevel"]["1683574915"]["ERROR"] == 3

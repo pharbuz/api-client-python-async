@@ -8,7 +8,7 @@ from dynatrace.environment_v1.synthetic_monitors import (
 from dynatrace.pagination import PaginatedList
 
 
-async def test_list_string(dt: DynatraceAsync):
+async def test_list_string(dt: DynatraceAsync) -> None:
     monitors = await dt.synthetic_monitors.list(monitor_type="BROWSER")
     assert isinstance(monitors, PaginatedList)
     async for monitor in monitors:
@@ -20,7 +20,7 @@ async def test_list_string(dt: DynatraceAsync):
         break
 
 
-async def test_list_enum(dt: DynatraceAsync):
+async def test_list_enum(dt: DynatraceAsync) -> None:
     monitors = await dt.synthetic_monitors.list(monitor_type=MonitorType.BROWSER)
     assert isinstance(monitors, PaginatedList)
     async for monitor in monitors:
@@ -32,7 +32,7 @@ async def test_list_enum(dt: DynatraceAsync):
         break
 
 
-async def test_get_full_synthetic_config(dt: DynatraceAsync):
+async def test_get_full_synthetic_config(dt: DynatraceAsync) -> None:
     config = await dt.synthetic_monitors.get_full_monitor_configuration(
         monitor_id="SYNTHETIC_TEST-7639A3AED66940FA"
     )
@@ -42,11 +42,16 @@ async def test_get_full_synthetic_config(dt: DynatraceAsync):
     assert config.type == MonitorType.BROWSER
     assert config.created_from == CreatedFrom.API
     assert isinstance(config.script, dict)
-    assert (
-        config.anomaly_detection.outage_handling.local_outage_policy.consecutive_runs
-        == 1
-    )
-    assert not config.anomaly_detection.loading_time_thresholds.enabled
+    anomaly_detection = config.anomaly_detection
+    assert anomaly_detection is not None
+    outage_handling = anomaly_detection.outage_handling
+    assert outage_handling is not None
+    local_outage_policy = outage_handling.local_outage_policy
+    assert local_outage_policy is not None
+    assert local_outage_policy.consecutive_runs == 1
+    loading_time_thresholds = anomaly_detection.loading_time_thresholds
+    assert loading_time_thresholds is not None
+    assert not loading_time_thresholds.enabled
     for mz in config.management_zones:
         assert isinstance(mz, ManagementZone)
         break

@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 from enum import Enum
+from typing import Any
 
 from httpx import Response
 
@@ -39,7 +40,7 @@ class NotificationType(Enum):
 
 
 class Notification(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.alerting_profile: str = raw_element.get("alertingProfile")
@@ -48,7 +49,7 @@ class Notification(DynatraceObject):
 
 
 class AnsibleTowerNotificationConfig(Notification):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.alerting_profile: str = raw_element.get("alertingProfile")
@@ -63,7 +64,7 @@ class AnsibleTowerNotificationConfig(Notification):
 
 
 class EmailNotificationConfig(Notification):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.alerting_profile: str = raw_element.get("alertingProfile")
@@ -77,7 +78,7 @@ class EmailNotificationConfig(Notification):
 
 
 class HipChatNotificationConfig(Notification):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.alerting_profile: str = raw_element.get("alertingProfile")
@@ -88,7 +89,7 @@ class HipChatNotificationConfig(Notification):
 
 
 class JiraNotificationConfig(Notification):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.alerting_profile: str = raw_element.get("alertingProfile")
@@ -104,7 +105,7 @@ class JiraNotificationConfig(Notification):
 
 
 class OpsGenieNotificationConfig(Notification):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.alerting_profile: str = raw_element.get("alertingProfile")
@@ -116,7 +117,7 @@ class OpsGenieNotificationConfig(Notification):
 
 
 class PagerDutyNotificationConfig(Notification):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.alerting_profile: str = raw_element.get("alertingProfile")
@@ -128,7 +129,7 @@ class PagerDutyNotificationConfig(Notification):
 
 
 class ServiceNowNotificationConfig(Notification):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.alerting_profile: str = raw_element.get("alertingProfile")
@@ -144,7 +145,7 @@ class ServiceNowNotificationConfig(Notification):
 
 
 class SlackNotificationConfig(Notification):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.alerting_profile: str = raw_element.get("alertingProfile")
@@ -156,7 +157,7 @@ class SlackNotificationConfig(Notification):
 
 
 class TrelloNotificationConfig(Notification):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.alerting_profile: str = raw_element.get("alertingProfile")
@@ -172,7 +173,7 @@ class TrelloNotificationConfig(Notification):
 
 
 class VictorOpsNotificationConfig(Notification):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.alerting_profile: str = raw_element.get("alertingProfile")
@@ -184,13 +185,13 @@ class VictorOpsNotificationConfig(Notification):
 
 
 class HttpHeader(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.name: str = raw_element.get("name")
         self.value: str = raw_element.get("value")
 
 
 class WebHookNotificationConfig(Notification):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.alerting_profile: str = raw_element.get("alertingProfile")
@@ -208,7 +209,7 @@ class WebHookNotificationConfig(Notification):
 
 
 class XMattersNotificationConfig(Notification):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.alerting_profile: str = raw_element.get("alertingProfile")
@@ -228,10 +229,9 @@ class NotificationConfigStub(DynatraceObject):
         Gets the full notification configuration for this stub.
         """
         response = (
-            await self._http_client.make_request(
-                f"/api/config/v1/notifications/{self.id}"
-            )
+            await self._make_request(f"/api/config/v1/notifications/{self.id}")
         ).json()
+        notification: Notification
         if self.type == NotificationType.ANSIBLETOWER:
             notification = AnsibleTowerNotificationConfig(
                 self._http_client, None, response
@@ -272,11 +272,11 @@ class NotificationConfigStub(DynatraceObject):
         """
         Delete the notification for this stub.
         """
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"/api/config/v1/notifications/{self.id}", method="DELETE"
         )
 
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.description: str = raw_element.get("description")

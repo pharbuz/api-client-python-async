@@ -1,14 +1,32 @@
 """Account settings API wrappers."""
 
-from datetime import datetime
+from __future__ import annotations
+
 from typing import Any
 
+from httpx import Response
+
 from dynatrace.dynatrace_object import DynatraceObject
+from dynatrace.environment_v2.settings import (
+    EffectiveSettingsValue,
+    SettingsObject,
+)
 from dynatrace.environment_v2.settings import SettingService as DtSettingsService
-from dynatrace.environment_v2.settings import SettingsObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import int64_to_datetime
+from dynatrace.utils import (
+    raw_optional_bool,
+    raw_optional_object_list,
+    raw_optional_str,
+)
+
+__all__ = [
+    "EffectiveSettingsValue",
+    "FieldValue",
+    "FieldValuesPage",
+    "FieldValuesRequest",
+    "SettingService",
+]
 
 
 class SettingService(DtSettingsService):
@@ -17,6 +35,80 @@ class SettingService(DtSettingsService):
     def __init__(self, http_client: HttpClient):
         super().__init__(http_client=http_client)
         self.__http_client = http_client
+
+    async def list_costcenters(
+        self,
+        account_uuid: str,
+        page: int | None = None,
+        page_size: int | None = None,
+    ) -> FieldValuesPage:
+        """Lists all possible values for the costcenter field."""
+        return await self._list_field_values(
+            account_uuid, "costcenters", page, page_size
+        )
+
+    async def add_costcenters(
+        self,
+        account_uuid: str,
+        values: list[str] | list[FieldValue] | FieldValuesRequest,
+    ) -> Response:
+        """Adds the provided values to the costcenter field."""
+        return await self._write_field_values(
+            account_uuid, "costcenters", values, method="POST"
+        )
+
+    async def replace_costcenters(
+        self,
+        account_uuid: str,
+        values: list[str] | list[FieldValue] | FieldValuesRequest,
+    ) -> Response:
+        """Replaces the current values of the costcenter field."""
+        return await self._write_field_values(
+            account_uuid, "costcenters", values, method="PUT"
+        )
+
+    async def delete_costcenter(self, account_uuid: str, key: str) -> Response:
+        """Deletes a value by key on the costcenter field."""
+        return await self.__http_client.make_request(
+            f"/v1/accounts/{account_uuid}/settings/costcenters/{key}",
+            method="DELETE",
+        )
+
+    async def list_products(
+        self,
+        account_uuid: str,
+        page: int | None = None,
+        page_size: int | None = None,
+    ) -> FieldValuesPage:
+        """Lists all possible values for the product field."""
+        return await self._list_field_values(account_uuid, "products", page, page_size)
+
+    async def add_products(
+        self,
+        account_uuid: str,
+        values: list[str] | list[FieldValue] | FieldValuesRequest,
+    ) -> Response:
+        """Adds the provided values to the product field."""
+        return await self._write_field_values(
+            account_uuid, "products", values, method="POST"
+        )
+
+    async def replace_products(
+        self,
+        account_uuid: str,
+        values: list[str] | list[FieldValue] | FieldValuesRequest,
+    ) -> Response:
+        """Replaces the current values of the product field."""
+        return await self._write_field_values(
+            account_uuid, "products", values, method="PUT"
+        )
+
+    async def delete_product(self, account_uuid: str, key: str) -> Response:
+        """Deletes a value by key on the product field."""
+        return await self.__http_client.make_request(
+            f"/v1/accounts/{account_uuid}/settings/products/{key}",
+            method="DELETE",
+        )
 
     # Account-level settings listing endpoints.
     async def list_objects(
@@ -27,7 +119,7 @@ class SettingService(DtSettingsService):
         fields: str | None = None,
         filter: str | None = None,
         sort: str | None = None,
-        page_size: int | None = None,
+        page_size: str | None = None,
         admin_access: bool | None = None,
     ) -> PaginatedList[SettingsObject]:
         params = {
@@ -55,7 +147,7 @@ class SettingService(DtSettingsService):
         fields: str | None = None,
         page_size: int | None = None,
         admin_access: bool | None = None,
-    ) -> PaginatedList["EffectiveSettingsValue"]:
+    ) -> PaginatedList[EffectiveSettingsValue]:
         """Lists effective settings values for selected schemas at a selected scope."""
 
         params = {
@@ -73,27 +165,103 @@ class SettingService(DtSettingsService):
             target_params=params,
         ).initialize()
 
+    async def _list_field_values(
+        self,
+        account_uuid: str,
+        field: str,
+        page: int | None,
+        page_size: int | None,
+    ) -> FieldValuesPage:
+        params = {
+            "page": page,
+            "page-size": page_size,
+        }
+        resp = (
+            await self.__http_client.make_request(
+                f"/v1/accounts/{account_uuid}/settings/{field}",
+                params=params,
+            )
+        ).json()
+        return FieldValuesPage(raw_element=resp)
+
+    async def _write_field_values(
+        self,
+        account_uuid: str,
+        field: str,
+        values: list[str] | list[FieldValue] | FieldValuesRequest,
+        method: str,
+    ) -> Response:
+        return await self.__http_client.make_request(
+            f"/v1/accounts/{account_uuid}/settings/{field}",
+            method=method,
+            json=self._field_values_body(values),
+        )
+
+    @staticmethod
+    def _field_values_body(
+        values: list[str] | list[FieldValue] | FieldValuesRequest,
+    ) -> dict[str, Any]:
+        if isinstance(values, FieldValuesRequest):
+            return values.to_json()
+        return {
+            "values": [
+                value.to_json() if isinstance(value, FieldValue) else {"key": value}
+                for value in values
+            ]
+        }
+
 
 # Response models.
-class EffectiveSettingsValue(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.author: str | None = raw_element.get("author")
-        self.created: datetime | None = (
-            int64_to_datetime(int(raw_element.get("created")))
-            if raw_element.get("created")
-            else None
+class FieldValue(DynatraceObject):
+    def __init__(self, key: str | None = None, **kwargs: Any) -> None:
+        self.key: str | None = None
+        super().__init__(**kwargs)
+        if key is not None:
+            self.key = key
+
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.key = raw_optional_str(raw_element, "key")
+
+    def to_json(self) -> dict[str, Any]:
+        return {"key": self.key}
+
+
+class FieldValuesRequest(DynatraceObject):
+    def __init__(
+        self,
+        values: list[str] | list[FieldValue] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        self.values: list[FieldValue] = []
+        super().__init__(**kwargs)
+        if values is not None:
+            self.values = [
+                value if isinstance(value, FieldValue) else FieldValue(key=value)
+                for value in values
+            ]
+
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.values = (
+            raw_optional_object_list(
+                raw_element,
+                "values",
+                lambda value: FieldValue(raw_element=value),
+            )
+            or []
         )
-        self.created_by: str | None = raw_element.get("createdBy")
-        self.external_id: str | None = raw_element.get("externalId")
-        self.modified: datetime | None = (
-            int64_to_datetime(int(raw_element.get("modified")))
-            if raw_element.get("modified")
-            else None
+
+    def to_json(self) -> dict[str, Any]:
+        return {"values": [value.to_json() for value in self.values]}
+
+
+class FieldValuesPage(DynatraceObject):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.records: list[FieldValue] = (
+            raw_optional_object_list(
+                raw_element,
+                "records",
+                lambda value: FieldValue(raw_element=value),
+            )
+            or []
         )
-        self.modified_by: str | None = raw_element.get("modifiedBy")
-        self.origin: str | None = raw_element.get("origin")
-        self.schema_id: str | None = raw_element.get("schemaId")
-        self.schema_version: str | None = raw_element.get("schemaVersion")
-        self.search_summary: str | None = raw_element.get("searchSummary")
-        self.summary: str | None = raw_element.get("summary")
-        self.value: Any | None = raw_element.get("value")
+        self.has_next_page: bool | None = raw_optional_bool(raw_element, "hasNextPage")

@@ -1,15 +1,21 @@
+from typing import Any
+
+import pytest
+
 from dynatrace import DynatraceAsync
 from dynatrace.environment_v2.settings import (
     EffectiveSettingsValue,
     SchemaStub,
     SettingsObject,
     SettingsObjectCreate,
+    SettingsObjectUpdate,
 )
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import JSONDict
 from test.async_utils import MockResponse, collect
 
-settings_dict = {
+settings_dict: JSONDict = {
     "enabled": True,
     "summary": "DT API TEST 22",
     "queryDefinition": {
@@ -43,10 +49,11 @@ settings_dict = {
 settings_object = SettingsObjectCreate(
     "builtin:anomaly-detection.metric-events", settings_dict, "environment"
 )
+settings_object_update = SettingsObjectUpdate(settings_dict)
 test_object_id = "vu9U3hXa3q0AAAABACdidWlsdGluOmFub21hbHktZGV0ZWN0aW9uLm1ldHJpYy1ldmVudHMABnRlbmFudAAGdGVuYW50ACRiYmYzZWNhNy0zMmZmLTM2ZTEtOTFiOS05Y2QxZjE3OTc0YjC-71TeFdrerQ"
 
 
-async def test_list_schemas(dt: DynatraceAsync):
+async def test_list_schemas(dt: DynatraceAsync) -> None:
     schemas = await dt.settings.list_schemas()
     assert isinstance(schemas, PaginatedList)
     schema_list = await collect(schemas)
@@ -54,7 +61,7 @@ async def test_list_schemas(dt: DynatraceAsync):
     assert all(isinstance(s, SchemaStub) for s in schema_list)
 
 
-async def test_list_objects(dt: DynatraceAsync):
+async def test_list_objects(dt: DynatraceAsync) -> None:
     settings = await dt.settings.list_objects(
         schema_id="builtin:anomaly-detection.metric-events"
     )
@@ -64,17 +71,19 @@ async def test_list_objects(dt: DynatraceAsync):
     assert all(isinstance(s, SettingsObject) for s in settings_list)
 
 
-async def test_list_effective_values(dt: DynatraceAsync, monkeypatch):
+async def test_list_effective_values(
+    dt: DynatraceAsync, monkeypatch: pytest.MonkeyPatch
+) -> None:
     async def make_request(
-        self,
+        self: Any,
         path: str,
-        params: dict | None = None,
-        headers: dict | None = None,
-        method="GET",
-        data=None,
-        query_params=None,
-        **kwargs,
-    ):
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         assert path == "/api/v2/settings/effectiveValues"
         return MockResponse(
             {
@@ -112,17 +121,17 @@ async def test_list_effective_values(dt: DynatraceAsync, monkeypatch):
     assert effective_values_list[0].value == {"enabled": True}
 
 
-async def test_get_object(dt: DynatraceAsync):
+async def test_get_object(dt: DynatraceAsync) -> None:
     setting = await dt.settings.get_object(object_id=test_object_id)
     assert isinstance(setting, SettingsObject)
     assert setting.schema_version == "1.0.16"
 
 
-async def test_post_object(dt: DynatraceAsync):
+async def test_post_object(dt: DynatraceAsync) -> None:
     response = await dt.settings.create_object(body=settings_object)
     assert response[0].get("code") == 200
 
 
-async def test_put_object(dt: DynatraceAsync):
-    response = await dt.settings.update_object(test_object_id, settings_object)
+async def test_put_object(dt: DynatraceAsync) -> None:
+    response = await dt.settings.update_object(test_object_id, settings_object_update)
     print(response)

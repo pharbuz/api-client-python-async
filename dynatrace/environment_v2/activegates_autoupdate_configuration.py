@@ -21,6 +21,7 @@ from httpx import Response
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.schemas import ConfigurationMetadata
 from dynatrace.http_client import HttpClient
+from dynatrace.utils import raw_optional_str
 
 
 class ActiveGateAutoUpdateConfigurationService:
@@ -78,7 +79,7 @@ class ActiveGateAutoUpdateConfigurationService:
 
 
 class ActiveGateGlobalAutoUpdateConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.global_setting: str = raw_element.get("globalSetting")
         self.metadata: ConfigurationMetadata = ConfigurationMetadata(
             raw_element=raw_element.get("metadata")
@@ -86,6 +87,8 @@ class ActiveGateGlobalAutoUpdateConfig(DynatraceObject):
 
 
 class ActiveGateAutoUpdateConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.setting: str = raw_element.get("setting")
-        self.effective_setting: str = raw_element.get("effectiveSetting")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.setting: str | None = raw_optional_str(raw_element, "setting")
+        self.effective_setting: str | None = raw_optional_str(
+            raw_element, "effectiveSetting"
+        )

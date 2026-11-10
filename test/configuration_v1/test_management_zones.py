@@ -15,7 +15,7 @@ from dynatrace.environment_v2.schemas import ConfigurationMetadata
 from dynatrace.pagination import PaginatedList
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     management_zones = await dt.management_zones.list()
     assert isinstance(management_zones, PaginatedList)
 
@@ -26,7 +26,7 @@ async def test_list(dt: DynatraceAsync):
         break
 
 
-async def test_get(dt: DynatraceAsync):
+async def test_get(dt: DynatraceAsync) -> None:
     management_zones = await dt.management_zones.list()
     async for management_zone in management_zones:
         full_management_zone = await management_zone.get_full_configuration()

@@ -17,14 +17,14 @@ limitations under the License.
 import builtins
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import Any, cast
 
 from httpx import Response
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import int64_to_datetime, timestamp_to_string
+from dynatrace.utils import int64_to_datetime, raw_required_str, timestamp_to_string
 
 
 class MetricService:
@@ -34,7 +34,7 @@ class MetricService:
     async def query(
         self,
         metric_selector: str,
-        resolution: str = None,
+        resolution: str | None = None,
         time_from: datetime | str | None = None,
         time_to: datetime | str | None = None,
         entity_selector: str | None = None,
@@ -64,7 +64,7 @@ class MetricService:
         fields: str | None = None,
         written_since: str | datetime | None = None,
         metadata_selector: str | None = None,
-        page_size=100,
+        page_size: int = 100,
     ) -> PaginatedList["MetricDescriptor"]:
         params = {
             "pageSize": page_size,
@@ -88,28 +88,33 @@ class MetricService:
         ).json()
         return MetricDescriptor(http_client=self.__http_client, raw_element=response)
 
-    async def delete(self, metric_id) -> Response:
+    async def delete(self, metric_id: str) -> Response:
         return await self.__http_client.make_request(
             f"/api/v2/metrics/{metric_id}", method="DELETE"
         )
 
-    async def ingest(self, lines: builtins.list[str]):
-        lines = "\n".join(lines).encode("utf-8")
-        return (
+    async def ingest(self, lines: builtins.list[str]) -> dict[str, Any]:
+        payload = "\n".join(lines).encode("utf-8")
+        response = (
             await self.__http_client.make_request(
                 "/api/v2/metrics/ingest",
                 method="POST",
-                data=lines,
+                data=payload,
                 headers={"Content-Type": "text/plain; charset=utf-8"},
             )
         ).json()
+        return cast(dict[str, Any], response)
 
 
 class MetricSeries(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.timestamps: list[datetime] = [
-            int64_to_datetime(timestamp)
-            for timestamp in raw_element.get("timestamps", [])
+            converted
+            for converted in (
+                int64_to_datetime(timestamp)
+                for timestamp in raw_element.get("timestamps", [])
+            )
+            if converted is not None
         ]
         self.dimensions: list[str] = raw_element.get("dimensions", [])
         self.values: list[float] = raw_element.get("values", [])
@@ -117,8 +122,8 @@ class MetricSeries(DynatraceObject):
 
 
 class MetricSeriesCollection(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict):
-        self.metric_id: str = raw_element.get("metricId")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.metric_id: str = raw_required_str(raw_element, "metricId")
         self.data: list[MetricSeries] = [
             MetricSeries(self._http_client, self._headers, metric_serie)
             for metric_serie in raw_element.get("data", [])
@@ -127,13 +132,13 @@ class MetricSeriesCollection(DynatraceObject):
 
 
 class MetricDefaultAggregation(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.parameter: float = raw_element.get("parameter")
         self.type: str = raw_element.get("type")
 
 
 class MetricDimensionDefinition(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.index: int = raw_element.get("index")
         self.name: str = raw_element.get("name")
         self.key: str = raw_element.get("key")
@@ -178,7 +183,7 @@ class Transformation(Enum):
 
 
 class MetricDescriptor(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
 
         # required
         self.metric_id: str = raw_element.get("metricId")
@@ -228,5 +233,5 @@ class ValueType(Enum):
 
 
 class MetricValueType(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.type = ValueType(raw_element.get("type"))

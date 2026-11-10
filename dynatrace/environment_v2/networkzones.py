@@ -17,9 +17,12 @@ limitations under the License.
 import builtins
 from typing import Any
 
+from httpx import Response
+
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import raw_optional_bool, raw_optional_int, raw_optional_str
 
 
 class NetworkZoneService:
@@ -42,7 +45,7 @@ class NetworkZoneService:
             list_item="networkZones",
         ).initialize()
 
-    async def get(self, networkzone_id: str):
+    async def get(self, networkzone_id: str) -> "NetworkZone":
         """Gets parameters of specified network zone
 
         :param networkzone_id: the ID of the network zone
@@ -71,7 +74,7 @@ class NetworkZoneService:
         networkzone_id: str,
         alternate_zones: builtins.list[str] | None = None,
         description: str | None = None,
-    ):
+    ) -> Response:
         """Updates an existing network zone or creates a new one
 
         :param networkzone_id: the ID of the network zone, if none exists, will create
@@ -84,7 +87,7 @@ class NetworkZoneService:
             path=f"{self.ENDPOINT}/{networkzone_id}", params=params, method="PUT"
         )
 
-    async def delete(self, networkzone_id: str):
+    async def delete(self, networkzone_id: str) -> Response:
         """Deletes the specified network zone
 
         :param networkzone_id: the ID of the network zone
@@ -103,7 +106,7 @@ class NetworkZoneService:
         ).json()
         return NetworkZoneSettings(raw_element=response)
 
-    async def update_global_config(self, configuration: bool):
+    async def update_global_config(self, configuration: bool) -> Response:
         """Updates the global configuration of network zones.
 
         :param configuration: boolean setting to enable/disable NZs
@@ -114,35 +117,41 @@ class NetworkZoneService:
             path=self.ENDPOINT_GLOBALSETTINGS, method="PUT", params=params
         )
 
-    async def getGlobalConfig(self):
+    async def getGlobalConfig(self) -> "NetworkZoneSettings":
         return await self.get_global_config()
 
-    async def updateGlobalConfig(self, configuration: bool):
+    async def updateGlobalConfig(self, configuration: bool) -> Response:
         return await self.update_global_config(configuration)
 
 
 class NetworkZone(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.id: str = raw_element.get("id")
-        self.description: str = raw_element.get("description")
-        self.alternative_zones: list[str] = raw_element.get("alternativeZones")
-        self.num_oneagents_using: int = raw_element.get("numOfOneAgentsUsing")
-        self.num_oneagents_configured: int = raw_element.get("numOfConfiguredOneAgents")
-        self.num_oneagents_from_other_zones: int = raw_element.get(
-            "numOfOneAgentsFromOtherZones"
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.id: str | None = raw_optional_str(raw_element, "id")
+        self.description: str | None = raw_optional_str(raw_element, "description")
+        self.alternative_zones: list[str] = raw_element.get("alternativeZones", [])
+        self.num_oneagents_using: int | None = raw_optional_int(
+            raw_element, "numOfOneAgentsUsing"
         )
-        self.num_configured_activegates: int = raw_element.get(
-            "numOfConfiguredActiveGates"
+        self.num_oneagents_configured: int | None = raw_optional_int(
+            raw_element, "numOfConfiguredOneAgents"
+        )
+        self.num_oneagents_from_other_zones: int | None = raw_optional_int(
+            raw_element, "numOfOneAgentsFromOtherZones"
+        )
+        self.num_configured_activegates: int | None = raw_optional_int(
+            raw_element, "numOfConfiguredActiveGates"
         )
 
 
 class NetworkZoneSettings(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, bool]):
-        self.network_zones_enabled: bool = raw_element.get("networkZonesEnabled")
+    def _create_from_raw_data(self, raw_element: dict[str, bool]) -> None:
+        self.network_zones_enabled: bool | None = raw_optional_bool(
+            raw_element, "networkZonesEnabled"
+        )
 
 
 class NetworkZoneConnectionStatistics(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.hosts_configured_but_not_connected: list[str] = raw_element.get(
             "hostsConfiguredButNotConnected", []
         )

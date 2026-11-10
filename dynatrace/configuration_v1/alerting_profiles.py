@@ -31,7 +31,7 @@ from dynatrace.pagination import PaginatedList
 
 
 class AlertingProfileTagFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.include_mode: TagFilterIncludeMode = TagFilterIncludeMode(
             raw_element["includeMode"]
         )
@@ -47,7 +47,7 @@ class AlertingProfileTagFilter(DynatraceObject):
 
 
 class AlertingProfileSeverityRule(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.severity_level: SeverityLevel = SeverityLevel(raw_element["severityLevel"])
         self.tag_filter: AlertingProfileTagFilter = AlertingProfileTagFilter(
             raw_element=raw_element["tagFilter"]
@@ -63,7 +63,7 @@ class AlertingProfileSeverityRule(DynatraceObject):
 
 
 class AlertingPredefinedEventFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.event_type: AlertingPredefinedEvent = AlertingPredefinedEvent(
             raw_element["eventType"]
         )
@@ -74,7 +74,7 @@ class AlertingPredefinedEventFilter(DynatraceObject):
 
 
 class AlertingCustomTextFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.enabled: bool = raw_element["enabled"]
         self.value: str = raw_element["value"]
         self.operator: StringComparisonOperator = StringComparisonOperator(
@@ -94,7 +94,7 @@ class AlertingCustomTextFilter(DynatraceObject):
 
 
 class AlertingCustomEventFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.custom_title_filter: AlertingCustomTextFilter | None = (
             AlertingCustomTextFilter(raw_element=raw_element.get("customTitleFilter"))
             if "customTitleFilter" in raw_element.keys()
@@ -120,7 +120,7 @@ class AlertingCustomEventFilter(DynatraceObject):
 
 
 class AlertingEventTypeFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.predefined_event_filter: AlertingPredefinedEventFilter | None = (
             AlertingPredefinedEventFilter(
                 raw_element=raw_element.get("predefinedEventFilter")
@@ -144,7 +144,7 @@ class AlertingEventTypeFilter(DynatraceObject):
 
 
 class AlertingProfile(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.metadata: ConfigurationMetadata | None = ConfigurationMetadata(
             raw_element=raw_element.get("metadata")
         )
@@ -173,7 +173,7 @@ class AlertingProfile(DynatraceObject):
             raise ValueError(
                 "Object does not have an HTTP Client. Use alerting_profiles.post() instead."
             )
-        response = await self._http_client.make_request(
+        response = await self._make_request(
             path=AlertingProfileService.ENDPOINT, params=self.to_json(), method="POST"
         )
         self.id = response.json().get("id")
@@ -194,7 +194,7 @@ class AlertingProfile(DynatraceObject):
             raise ValueError(
                 "Object does not have an HTTP Client. Use alerting_profiles.put() instead."
             )
-        response = await self._http_client.make_request(
+        response = await self._make_request(
             path=f"{AlertingProfileService.ENDPOINT}/{self.id}",
             params=self.to_json(),
             method="PUT",
@@ -219,16 +219,14 @@ class AlertingProfile(DynatraceObject):
 
 
 class AlertingProfileStub(EntityShortRepresentation):
-    async def get_full_configuration(self):
+    async def get_full_configuration(self) -> AlertingProfile:
         """
         Gathers the full details of the alerting profile
         """
         if not self._http_client:
             raise ValueError("Object does not have an HTTP Client implemented.")
         response = (
-            await self._http_client.make_request(
-                f"{AlertingProfileService.ENDPOINT}/{self.id}"
-            )
+            await self._make_request(f"{AlertingProfileService.ENDPOINT}/{self.id}")
         ).json()
         return AlertingProfile(self._http_client, None, response)
 

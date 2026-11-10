@@ -18,7 +18,7 @@ git clone git@github.com:<your_username>/api-client-python.git
 cd api-client-python
 ```
 
-After that, create a python virtual environment, this project needs at minimum `python 3.6`.  
+After that, create a Python virtual environment, this project needs at minimum `Python 3.10`.
 Your favorite IDE can also do this for you, to do it manually you could run:  
 
 ```shell

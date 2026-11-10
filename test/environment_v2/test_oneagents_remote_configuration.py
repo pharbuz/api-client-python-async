@@ -12,7 +12,7 @@ from dynatrace.pagination import PaginatedList
 TEST_ENTITY_ID = "0x2b7c0b02"
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     jobs = await dt.oneagents_remote_configuration.list()
 
     assert isinstance(jobs, PaginatedList)
@@ -26,7 +26,7 @@ async def test_list(dt: DynatraceAsync):
         break
 
 
-async def test_post(dt: DynatraceAsync):
+async def test_post(dt: DynatraceAsync) -> None:
     operation = RemoteConfigurationManagementOperation.build(
         attribute=AttributeType.NETWORK_ZONE,
         operation=OperationType.SET,
@@ -46,7 +46,7 @@ async def test_post(dt: DynatraceAsync):
     assert job.operations[0].value == "test-zone"
 
 
-async def test_get_current(dt: DynatraceAsync):
+async def test_get_current(dt: DynatraceAsync) -> None:
     current_job = await dt.oneagents_remote_configuration.get_current()
 
     if current_job is not None:
@@ -55,7 +55,7 @@ async def test_get_current(dt: DynatraceAsync):
         assert current_job.processed_entities_count <= current_job.total_entities_count
 
 
-async def test_post_preview(dt: DynatraceAsync):
+async def test_post_preview(dt: DynatraceAsync) -> None:
     operation = RemoteConfigurationManagementOperation.build(
         attribute=AttributeType.NETWORK_ZONE,
         operation=OperationType.SET,
@@ -78,7 +78,7 @@ async def test_post_preview(dt: DynatraceAsync):
         break
 
 
-async def test_validate(dt: DynatraceAsync):
+async def test_validate(dt: DynatraceAsync) -> None:
     operation = RemoteConfigurationManagementOperation.build(
         attribute=AttributeType.NETWORK_ZONE,
         operation=OperationType.SET,
@@ -98,7 +98,7 @@ async def test_validate(dt: DynatraceAsync):
         assert isinstance(validation_result.invalid_operations, list)
 
 
-async def test_get_job(dt: DynatraceAsync):
+async def test_get_job(dt: DynatraceAsync) -> None:
     ID = "7974003406714390819"
     job = await dt.oneagents_remote_configuration.get(ID)
 

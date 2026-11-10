@@ -280,7 +280,7 @@ class OperationType(Enum):
 class RemoteConfigurationManagementOperation(DynatraceObject):
     """Definition of a single remote configuration management operation"""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.attribute: AttributeType = AttributeType(raw_element["attribute"])
         self.operation: OperationType = OperationType(raw_element["operation"])
         self.value: str | None = raw_element.get("value")
@@ -344,7 +344,7 @@ class RemoteConfigurationManagementOperationOneAgentRequest:
 class RemoteConfigurationManagementJob(DynatraceObject):
     """Remote configuration management job"""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str = raw_element["id"]
         self.entity_type: EntityType = EntityType(raw_element["entityType"])
         self.start_time: str = raw_element["startTime"]
@@ -361,7 +361,7 @@ class RemoteConfigurationManagementJob(DynatraceObject):
 class RemoteConfigurationManagementJobSummary(DynatraceObject):
     """Remote configuration management job with basic data"""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str = raw_element["id"]
         self.entity_type: EntityType = EntityType(raw_element["entityType"])
         self.start_time: str = raw_element["startTime"]
@@ -371,7 +371,7 @@ class RemoteConfigurationManagementJobSummary(DynatraceObject):
 class RemoteConfigurationManagementJobPreview(DynatraceObject):
     """A preview of remote configuration management job"""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.attribute: AttributeType = AttributeType(raw_element["attribute"])
         self.operation: OperationType = OperationType(raw_element["operation"])
         self.value: str | None = raw_element.get("value")
@@ -384,7 +384,7 @@ class RemoteConfigurationManagementJobPreview(DynatraceObject):
 class RemoteConfigurationManagementValidationResult(DynatraceObject):
     """The result of remote configuration management validation"""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.invalid_entities: list[
             RemoteConfigurationManagementEntityValidationError
         ] = [
@@ -402,7 +402,7 @@ class RemoteConfigurationManagementValidationResult(DynatraceObject):
 class RemoteConfigurationManagementEntityValidationError(DynatraceObject):
     """Entity validation error for remote configuration management"""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.entity: str = raw_element["entity"]
         self.reasons: list[str] = raw_element.get("reasons", [])
 
@@ -410,7 +410,7 @@ class RemoteConfigurationManagementEntityValidationError(DynatraceObject):
 class RemoteConfigurationManagementOperationValidationError(DynatraceObject):
     """Validation error of remote configuration management operation definition"""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.attribute: AttributeType | None = (
             AttributeType(raw_element["attribute"])
             if "attribute" in raw_element

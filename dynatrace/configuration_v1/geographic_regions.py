@@ -1,4 +1,7 @@
 import builtins
+from typing import Any
+
+from httpx import Response
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -17,17 +20,19 @@ class GeoRegionsIpAddressMappingsService:
         response = (await self._http_client.make_request(self.ENDPOINT)).json()
         return IPAddressMapping(self._http_client, None, response)
 
-    async def put(self, mappings: builtins.list["IPAddressMapping"]):
+    async def put(self, mappings: builtins.list["IPAddressMapping"]) -> Response:
         """
         Updates the IP address mappings of the environment
         """
         data = [mapping.json() for mapping in mappings]
-        body = {"ipAddressMappingRules": data}
-        (await self._http_client.make_request(self.ENDPOINT, method="PUT", params=body))
+        body: dict[str, Any] = {"ipAddressMappingRules": data}
+        return await self._http_client.make_request(
+            self.ENDPOINT, method="PUT", params=body
+        )
 
 
 class IPAddressMapping(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.rules: list[IPAddressMappingRule] = [
             IPAddressMappingRule(raw_element=e)
             for e in raw_element.get("ipAddressMappingRules")
@@ -35,14 +40,16 @@ class IPAddressMapping(DynatraceObject):
 
 
 class IPAddressMappingRule(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.location = IPAddressMappingLocation(
             raw_element=raw_element.get("location")
         )
         self.ip_range = IPAddressRange(raw_element=raw_element.get("ipRange"))
 
     @staticmethod
-    def create(location: "IPAddressMappingLocation", ip_range: "IPAddressRange"):
+    def create(
+        location: "IPAddressMappingLocation", ip_range: "IPAddressRange"
+    ) -> "IPAddressMappingRule":
         """
         Creates a new IP address mapping rule
         """
@@ -55,7 +62,7 @@ class IPAddressMappingRule(DynatraceObject):
 
 
 class IPAddressMappingLocation(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.country_code: str = raw_element.get("countryCode")
         self.city: str | None = raw_element.get("city")
         self.region_code: str | None = raw_element.get("regionCode")
@@ -69,7 +76,7 @@ class IPAddressMappingLocation(DynatraceObject):
         region_code: str | None = None,
         latitude: float | None = None,
         longitude: float | None = None,
-    ):
+    ) -> "IPAddressMappingLocation":
         return IPAddressMappingLocation(
             raw_element={
                 "countryCode": country_code,
@@ -82,7 +89,7 @@ class IPAddressMappingLocation(DynatraceObject):
 
 
 class IPAddressRange(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.address: str = raw_element.get("address")
         self.subnet_mask: int | None = raw_element.get("subnetMask")
         self.address_to: str | None = raw_element.get("addressTo")

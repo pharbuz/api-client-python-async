@@ -23,7 +23,7 @@ from dynatrace.dynatrace_object import DynatraceObject
 
 
 class ConfigurationMetadata(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.cluster_version: str = raw_element.get("clusterVersion")
         self.configuration_versions: list[int] = raw_element.get(
             "configurationVersions"
@@ -48,7 +48,7 @@ class VersionCompareType(Enum):
 
 
 class ManagementZone(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name: str = raw_element.get("name", "")
         self.id: str = raw_element["id"]
 

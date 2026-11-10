@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from unittest import mock
 
 import pytest
@@ -8,7 +9,7 @@ from test.async_utils import local_make_request
 
 
 @pytest.fixture
-def dt():
+def dt() -> Generator[DynatraceAsync]:
     with mock.patch.object(HttpClient, "make_request", new=local_make_request):
         dt = DynatraceAsync(
             base_url="mock_tenant",

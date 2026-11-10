@@ -7,19 +7,19 @@ from dynatrace.environment_v2.credential_vault import (
 from dynatrace.pagination import PaginatedList
 
 
-async def test_list_credentials(dt: DynatraceAsync):
+async def test_list_credentials(dt: DynatraceAsync) -> None:
     credentials = await dt.credentials.list()
     assert isinstance(credentials, PaginatedList)
     assert len(credentials) == 2
 
 
-async def test_get_credential(dt: DynatraceAsync):
+async def test_get_credential(dt: DynatraceAsync) -> None:
     credential = await dt.credentials.get("CREDENTIALS_VAULT-123")
     assert isinstance(credential, CredentialsResponseElement)
     assert credential.id == "CREDENTIALS_VAULT-123"
 
 
-async def test_create_credential(dt: DynatraceAsync):
+async def test_create_credential(dt: DynatraceAsync) -> None:
     response = await dt.credentials.create(
         UserPasswordCredentials(
             name="New user-pass credentials",
@@ -32,7 +32,7 @@ async def test_create_credential(dt: DynatraceAsync):
     assert response.id == "CREDENTIALS_VAULT-CREATED"
 
 
-async def test_update_credential(dt: DynatraceAsync):
+async def test_update_credential(dt: DynatraceAsync) -> None:
     response = await dt.credentials.update(
         "CREDENTIALS_VAULT-123",
         UserPasswordCredentials(
@@ -46,6 +46,6 @@ async def test_update_credential(dt: DynatraceAsync):
     assert response.id == "CREDENTIALS_VAULT-UPDATED"
 
 
-async def test_delete_credential(dt: DynatraceAsync):
+async def test_delete_credential(dt: DynatraceAsync) -> None:
     response = await dt.credentials.delete("CREDENTIALS_VAULT-123")
     assert response.json() is None

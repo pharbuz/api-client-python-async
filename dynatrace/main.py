@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import logging
+from types import TracebackType
 
 from dynatrace.account.schemas import AccountAPI
 from dynatrace.auth import DynatraceAccessToken, DynatraceOAuthCredentials
@@ -117,20 +118,20 @@ class DynatraceAsync:
         self,
         base_url: str,
         credentials: DynatraceOAuthCredentials | DynatraceAccessToken,
-        log: logging.Logger = None,
-        proxies: dict = None,
-        too_many_requests_strategy=None,
+        log: logging.Logger | None = None,
+        proxies: dict[str, str] | None = None,
+        too_many_requests_strategy: str | None = None,
         retries: int = 0,
         retry_delay_ms: int = 0,
         mc_jsession_id: str | None = None,
         mc_b925d32c: str | None = None,
         mc_sso_csrf_cookie: str | None = None,
-        print_bodies=False,
+        print_bodies: bool = False,
         timeout: int | None = None,
-        headers: dict | None = None,
+        headers: dict[str, str] | None = None,
         verify_ssl: bool = False,
         token_timeout: int = 30,
-    ):
+    ) -> None:
         if not base_url:
             raise ValueError("base_url is required")
         if isinstance(credentials, DynatraceOAuthCredentials):
@@ -263,7 +264,7 @@ class DynatraceAsync:
             self.platform: PlatformAPI = PlatformAPI(self.__http_client)
             self.account: AccountAPI = AccountAPI(self.__http_client)
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> object:
         if isinstance(self.__credentials, DynatraceOAuthCredentials):
             if name in self._OAUTH_RESTRICTED:
                 raise AttributeError(
@@ -284,5 +285,10 @@ class DynatraceAsync:
     async def __aenter__(self) -> "DynatraceAsync":
         return self
 
-    async def __aexit__(self, exc_type, exc, tb) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: TracebackType | None,
+    ) -> None:
         await self.aclose()

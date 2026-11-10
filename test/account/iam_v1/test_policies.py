@@ -1,6 +1,7 @@
 """Tests for account IAM v1 policies API."""
 
 import json
+from typing import Any
 from unittest import mock
 
 from dynatrace import DynatraceAsync
@@ -17,35 +18,35 @@ from dynatrace.http_client import HttpClient
 
 
 class MockResponse:
-    def __init__(self, json_data=None, status_code=200):
+    def __init__(self, json_data: Any = None, status_code: int = 200) -> None:
         self._json_data = json_data
-        self.headers = {}
+        self.headers: dict[str, str] = {}
         self.text = json.dumps(json_data) if json_data is not None else ""
         self.status_code = status_code
 
-    def json(self):
+    def json(self) -> Any:
         return self._json_data
 
 
-async def test_policies_service_is_exposed(dt: DynatraceAsync):
+async def test_policies_service_is_exposed(dt: DynatraceAsync) -> None:
     assert isinstance(dt.account.iam_policies, AccountPoliciesService)
 
 
-async def test_policies_list(dt: DynatraceAsync):
+async def test_policies_list(dt: DynatraceAsync) -> None:
     level_type = "account"
     level_id = "account-123"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == (
             "GET",
             f"/iam/v1/repo/{level_type}/{level_id}/policies",
@@ -70,22 +71,22 @@ async def test_policies_list(dt: DynatraceAsync):
     assert len(policies.policies) == 1
 
 
-async def test_policies_create(dt: DynatraceAsync):
+async def test_policies_create(dt: DynatraceAsync) -> None:
     level_type = "account"
     level_id = "account-123"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        json=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        json: Any = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == (
             "POST",
             f"/iam/v1/repo/{level_type}/{level_id}/policies",
@@ -117,22 +118,22 @@ async def test_policies_create(dt: DynatraceAsync):
     assert policy.name == "NewPolicy"
 
 
-async def test_policies_get(dt: DynatraceAsync):
+async def test_policies_get(dt: DynatraceAsync) -> None:
     level_type = "account"
     level_id = "account-123"
     policy_uuid = "policy-1"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == (
             "GET",
             f"/iam/v1/repo/{level_type}/{level_id}/policies/{policy_uuid}",
@@ -156,23 +157,23 @@ async def test_policies_get(dt: DynatraceAsync):
     assert policy.uuid == policy_uuid
 
 
-async def test_policies_update(dt: DynatraceAsync):
+async def test_policies_update(dt: DynatraceAsync) -> None:
     level_type = "account"
     level_id = "account-123"
     policy_uuid = "policy-1"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        json=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        json: Any = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (
             method,
             path,
@@ -196,22 +197,22 @@ async def test_policies_update(dt: DynatraceAsync):
     assert response.status_code == 204
 
 
-async def test_policies_delete(dt: DynatraceAsync):
+async def test_policies_delete(dt: DynatraceAsync) -> None:
     level_type = "account"
     level_id = "account-123"
     policy_uuid = "policy-1"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (
             method,
             path,
@@ -230,21 +231,21 @@ async def test_policies_delete(dt: DynatraceAsync):
     assert response.status_code == 204
 
 
-async def test_policies_list_aggregate(dt: DynatraceAsync):
+async def test_policies_list_aggregate(dt: DynatraceAsync) -> None:
     level_type = "account"
     level_id = "account-123"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == (
             "GET",
             f"/iam/v1/repo/{level_type}/{level_id}/policies/aggregate",
@@ -271,21 +272,21 @@ async def test_policies_list_aggregate(dt: DynatraceAsync):
     assert len(policies.policy_overview_list) == 1
 
 
-async def test_policies_list_bindings(dt: DynatraceAsync):
+async def test_policies_list_bindings(dt: DynatraceAsync) -> None:
     level_type = "account"
     level_id = "account-123"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == (
             "GET",
             f"/iam/v1/repo/{level_type}/{level_id}/bindings",
@@ -314,23 +315,23 @@ async def test_policies_list_bindings(dt: DynatraceAsync):
     assert len(bindings.policy_bindings) == 1
 
 
-async def test_policies_get_effective_permissions(dt: DynatraceAsync):
+async def test_policies_get_effective_permissions(dt: DynatraceAsync) -> None:
     level_type = "account"
     level_id = "account-123"
     entity_id = "user-1"
     entity_type = "user"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == (
             "GET",
             f"/iam/v1/resolution/{level_type}/{level_id}/effectivepermissions",

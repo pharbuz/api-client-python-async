@@ -23,7 +23,7 @@ from httpx import Response
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import timestamp_to_string
+from dynatrace.utils import raw_required_float, raw_required_str, timestamp_to_string
 
 
 class SloService:
@@ -195,15 +195,15 @@ class SloService:
 
 
 class Slo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         # required
-        self.name: str = raw_element.get("name")
+        self.name: str = raw_required_str(raw_element, "name")
         self.id: str = raw_element.get("id", "")
-        self.target: float = raw_element.get("target")
-        self.warning: float = raw_element.get("warning")
-        self.timeframe: str = raw_element.get("timeframe")
+        self.target: float = raw_required_float(raw_element, "target")
+        self.warning: float = raw_required_float(raw_element, "warning")
+        self.timeframe: str = raw_required_str(raw_element, "timeframe")
         self.evaluation_type: SloEvaluationType = SloEvaluationType(
-            raw_element.get("evaluationType")
+            raw_element["evaluationType"]
         )
 
         # optional
@@ -258,7 +258,7 @@ class Slo(DynatraceObject):
 
     async def post(self) -> "Response":
         """Creates this object as a new SLO in Dynatrace"""
-        response = await self._http_client.make_request(
+        response = await self._make_request(
             path=SloService.ENDPOINT, method="POST", params=self.to_json()
         )
         if response.status_code == 201:
@@ -269,7 +269,7 @@ class Slo(DynatraceObject):
 
     async def put(self) -> "Response":
         """Updates an existing SLO in Dynatrace based on this object's details"""
-        return await self._http_client.make_request(
+        return await self._make_request(
             path=f"{SloService.ENDPOINT}/{self.id}", method="PUT", params=self.to_json()
         )
 
@@ -277,7 +277,7 @@ class Slo(DynatraceObject):
 class SloEvaluationType(Enum):
     AGGREGATE = "AGGREGATE"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
 
 
@@ -286,5 +286,5 @@ class SloStatus(Enum):
     SUCCESS = "SUCCESS"
     WARNING = "WARNING"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value

@@ -1,7 +1,7 @@
 """Account group management API wrappers."""
 
 import builtins
-from typing import Any, Union
+from typing import Any
 
 from httpx import Response
 
@@ -58,17 +58,13 @@ class AccountGroupsService:
         self,
         account_uuid: str,
         group_uuid: str,
-        group_config: Union["GroupUpdateRequest", dict[str, Any]],
+        group_config: "GroupUpdateRequest",
     ) -> Response:
         """Edit a user group."""
-        if isinstance(group_config, GroupUpdateRequest):
-            body = group_config.to_json()
-        else:
-            body = group_config
         return await self.__http_client.make_request(
             f"/iam/v1/accounts/{account_uuid}/groups/{group_uuid}",
             method="PUT",
-            json=body,
+            json=group_config.to_json(),
         )
 
     async def delete(self, account_uuid: str, group_uuid: str) -> Response:
@@ -83,7 +79,7 @@ class AccountGroupsService:
 class Group(DynatraceObject):
     """Group object."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.uuid: str | None = raw_element.get("uuid")
         self.name: str | None = raw_element.get("name")
         self.description: str | None = raw_element.get("description")
@@ -106,7 +102,7 @@ class Group(DynatraceObject):
 class GroupList(DynatraceObject):
     """List of groups."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.count: int | None = raw_element.get("count")
         self.items: list[Group] = [
             Group(raw_element=e) for e in raw_element.get("items", [])
@@ -116,7 +112,7 @@ class GroupList(DynatraceObject):
 class GroupUser(DynatraceObject):
     """User in a group."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.uid: str | None = raw_element.get("uid")
         self.email: str | None = raw_element.get("email")
         self.name: str | None = raw_element.get("name")
@@ -128,7 +124,7 @@ class GroupUser(DynatraceObject):
 class GroupMembers(DynatraceObject):
     """Members of a group."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.count: int | None = raw_element.get("count")
         self.items: list[GroupUser] = [
             GroupUser(raw_element=e) for e in raw_element.get("items", [])
@@ -146,11 +142,11 @@ class GroupUpdateRequest(DynatraceObject):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self.name = name
-        self.description = description
-        self.federated_attribute_values = federated_attribute_values or []
+        self.name: str | None = name
+        self.description: str | None = description
+        self.federated_attribute_values: list[str] = federated_attribute_values or []
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name = raw_element.get("name")
         self.description = raw_element.get("description")
         self.federated_attribute_values = raw_element.get(

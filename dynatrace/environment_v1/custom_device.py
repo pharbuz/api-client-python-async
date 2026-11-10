@@ -14,8 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from collections.abc import MutableSequence
+from collections.abc import Iterable, MutableSequence
 from datetime import datetime, timedelta, timezone
+from typing import cast, overload
+
+from httpx import Response
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
@@ -37,7 +40,7 @@ class CustomDeviceService:
         config_url: str | None = None,
         properties: dict[str, str] | None = None,
         tags: list[str] | None = None,
-        series: list | None = None,
+        series: "Series | list[EntityTimeseriesData] | None" = None,
         host_names: list[str] | None = None,
     ) -> "CustomDevicePushMessage":
         return CustomDevicePushMessage(
@@ -57,8 +60,8 @@ class CustomDeviceService:
         )
 
 
-class Series(MutableSequence):
-    def __init__(self, *args):
+class Series(MutableSequence["EntityTimeseriesData"]):
+    def __init__(self, *args: "EntityTimeseriesData"):
         self.list: list[EntityTimeseriesData] = []
         self.extend(list(args))
 
@@ -72,29 +75,52 @@ class Series(MutableSequence):
                 return
         self.list.append(time_series)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.list)
 
-    def __getitem__(self, i):
+    @overload
+    def __getitem__(self, i: int) -> "EntityTimeseriesData": ...
+
+    @overload
+    def __getitem__(self, i: slice) -> list["EntityTimeseriesData"]: ...
+
+    def __getitem__(
+        self, i: int | slice
+    ) -> "EntityTimeseriesData | list[EntityTimeseriesData]":
         return self.list[i]
 
-    def __delitem__(self, i):
+    def __delitem__(self, i: int | slice) -> None:
         del self.list[i]
 
-    def __setitem__(self, i, v):
-        self.list[i] = v
+    @overload
+    def __setitem__(self, i: int, v: "EntityTimeseriesData") -> None: ...
 
-    def insert(self, i, v):
+    @overload
+    def __setitem__(self, i: slice, v: Iterable["EntityTimeseriesData"]) -> None: ...
+
+    def __setitem__(
+        self,
+        i: int | slice,
+        v: "EntityTimeseriesData | Iterable[EntityTimeseriesData]",
+    ) -> None:
+        if isinstance(i, slice):
+            self.list[i] = cast(Iterable[EntityTimeseriesData], v)
+        else:
+            if not isinstance(v, EntityTimeseriesData):
+                raise TypeError("expected EntityTimeseriesData")
+            self.list[i] = v
+
+    def insert(self, i: int, v: "EntityTimeseriesData") -> None:
         self.list.insert(i, v)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.list)
 
 
 class CustomDevicePushMessage(DynatraceObject):
     def __init__(
         self,
-        http_client,
+        http_client: HttpClient,
         device_id: str,
         display_name: str | None = None,
         group: str | None = None,
@@ -105,9 +131,9 @@ class CustomDevicePushMessage(DynatraceObject):
         config_url: str | None = None,
         properties: dict[str, str] | None = None,
         tags: list[str] | None = None,
-        series: Series | None = None,
+        series: Series | list["EntityTimeseriesData"] | None = None,
         host_names: list[str] | None = None,
-    ):
+    ) -> None:
         self.device_id = device_id
         self.display_name: str | None = display_name
         self.group: str | None = group
@@ -118,9 +144,12 @@ class CustomDevicePushMessage(DynatraceObject):
         self.config_url: str | None = config_url
         self.properties: dict[str, str] | None = properties
         self.tags: list[str] | None = tags
-        self.__series: Series = series
-        if self.__series is None:
-            self.__series: Series = Series()
+        if series is None:
+            self.__series = Series()
+        elif isinstance(series, Series):
+            self.__series = series
+        else:
+            self.__series = Series(*series)
         self.host_names: list[str] | None = host_names
 
         raw_element = {
@@ -145,13 +174,13 @@ class CustomDevicePushMessage(DynatraceObject):
         return self.__series
 
     @series.setter
-    def series(self, series: Series):
+    def series(self, series: Series) -> None:
         self.__series = series
         self._raw_element["series"] = [s._raw_element for s in self.__series]
 
-    async def post(self, only_valid_data_points=False):
+    async def post(self, only_valid_data_points: bool = False) -> Response:
         try:
-            response = await self._http_client.make_request(
+            response = await self._make_request(
                 f"/api/v1/entity/infrastructure/custom/{self.device_id}",
                 params=self._raw_element,
                 method="POST",
@@ -163,19 +192,19 @@ class CustomDevicePushMessage(DynatraceObject):
                 or "Data point timestamp is too far in the past" in f"{e}"
             ):
                 if "configuration.Creation timestamp" in f"{e}":
-                    max_timestamp = int(
+                    max_timestamp_ms = int(
                         f"{e}".split("configuration.Creation timestamp is:")[1]
                         .split('"')[0]
                         .strip()
                     )
                     max_timestamp = datetime.fromtimestamp(
-                        max_timestamp / 1000, tz=timezone.utc
+                        max_timestamp_ms / 1000, tz=timezone.utc
                     )
                 else:
                     max_timestamp = datetime.now(tz=timezone.utc) - timedelta(
                         minutes=59
                     )
-                self._http_client.log.warning(
+                self._require_http_client().log.warning(
                     f"Some data points were invalid, removing data points older than {max_timestamp}"
                 )
                 for s in self.series:
@@ -196,7 +225,7 @@ class CustomDevicePushMessage(DynatraceObject):
         value: float,
         timestamp: datetime | None = None,
         dimensions: dict[str, str] | None = None,
-    ):
+    ) -> None:
         data_point = DataPoint(value, timestamp)
         self.series.append(
             EntityTimeseriesData(self._http_client, key, [data_point], dimensions)
@@ -209,11 +238,11 @@ class CustomDevicePushMessage(DynatraceObject):
 class EntityTimeseriesData(DynatraceObject):
     def __init__(
         self,
-        http_client,
+        http_client: HttpClient | None,
         timeseries_id: str,
         data_points: list["DataPoint"],
         dimensions: dict[str, str] | None = None,
-    ):
+    ) -> None:
         self.timeseries_id: str = timeseries_id
         self.dimensions = dimensions
         self.__data_points: list[DataPoint] = data_points
@@ -227,7 +256,7 @@ class EntityTimeseriesData(DynatraceObject):
         }
         super().__init__(http_client, None, raw_element)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Series(id={self.timeseries_id}, data_points={self.data_points})"
 
     @property
@@ -235,7 +264,7 @@ class EntityTimeseriesData(DynatraceObject):
         return self.__data_points
 
     @data_points.setter
-    def data_points(self, data_points: list["DataPoint"]):
+    def data_points(self, data_points: list["DataPoint"]) -> None:
         self.__data_points = data_points
         self._raw_element["dataPoints"] = [
             [int(data_point.timestamp.timestamp() * 1000), data_point.value]
@@ -244,11 +273,11 @@ class EntityTimeseriesData(DynatraceObject):
 
 
 class DataPoint:
-    def __init__(self, value: float, timestamp: datetime | None = None):
-        self.timestamp = timestamp
-        if self.timestamp is None:
-            self.timestamp = datetime.now()
+    def __init__(self, value: float, timestamp: datetime | None = None) -> None:
+        self.timestamp: datetime = (
+            timestamp if timestamp is not None else datetime.now()
+        )
         self.value = value
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"[{self.timestamp}, {self.value}]"
