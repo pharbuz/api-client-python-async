@@ -16,11 +16,14 @@ limitations under the License.
 
 import builtins
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
+
+from httpx import Response
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import raw_required_int, raw_required_str
 
 
 class ExtensionsServiceV2:
@@ -103,7 +106,9 @@ class ExtensionsServiceV2:
         ).json()
         return Extension(raw_element=response)
 
-    async def post(self, zip_file_path: str | Path, validate_only: bool | None = False):
+    async def post(
+        self, zip_file_path: str | Path, validate_only: bool | None = False
+    ) -> "Extension":
         """Post the specified version of the extension 2.0
 
         :param zip_file_path: path to zipped extension 2.0
@@ -125,7 +130,7 @@ class ExtensionsServiceV2:
             ).json()
             return Extension(raw_element=response)
 
-    async def delete(self, extension_name: str, extension_version: str):
+    async def delete(self, extension_name: str, extension_version: str) -> Response:
         """Deletes the specified version of the extension 2.0
 
         :param extension_name: the name of the requested extension 2.0
@@ -153,7 +158,9 @@ class ExtensionsServiceV2:
         ).json()
         return ExtensionEnvironmentConfigurationVersion(raw_element=response)
 
-    async def put_environment_config(self, extension_name: str, extension_version: str):
+    async def put_environment_config(
+        self, extension_name: str, extension_version: str
+    ) -> Response:
         """Updates an existing active environment configuration version of the extension 2.0
 
         :param extension_name: the name of the requested extension 2.0
@@ -168,7 +175,7 @@ class ExtensionsServiceV2:
             params=params,
         )
 
-    async def delete_environment_config(self, extension_name: str):
+    async def delete_environment_config(self, extension_name: str) -> Response:
         """Deactivates the environment configuration of the specified extension 2.0
 
         :param extension_name: the name of the requested extension 2.0 to deactivate
@@ -184,7 +191,7 @@ class ExtensionsServiceV2:
         response = (
             await self.__http_client.make_request(f"{self.SCHEMA_ENDPOINT}")
         ).json()
-        return response.get("versions", [])
+        return cast(builtins.list[str], response.get("versions", []))
 
     async def list_schemas(self, schema_version: str) -> "SchemaFiles":
         response = await self.__http_client.make_request(
@@ -195,24 +202,25 @@ class ExtensionsServiceV2:
     async def get_schema_file(
         self, schema_version: str, file_name: str
     ) -> dict[str, Any]:
-        return (
+        response = (
             await self.__http_client.make_request(
                 f"{self.SCHEMA_ENDPOINT}/{schema_version}/{file_name}"
             )
         ).json()
+        return cast(dict[str, Any], response)
 
     async def post_monitoring_configurations(
         self,
         extension_name: str,
         configurations: builtins.list["MonitoringConfigurationDto"],
-    ) -> builtins.list:
+    ) -> builtins.list[Any]:
         params = [c.to_json() for c in configurations]
         response = await self.__http_client.make_request(
             f"{self.ENDPOINT}/{extension_name}/monitoringConfigurations",
             params=params,
             method="POST",
         )
-        return response.json()
+        return cast(builtins.list[Any], response.json())
 
     async def list_monitoring_configurations(
         self,
@@ -241,54 +249,56 @@ class ExtensionsServiceV2:
 
     async def delete_monitoring_configuration(
         self, extension_name: str, config_id: str
-    ):
+    ) -> Response:
         url = f"{self.ENDPOINT}/{extension_name}/monitoringConfigurations/{config_id}"
         return await self.__http_client.make_request(url, method="DELETE")
 
 
 class SchemaFiles(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.files: list[str] = raw_element.get("files", [])
 
 
 class Extension(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.version: str = raw_element.get("version")
-        self.extension_name: str = raw_element.get("extensionName")
-        self.min_dynatrace_version: str = raw_element.get("minDynatraceVersion")
-        self.file_hash: str = raw_element.get("fileHash")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.version: str = raw_required_str(raw_element, "version")
+        self.extension_name: str = raw_required_str(raw_element, "extensionName")
+        self.min_dynatrace_version: str = raw_required_str(
+            raw_element, "minDynatraceVersion"
+        )
+        self.file_hash: str = raw_required_str(raw_element, "fileHash")
         self.author: AuthorDTO = AuthorDTO(raw_element=raw_element.get("author"))
-        self.data_sources: list[str] = raw_element.get("dataSources")
-        self.variables: list[str] = raw_element.get("variables")
-        self.feature_sets: list[str] = raw_element.get("featureSets")
+        self.data_sources: list[str] = raw_element.get("dataSources", [])
+        self.variables: list[str] = raw_element.get("variables", [])
+        self.feature_sets: list[str] = raw_element.get("featureSets", [])
 
 
 class AuthorDTO(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.name: str = raw_element.get("name")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.name: str | None = raw_element.get("name")
 
 
 class ExtensionEventDTO(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.timestamp: str = raw_element.get("timestamp")
-        self.severity: str = raw_element.get("severity")
-        self.message: str = raw_element.get("message")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.timestamp: str | None = raw_element.get("timestamp")
+        self.severity: str | None = raw_element.get("severity")
+        self.message: str | None = raw_element.get("message")
 
 
 class ExtensionEnvironmentConfigurationVersion(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.version: str = raw_element.get("version")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.version: str = raw_required_str(raw_element, "version")
 
     def to_json(self) -> dict[str, Any]:
         """Translates an ExtensionEnvironmentConfigurationVersion to a JSON dict."""
         return {"version": self.version}
 
-    async def put(self, extension_name: str):
+    async def put(self, extension_name: str) -> Response:
         """Updates an existing extension environment config's version in Dynatrace
 
         :param extension_name: the name of the extension required for making the API call
         """
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"{ExtensionsServiceV2.ENDPOINT}/{extension_name}/environmentConfiguration",
             params=self.to_json(),
             method="PUT",
@@ -296,9 +306,9 @@ class ExtensionEnvironmentConfigurationVersion(DynatraceObject):
 
 
 class MinimalExtension(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.version: str = raw_element.get("version")
-        self.extension_name: str = raw_element.get("extensionName")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.version: str = raw_required_str(raw_element, "version")
+        self.extension_name: str = raw_required_str(raw_element, "extensionName")
 
     def list_version(self) -> str:
         """Class method for obtaining extension2.0 version"""
@@ -312,7 +322,7 @@ class MinimalExtension(DynatraceObject):
         :return: ExtensionEnvironmentConfigurationVersion object
         """
         response = (
-            await self._http_client.make_request(
+            await self._make_request(
                 f"{ExtensionsServiceV2.ENDPOINT}/{self.extension_name}/environmentConfiguration"
             )
         ).json()
@@ -333,7 +343,7 @@ class MinimalExtension(DynatraceObject):
         ).initialize()
 
     async def list_monitoring_config_events(
-        self, config_id
+        self, config_id: str
     ) -> PaginatedList["ExtensionEventDTO"]:
         """Gets the list of the events linked to specific monitoring configuration
 
@@ -354,18 +364,18 @@ class MonitoringConfigurationDto:
         self.scope = scope
         self.configuration = configuration
 
-    def to_json(self):
+    def to_json(self) -> dict[str, Any]:
         return {"scope": self.scope, "value": self.configuration}
 
 
 class ExtensionMonitoringConfiguration(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.objectId: str = raw_element.get("objectId")
-        self.scope: str = raw_element.get("scope")
-        self.configuration: dict[str, Any] = raw_element.get("value")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.objectId: str = raw_required_str(raw_element, "objectId")
+        self.scope: str = raw_required_str(raw_element, "scope")
+        self.configuration: dict[str, Any] = raw_element["value"]
 
 
 class MonitoringConfigurationResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.objectId: str = raw_element.get("objectId")
-        self.code: int = raw_element.get("code")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.objectId: str = raw_required_str(raw_element, "objectId")
+        self.code: int = raw_required_int(raw_element, "code")

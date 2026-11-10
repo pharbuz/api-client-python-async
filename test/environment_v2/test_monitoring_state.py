@@ -1,3 +1,7 @@
+from typing import Any
+
+import pytest
+
 from dynatrace import DynatraceAsync
 from dynatrace.environment_v2.monitoring_state import (
     MonitoredEntityState,
@@ -8,19 +12,21 @@ from dynatrace.pagination import PaginatedList
 from test.async_utils import MockResponse
 
 
-async def test_list_monitoring_states(dt: DynatraceAsync, monkeypatch):
-    requests = []
+async def test_list_monitoring_states(
+    dt: DynatraceAsync, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    requests: list[tuple[str, dict[str, Any] | None]] = []
 
     async def make_request(
-        self,
+        self: Any,
         path: str,
-        params: dict | None = None,
-        headers: dict | None = None,
-        method="GET",
-        data=None,
-        query_params=None,
-        **kwargs,
-    ):
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         requests.append((path, params))
         if len(requests) == 1:
             return MockResponse(

@@ -9,6 +9,7 @@ import json
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 import wrapt
 
@@ -16,8 +17,20 @@ from dynatrace import DynatraceAsync, DynatraceOAuthCredentials
 from dynatrace.utils import slugify
 
 
+def required_env(name: str) -> str:
+    value = os.getenv(name)
+    if value is None:
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
+
+
 @wrapt.patch_function_wrapper("dynatrace.http_client", "HttpClient.make_request")
-async def dump_to_json(wrapped, instance, args, kwargs):
+async def dump_to_json(
+    wrapped: Any,
+    instance: Any,
+    args: tuple[Any, ...],
+    kwargs: dict[str, Any],
+) -> Any:
     r = await wrapped(*args, **kwargs)
     method = kwargs.get("method", "GET")
     params = kwargs.get("params", "")
@@ -41,7 +54,7 @@ async def dump_to_json(wrapped, instance, args, kwargs):
     return r
 
 
-def setup_log():
+def setup_log() -> logging.Logger:
     log = logging.getLogger(__name__)
     log.setLevel(logging.DEBUG)
     st = logging.StreamHandler()
@@ -53,13 +66,18 @@ def setup_log():
     return log
 
 
-async def main():
+async def main() -> None:
+    base_url = required_env("DYNATRACE_TENANT_URL")
+    client_id = required_env("DYNATRACE_OAUTH_CLIENT_ID")
+    client_secret = required_env("DYNATRACE_OAUTH_CLIENT_SECRET")
+    account_uuid = required_env("DYNATRACE_ACCOUNT_UUID")
+
     async with DynatraceAsync(
-        base_url=os.getenv("DYNATRACE_TENANT_URL"),
+        base_url=base_url,
         credentials=DynatraceOAuthCredentials(
-            client_id=os.getenv("DYNATRACE_OAUTH_CLIENT_ID"),
-            client_secret=os.getenv("DYNATRACE_OAUTH_CLIENT_SECRET"),
-            account_uuid=os.getenv("DYNATRACE_ACCOUNT_UUID"),
+            client_id=client_id,
+            client_secret=client_secret,
+            account_uuid=account_uuid,
             scope="environment-api:metrics:read environment-api:entities:read",
         ),
         log=setup_log(),

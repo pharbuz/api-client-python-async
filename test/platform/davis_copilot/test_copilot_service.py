@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from unittest import mock
 
 from dynatrace import DynatraceAsync
@@ -13,11 +14,11 @@ from dynatrace.platform.davis_copilot.copilot_service import (
 class MockResponse:
     def __init__(
         self,
-        json_data=None,
-        headers=None,
-        text=None,
+        json_data: Any = None,
+        headers: dict[str, str] | None = None,
+        text: str | None = None,
         raise_json: bool = False,
-    ):
+    ) -> None:
         self._json_data = json_data
         self.headers = headers or {}
         self.text = (
@@ -28,28 +29,28 @@ class MockResponse:
         self.status_code = 200
         self._raise_json = raise_json
 
-    def json(self):
+    def json(self) -> Any:
         if self._raise_json:
             raise ValueError("No JSON payload")
         return self._json_data
 
 
-async def test_copilot_service_is_exposed(dt: DynatraceAsync):
+async def test_copilot_service_is_exposed(dt: DynatraceAsync) -> None:
     assert isinstance(dt.platform.davis_copilot, CopilotService)
 
 
-async def test_copilot_service_returns_expected_models(dt: DynatraceAsync):
+async def test_copilot_service_returns_expected_models(dt: DynatraceAsync) -> None:
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == ("GET", "/platform/davis/copilot/v1/skills"):
             return MockResponse(
                 {"skills": ["conversation", "nl2dql", "dql2nl", "documentSearch"]}

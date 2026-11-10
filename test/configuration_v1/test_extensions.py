@@ -1,4 +1,7 @@
 from datetime import datetime, timezone
+from typing import Any
+
+import pytest
 
 from dynatrace import DynatraceAsync
 from dynatrace.configuration_v1.extensions import (
@@ -12,11 +15,12 @@ from dynatrace.configuration_v1.extensions import (
     GlobalExtensionConfiguration,
 )
 from dynatrace.environment_v2.monitored_entities import EntityShortRepresentation
+from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from test.async_utils import collect
+from test.async_utils import MockResponse, collect
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     extensions = await dt.extensions.list()
     assert isinstance(extensions, PaginatedList)
 
@@ -30,7 +34,7 @@ async def test_list(dt: DynatraceAsync):
     assert first.type == ExtensionType.ACTIVEGATE
 
 
-async def test_get(dt: DynatraceAsync):
+async def test_get(dt: DynatraceAsync) -> None:
     extension = await dt.extensions.get("custom.python.citrixAgent")
     assert isinstance(extension, Extension)
     assert extension.id == "custom.python.citrixAgent"
@@ -46,18 +50,19 @@ async def test_get(dt: DynatraceAsync):
     assert first_property.type == "BOOLEAN"
 
 
-async def test_get_global_configuration(dt: DynatraceAsync):
+async def test_get_global_configuration(dt: DynatraceAsync) -> None:
     global_config = await dt.extensions.get_global_configuration(
         "custom.python.citrixAgent"
     )
     assert isinstance(global_config, GlobalExtensionConfiguration)
     assert global_config.extension_id == "custom.python.citrixAgent"
     assert global_config.enabled
-    assert not global_config.infraOnlyEnabled
+    assert not global_config.infra_only_enabled
+    assert global_config.properties is not None
     assert global_config.properties["log_level"] == "INFO"
 
 
-async def test_get_state(dt: DynatraceAsync):
+async def test_get_state(dt: DynatraceAsync) -> None:
     states = await dt.extensions.list_states(
         "custom.remote.python.salesforce_eventstream"
     )
@@ -78,27 +83,129 @@ async def test_get_state(dt: DynatraceAsync):
     assert first.process_id is None
 
 
-async def test_get_instance_configuration(dt: DynatraceAsync):
+async def test_get_instance_configuration(dt: DynatraceAsync) -> None:
     config = await dt.extensions.get_instance_configuration(
         "custom.remote.python.salesforce_eventstream", "5649014104314746667"
     )
     assert isinstance(config, ExtensionConfigurationDto)
 
-    # TODO - This is a bug on Dynatrace, watch for the fix, this is the configuration ID
-    assert config.extension_id == "5649014104314746667"
+    assert config.extension_id == "custom.remote.python.salesforce_eventstream"
 
     assert config.enabled
+    assert config.active_gate is not None
     assert config.active_gate.id == "-7885258652650793909"
     assert config.active_gate.name == "arch-david"
     assert config.endpoint_id == "5649014104314746667"
     assert config.endpoint_name == "curious-hawk"
+    assert config.properties is not None
     assert (
         config.properties["openkit_application_id"]
         == "87eee414-9338-446b-988b-bbdbf495c4f4"
     )
 
 
-async def test_list_activegate_extension_modules(dt: DynatraceAsync):
+async def test_put_instance_configuration(
+    dt: DynatraceAsync, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[dict[str, Any]] = []
+
+    async def fake_make_request(
+        self: HttpClient,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
+        calls.append({"path": path, "params": params, "method": method})
+        return MockResponse(None)
+
+    monkeypatch.setattr(HttpClient, "make_request", fake_make_request)
+
+    config = dt.extensions.create_instance(
+        extension_id="custom.remote.python.demo",
+        properties={"serverIp": "127.0.0.1"},
+        enabled=True,
+        use_global=False,
+        activegate=EntityShortRepresentation(
+            raw_element={"id": "7835970235169136995", "name": "ActiveGate Host Name"}
+        ),
+        endpoint_id="endpoint-id",
+        endpoint_name="endpoint-name",
+    )
+
+    await dt.extensions.put_instance("configuration-id", config)
+
+    assert calls == [
+        {
+            "path": "/api/config/v1/extensions/custom.remote.python.demo/instances/configuration-id",
+            "params": {
+                "extensionId": "custom.remote.python.demo",
+                "enabled": True,
+                "useGlobal": False,
+                "properties": {"serverIp": "127.0.0.1"},
+                "hostId": None,
+                "activeGate": {
+                    "id": "7835970235169136995",
+                    "name": "ActiveGate Host Name",
+                    "description": None,
+                },
+                "endpointId": "endpoint-id",
+                "endpointName": "endpoint-name",
+            },
+            "method": "PUT",
+        }
+    ]
+
+
+async def test_put_global_configuration(
+    dt: DynatraceAsync, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[dict[str, Any]] = []
+
+    async def fake_make_request(
+        self: HttpClient,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
+        calls.append({"path": path, "params": params, "method": method})
+        return MockResponse(None)
+
+    monkeypatch.setattr(HttpClient, "make_request", fake_make_request)
+
+    config = GlobalExtensionConfiguration(
+        raw_element={
+            "enabled": True,
+            "extensionId": "custom.remote.python.demo",
+            "infraOnlyEnabled": False,
+            "properties": {"serverIp": "127.0.0.1"},
+        },
+    )
+
+    await dt.extensions.put_global_configuration(config)
+
+    assert calls == [
+        {
+            "path": "/api/config/v1/extensions/custom.remote.python.demo/global",
+            "params": {
+                "enabled": True,
+                "extensionId": "custom.remote.python.demo",
+                "infraOnlyEnabled": False,
+                "properties": {"serverIp": "127.0.0.1"},
+            },
+            "method": "PUT",
+        }
+    ]
+
+
+async def test_list_activegate_extension_modules(dt: DynatraceAsync) -> None:
     modules = await dt.extensions.list_activegate_extension_modules()
     assert isinstance(modules, PaginatedList)
 

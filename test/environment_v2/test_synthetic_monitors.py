@@ -10,7 +10,7 @@ MULTI_MONITOR_ID = "MULTIPROTOCOL_MONITOR-63653CB579F573D1"
 BROWSER_MONITOR_ID = "SYNTHETIC_TEST-3724112C5023ADB4"
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     monitors = await dt.synthetic_monitors_v2.list()
 
     assert isinstance(monitors, list)
@@ -28,7 +28,7 @@ async def test_list(dt: DynatraceAsync):
     assert monitors[1].enabled is False
 
 
-async def test_get_multi_protocol(dt: DynatraceAsync):
+async def test_get_multi_protocol(dt: DynatraceAsync) -> None:
     monitor = await dt.synthetic_monitors_v2.get(monitor_id=MULTI_MONITOR_ID)
 
     assert isinstance(monitor, SyntheticMultiProtocolMonitor)
@@ -45,7 +45,7 @@ async def test_get_multi_protocol(dt: DynatraceAsync):
     assert isinstance(monitor.primary_grail_tags, list)
 
 
-async def test_get_browser(dt: DynatraceAsync):
+async def test_get_browser(dt: DynatraceAsync) -> None:
     monitor = await dt.synthetic_monitors_v2.get(monitor_id=BROWSER_MONITOR_ID)
 
     assert isinstance(monitor, SyntheticBrowserMonitor)
@@ -67,7 +67,7 @@ async def test_get_browser(dt: DynatraceAsync):
     assert isinstance(monitor.cookies, list)
 
 
-async def test_create(dt: DynatraceAsync):
+async def test_create(dt: DynatraceAsync) -> None:
     body = {
         "name": "Test Monitor",
         "type": "MULTI_PROTOCOL",
@@ -86,7 +86,7 @@ async def test_create(dt: DynatraceAsync):
     assert result.entity_id == "MULTIPROTOCOL_MONITOR-NEW1234567890ABCDEF"
 
 
-async def test_update(dt: DynatraceAsync):
+async def test_update(dt: DynatraceAsync) -> None:
     body = {
         "name": "Updated Monitor",
         "enabled": False,
@@ -104,6 +104,6 @@ async def test_update(dt: DynatraceAsync):
     assert response.status_code == 200
 
 
-async def test_delete(dt: DynatraceAsync):
+async def test_delete(dt: DynatraceAsync) -> None:
     response = await dt.synthetic_monitors_v2.delete(monitor_id=MULTI_MONITOR_ID)
     assert response.status_code == 200

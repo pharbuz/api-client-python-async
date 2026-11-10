@@ -16,6 +16,7 @@ limitations under the License.
 
 import builtins
 from datetime import datetime
+from typing import Any
 
 from httpx import Response
 
@@ -139,13 +140,13 @@ class TokenService:
             list_item="apiTokens",
         ).initialize()
 
-    async def get(self, token_id: str):
+    async def get(self, token_id: str) -> "ApiToken":
         response = await self.__http_client.make_request(
             f"/api/v2/apiTokens/{token_id}", method="GET"
         )
         return ApiToken(raw_element=response.json())
 
-    async def put(self, token_id: str, api_token: "ApiTokenUpdate"):
+    async def put(self, token_id: str, api_token: "ApiTokenUpdate") -> Response:
         response = await self.__http_client.make_request(
             f"/api/v2/apiTokens/{token_id}", method="PUT", params=api_token.json()
         )
@@ -176,7 +177,7 @@ class TokenService:
         )
         return ApiTokenCreated(raw_element=response.json())
 
-    async def lookup(self, token: str):
+    async def lookup(self, token: str) -> "ApiToken":
         response = await self.__http_client.make_request(
             "/api/v2/apiTokens/lookup", method="POST", params={"token": token}
         )
@@ -184,7 +185,7 @@ class TokenService:
 
 
 class ApiToken(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.last_used_date: datetime | None = iso8601_to_datetime(
             raw_element.get("lastUsedDate")
         )
@@ -202,17 +203,15 @@ class ApiToken(DynatraceObject):
         self.scopes: list[str] = raw_element.get("scopes", [])
         self.enabled: bool = raw_element.get("enabled")
 
-    async def delete(self):
-        return await self._http_client.make_request(
-            f"/api/v2/apiTokens/{self.id}", method="DELETE"
-        )
+    async def delete(self) -> Response:
+        return await self._make_request(f"/api/v2/apiTokens/{self.id}", method="DELETE")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"ApiToken(id={self.id}, owner={self.owner}, name={self.name})"
 
 
 class ApiTokenCreated(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.token: str = raw_element.get("token")
         self.expiration_date: datetime | None = iso8601_to_datetime(
             raw_element.get("expirationDate")
@@ -231,8 +230,8 @@ class ApiTokenUpdate:
         self.enabled = enabled
         self.scopes = scopes
 
-    def json(self) -> dict:
-        body = {}
+    def json(self) -> dict[str, Any]:
+        body: dict[str, Any] = {}
         if self.name is not None:
             body["name"] = self.name
         if self.enabled is not None:

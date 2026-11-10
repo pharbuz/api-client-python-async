@@ -11,7 +11,7 @@ from dynatrace.utils import int64_to_datetime
 from test.async_utils import first
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     metrics = await dt.metrics.list()
     assert isinstance(metrics, PaginatedList)
     metric = await first(metrics)
@@ -22,7 +22,7 @@ async def test_list(dt: DynatraceAsync):
     assert metric.unit == "NotApplicable"
 
 
-async def test_list_fields(dt: DynatraceAsync):
+async def test_list_fields(dt: DynatraceAsync) -> None:
     metrics = await dt.metrics.list(
         fields="+tags,+dduBillable,+created,+lastWritten,+aggregationTypes,+defaultAggregation,+dimensionDefinitions,+transformations,+entityType"
     )
@@ -42,16 +42,22 @@ async def test_list_fields(dt: DynatraceAsync):
         AggregationType.AUTO,
         AggregationType.AUTO.VALUE,
     ]
-    assert Transformation.FOLD in metric.transformations
-    assert metric.default_aggregation.type == "value"
-    assert len(metric.dimension_definitions) == 3
-    assert metric.dimension_definitions[0].key == "dt.entity.device_application"
-    assert metric.dimension_definitions[0].name == "Application"
-    assert metric.dimension_definitions[0].index == 0
-    assert metric.dimension_definitions[0].type == "ENTITY"
+    transformations = metric.transformations
+    assert transformations is not None
+    assert Transformation.FOLD in transformations
+    default_aggregation = metric.default_aggregation
+    assert default_aggregation is not None
+    assert default_aggregation.type == "value"
+    dimension_definitions = metric.dimension_definitions
+    assert dimension_definitions is not None
+    assert len(dimension_definitions) == 3
+    assert dimension_definitions[0].key == "dt.entity.device_application"
+    assert dimension_definitions[0].name == "Application"
+    assert dimension_definitions[0].index == 0
+    assert dimension_definitions[0].type == "ENTITY"
 
 
-async def test_list_params(dt: DynatraceAsync):
+async def test_list_params(dt: DynatraceAsync) -> None:
 
     written_since = int64_to_datetime(1621029621)
 
@@ -70,12 +76,16 @@ async def test_list_params(dt: DynatraceAsync):
     assert not metric.ddu_billable
     assert metric.last_written == int64_to_datetime(1621030025348)
     assert metric.entity_type == ["HOST"]
-    assert metric.default_aggregation.type == "avg"
+    default_aggregation = metric.default_aggregation
+    assert default_aggregation is not None
+    assert default_aggregation.type == "avg"
     assert metric.tags == []
-    assert metric.dimension_definitions[0].key == "dt.entity.host"
+    dimension_definitions = metric.dimension_definitions
+    assert dimension_definitions is not None
+    assert dimension_definitions[0].key == "dt.entity.host"
 
 
-async def test_get(dt: DynatraceAsync):
+async def test_get(dt: DynatraceAsync) -> None:
 
     metric = await dt.metrics.get("builtin:host.cpu.idle")
 
@@ -86,13 +96,19 @@ async def test_get(dt: DynatraceAsync):
     assert not metric.ddu_billable
     assert metric.last_written == int64_to_datetime(1621030565348)
     assert metric.entity_type == ["HOST"]
-    assert metric.default_aggregation.type == "avg"
+    default_aggregation = metric.default_aggregation
+    assert default_aggregation is not None
+    assert default_aggregation.type == "avg"
     assert metric.tags == []
-    assert metric.dimension_definitions[0].key == "dt.entity.host"
-    assert metric.metric_value_type.type == ValueType.SCORE
+    dimension_definitions = metric.dimension_definitions
+    assert dimension_definitions is not None
+    assert dimension_definitions[0].key == "dt.entity.host"
+    metric_value_type = metric.metric_value_type
+    assert metric_value_type is not None
+    assert metric_value_type.type == ValueType.SCORE
 
 
-def test_metric_descriptor_accepts_openapi_transformations():
+def test_metric_descriptor_accepts_openapi_transformations() -> None:
     transformations = [
         "asGauge",
         "default",
@@ -130,7 +146,7 @@ def test_metric_descriptor_accepts_openapi_transformations():
     ]
 
 
-async def test_query(dt: DynatraceAsync):
+async def test_query(dt: DynatraceAsync) -> None:
     time_from = int64_to_datetime(1621020000000)
     time_to = int64_to_datetime(1621025000000)
 
@@ -155,7 +171,7 @@ async def test_query(dt: DynatraceAsync):
     assert first_data.timestamps[0] == int64_to_datetime(3151435100000)
 
 
-async def test_ingest(dt: DynatraceAsync):
+async def test_ingest(dt: DynatraceAsync) -> None:
     ingest = await dt.metrics.ingest(["a 1", "b 2"])
     assert isinstance(ingest, dict)
     assert ingest["linesOk"] == 1

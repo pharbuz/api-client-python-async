@@ -1,7 +1,7 @@
 """AppEngine Registry API wrappers."""
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from httpx import Response
 
@@ -38,7 +38,7 @@ class AppEngineRegistryService:
         response = await self.__http_client.make_request(
             self.ENDPOINT_APPS, params=params
         )
-        return AppInfoList(self.__http_client, response.headers, response.json())
+        return AppInfoList(self.__http_client, dict(response.headers), response.json())
 
     async def install_app(
         self, app_bundle: str | Path | bytes | bytearray
@@ -51,7 +51,7 @@ class AppEngineRegistryService:
             headers={"Content-Type": "application/zip"},
             data=bundle_data,
         )
-        return AppStub(self.__http_client, response.headers, response.json())
+        return AppStub(self.__http_client, dict(response.headers), response.json())
 
     async def search_actions(self, query: str | None = None) -> "SearchAppActionList":
         """Search actions of installed apps."""
@@ -60,7 +60,7 @@ class AppEngineRegistryService:
             self.ENDPOINT_SEARCH_ACTIONS, params=params
         )
         return SearchAppActionList(
-            self.__http_client, response.headers, response.json()
+            self.__http_client, dict(response.headers), response.json()
         )
 
     async def get_app(
@@ -77,7 +77,7 @@ class AppEngineRegistryService:
         response = await self.__http_client.make_request(
             f"{self.ENDPOINT_APPS}/{app_id}", params=params
         )
-        return AppInfo(self.__http_client, response.headers, response.json())
+        return AppInfo(self.__http_client, dict(response.headers), response.json())
 
     async def uninstall_app(self, app_id: str) -> Response:
         """Uninstall an app."""
@@ -90,12 +90,14 @@ class AppEngineRegistryService:
         response = await self.__http_client.make_request(
             self.ENDPOINT_APP_MANIFEST_SCHEMA
         )
-        return response.json()
+        return cast(dict[str, Any], response.json())
 
     async def get_default_csp_properties(self) -> "AppDefaultCsp":
         """Get default CSP rules for apps."""
         response = await self.__http_client.make_request(self.ENDPOINT_APP_DEFAULT_CSP)
-        return AppDefaultCsp(self.__http_client, response.headers, response.json())
+        return AppDefaultCsp(
+            self.__http_client, dict(response.headers), response.json()
+        )
 
     @staticmethod
     def __load_bundle_data(app_bundle: str | Path | bytes | bytearray) -> bytes:
@@ -106,12 +108,12 @@ class AppEngineRegistryService:
 
 
 class Warning(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.message: str | None = raw_element.get("message")
 
 
 class AppStub(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.warnings: list[Warning] = [
             Warning(raw_element=element) for element in raw_element.get("warnings", [])
         ]
@@ -119,25 +121,25 @@ class AppStub(DynatraceObject):
 
 
 class AppIcon(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.href: str | None = raw_element.get("href")
 
 
 class AppIsolatedUri(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.url: str | None = raw_element.get("url")
         self.base_url: str | None = raw_element.get("baseUrl")
         self.widget_url: str | None = raw_element.get("widgetUrl")
 
 
 class AppSignatureInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.signed: bool | None = raw_element.get("signed")
         self.publisher: str | None = raw_element.get("publisher")
 
 
 class ModificationInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.created_by: str | None = raw_element.get("createdBy")
         self.created_at: str | None = raw_element.get("createdAt")
         self.last_modified_by: str | None = raw_element.get("lastModifiedBy")
@@ -145,18 +147,18 @@ class ModificationInfo(DynatraceObject):
 
 
 class ResourceContext(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.operations: list[str] = raw_element.get("operations", [])
 
 
 class SubResourceConstraintViolation(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.path: str | None = raw_element.get("path")
         self.message: str | None = raw_element.get("message")
 
 
 class SubResourceError(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.message: str | None = raw_element.get("message")
         self.error_code: str | None = raw_element.get("errorCode")
         self.error_ref: str | None = raw_element.get("errorRef")
@@ -167,7 +169,7 @@ class SubResourceError(DynatraceObject):
 
 
 class SubResourceStatus(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.sub_resource_type: str | None = raw_element.get("subResourceType")
         self.status: str | None = raw_element.get("status")
         self.error: SubResourceError | None = (
@@ -178,7 +180,7 @@ class SubResourceStatus(DynatraceObject):
 
 
 class ResourceStatus(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.status: str | None = raw_element.get("status")
         self.sub_resource_types: list[str] = raw_element.get("subResourceTypes", [])
         self.sub_resource_statuses: list[SubResourceStatus] = [
@@ -192,7 +194,7 @@ class ResourceStatus(DynatraceObject):
 
 
 class AppInfo(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str | None = raw_element.get("id")
         self.name: str | None = raw_element.get("name")
         self.version: str | None = raw_element.get("version")
@@ -235,20 +237,20 @@ class AppInfo(DynatraceObject):
 
 
 class AppInfoList(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.apps: list[AppInfo] = [
             AppInfo(raw_element=element) for element in raw_element.get("apps", [])
         ]
 
 
 class SearchAppActionItem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name: str | None = raw_element.get("name")
         self.description: str | None = raw_element.get("description")
 
 
 class SearchAppAction(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str | None = raw_element.get("id")
         self.name: str | None = raw_element.get("name")
         self.actions: list[SearchAppActionItem] = [
@@ -258,7 +260,7 @@ class SearchAppAction(DynatraceObject):
 
 
 class SearchAppActionList(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.apps: list[SearchAppAction] = [
             SearchAppAction(raw_element=element)
             for element in raw_element.get("apps", [])
@@ -267,7 +269,7 @@ class SearchAppActionList(DynatraceObject):
 
 
 class AppDefaultCsp(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.policy_directives: dict[str, list[str]] = raw_element.get(
             "policyDirectives", {}
         )

@@ -9,7 +9,9 @@ from dynatrace.account.iam_v1.platform_tokens import AccountPlatformTokensServic
 from dynatrace.account.iam_v1.policies import AccountPoliciesService
 from dynatrace.account.iam_v1.service_users import AccountServiceUsersService
 from dynatrace.account.iam_v1.users import AccountUsersService
+from dynatrace.account.limits import AccountLimitsService
 from dynatrace.account.notifications import NotificationService
+from dynatrace.account.reference_data import ReferenceDataService
 from dynatrace.account.sub_v1.cost_allocation import CostAllocationService
 from dynatrace.account.sub_v1.rate_cards import RateCardService
 from dynatrace.account.sub_v2.subscriptions import SubscriptionService
@@ -24,6 +26,12 @@ class AccountAPI:
 
         # Account notification APIs.
         self.notifications: NotificationService = NotificationService(http_client)
+
+        # Account limits APIs.
+        self.limits: AccountLimitsService = AccountLimitsService(http_client)
+
+        # Reference data APIs.
+        self.reference_data: ReferenceDataService = ReferenceDataService(http_client)
 
         # Account environment management APIs.
         self.env_v1: AccountEnvironmentsV1Service = AccountEnvironmentsV1Service(

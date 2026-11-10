@@ -62,7 +62,7 @@ class AnalyzerService:
 
 
 class AnalyzerExecuteResult(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.request_token: str | None = raw_element.get("requestToken")
         self.ttl_in_seconds: int | None = raw_element.get("ttlInSeconds")
         result_raw = raw_element.get("result")
@@ -74,7 +74,7 @@ class AnalyzerExecuteResult(DynatraceObject):
 
 
 class AnalyzerPollResult(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.request_token: str | None = raw_element.get("requestToken")
         self.ttl_in_seconds: int | None = raw_element.get("ttlInSeconds")
         result_raw = raw_element.get("result")
@@ -87,7 +87,7 @@ class AnalyzerPollResult(DynatraceObject):
 
 # Nested analyzer payload models.
 class AnalyzerResult(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.result_id: str | None = raw_element.get("resultId")
         self.result_status: str | None = raw_element.get("resultStatus")
         self.execution_status: str | None = raw_element.get("executionStatus")
@@ -115,7 +115,7 @@ class AnalyzerResult(DynatraceObject):
 
 
 class AnalyzerInput(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         general_raw = raw_element.get("generalParameters") or {}
         self.general_parameters: AnalyzerGeneralParameters | None = (
             AnalyzerGeneralParameters(raw_element=general_raw)
@@ -128,7 +128,7 @@ class AnalyzerInput(DynatraceObject):
 
 
 class AnalyzerGeneralParameters(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         timeframe_raw = raw_element.get("timeframe")
         self.timeframe: Timeframe | None = (
             Timeframe(raw_element=timeframe_raw)
@@ -142,20 +142,20 @@ class AnalyzerGeneralParameters(DynatraceObject):
 
 
 class Timeframe(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.start_time: str | None = raw_element.get("startTime")
         self.end_time: str | None = raw_element.get("endTime")
 
 
 class AnalyzerExecutionLog(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.level: str | None = raw_element.get("level")
         self.message: str | None = raw_element.get("message")
         self.path: str | None = raw_element.get("path")
 
 
 class AnalyzerOutput(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         system_raw = raw_element.get("system")
         self.system: AnalyzerOutputSystemParameters | None = (
             AnalyzerOutputSystemParameters(raw_element=system_raw)
@@ -166,7 +166,7 @@ class AnalyzerOutput(DynatraceObject):
 
 
 class AnalyzerOutputSystemParameters(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.logs: list[AnalyzerOutputLog] = [
             AnalyzerOutputLog(raw_element=e)
             for e in (raw_element.get("logs") or [])
@@ -175,13 +175,13 @@ class AnalyzerOutputSystemParameters(DynatraceObject):
 
 
 class AnalyzerOutputLog(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.level: str | None = raw_element.get("level")
         self.message: str | None = raw_element.get("message")
 
 
 class AnalyzerDimensionalData(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         query_raw = raw_element.get("query")
         self.query: AnalyzerDimensionalQuery | None = (
             AnalyzerDimensionalQuery(raw_element=query_raw)
@@ -193,7 +193,7 @@ class AnalyzerDimensionalData(DynatraceObject):
 
 
 class AnalyzerDimensionalQuery(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.expression: str | None = raw_element.get("expression")
         timeframe_raw = raw_element.get("timeframe")
         self.timeframe: Timeframe | None = (

@@ -1,7 +1,7 @@
 """Account policy management API wrappers."""
 
 import builtins
-from typing import Any, Union
+from typing import Any
 
 from httpx import Response
 
@@ -37,7 +37,7 @@ class AccountPoliciesService:
         name: str | None = None,
     ) -> "PolicyList":
         """List all native policies of a level."""
-        params = {}
+        params: dict[str, Any] = {}
         if categories:
             params["categories"] = categories
         if name:
@@ -54,18 +54,14 @@ class AccountPoliciesService:
         self,
         level_type: str,
         level_id: str,
-        policy_config: Union["PolicyCreateRequest", dict[str, Any]],
+        policy_config: "PolicyCreateRequest",
     ) -> "Policy":
         """Create a new policy."""
-        if isinstance(policy_config, PolicyCreateRequest):
-            body = policy_config.to_json()
-        else:
-            body = policy_config
         resp = (
             await self.__http_client.make_request(
                 f"/iam/v1/repo/{level_type}/{level_id}/policies",
                 method="POST",
-                json=body,
+                json=policy_config.to_json(),
             )
         ).json()
         return Policy(raw_element=resp)
@@ -84,17 +80,13 @@ class AccountPoliciesService:
         level_type: str,
         level_id: str,
         policy_uuid: str,
-        policy_config: Union["PolicyCreateRequest", dict[str, Any]],
+        policy_config: "PolicyCreateRequest",
     ) -> Response:
         """Update a policy."""
-        if isinstance(policy_config, PolicyCreateRequest):
-            body = policy_config.to_json()
-        else:
-            body = policy_config
         return await self.__http_client.make_request(
             f"/iam/v1/repo/{level_type}/{level_id}/policies/{policy_uuid}",
             method="PUT",
-            json=body,
+            json=policy_config.to_json(),
         )
 
     async def delete(
@@ -143,17 +135,13 @@ class AccountPoliciesService:
         level_type: str,
         level_id: str,
         policy_uuid: str,
-        bindings_config: Union["PolicyBindingsCreateRequest", dict[str, Any]],
+        bindings_config: "PolicyBindingsCreateRequest",
     ) -> Response:
         """Add policy bindings to a level."""
-        if isinstance(bindings_config, PolicyBindingsCreateRequest):
-            body = bindings_config.to_json()
-        else:
-            body = bindings_config
         return await self.__http_client.make_request(
             f"/iam/v1/repo/{level_type}/{level_id}/bindings/{policy_uuid}",
             method="POST",
-            json=body,
+            json=bindings_config.to_json(),
         )
 
     async def get_group_policies(
@@ -214,7 +202,7 @@ class AccountPoliciesService:
 class PolicyStatement(DynatraceObject):
     """Policy statement."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.effect: str | None = raw_element.get("effect")
         self.permissions: list[str] = raw_element.get("permissions", [])
         self.conditions: list[dict[str, Any]] = raw_element.get("conditions", [])
@@ -223,7 +211,7 @@ class PolicyStatement(DynatraceObject):
 class Policy(DynatraceObject):
     """Policy object."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.uuid: str | None = raw_element.get("uuid")
         self.name: str | None = raw_element.get("name")
         self.description: str | None = raw_element.get("description")
@@ -238,14 +226,14 @@ class Policy(DynatraceObject):
 class PolicyList(DynatraceObject):
     """List of policies."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.policies: list[dict[str, Any]] = raw_element.get("policies", [])
 
 
 class PolicyOverview(DynatraceObject):
     """Policy overview object."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.uuid: str | None = raw_element.get("uuid")
         self.name: str | None = raw_element.get("name")
         self.description: str | None = raw_element.get("description")
@@ -256,7 +244,7 @@ class PolicyOverview(DynatraceObject):
 class PolicyOverviewList(DynatraceObject):
     """List of policy overviews."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.policy_overview_list: list[PolicyOverview] = [
             PolicyOverview(raw_element=e)
             for e in raw_element.get("policyOverviewList", [])
@@ -266,7 +254,7 @@ class PolicyOverviewList(DynatraceObject):
 class PolicyBinding(DynatraceObject):
     """Policy binding object."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.policy_uuid: str | None = raw_element.get("policyUuid")
         self.groups: list[str] = raw_element.get("groups", [])
         self.parameters: dict[str, str] = raw_element.get("parameters", {})
@@ -277,7 +265,7 @@ class PolicyBinding(DynatraceObject):
 class PolicyBindings(DynatraceObject):
     """Policy bindings for a level."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.level_type: str | None = raw_element.get("levelType")
         self.level_id: str | None = raw_element.get("levelId")
         self.policy_bindings: list[PolicyBinding] = [
@@ -288,14 +276,14 @@ class PolicyBindings(DynatraceObject):
 class PolicyUuids(DynatraceObject):
     """List of policy UUIDs."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.policy_uuids: list[str] = raw_element.get("policyUuids", [])
 
 
 class EffectivePermission(DynatraceObject):
     """Effective permission."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.permission: str | None = raw_element.get("permission")
         self.effects: list[dict[str, Any]] = raw_element.get("effects", [])
 
@@ -303,7 +291,7 @@ class EffectivePermission(DynatraceObject):
 class EffectivePermissions(DynatraceObject):
     """Effective permissions for a user or group."""
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.effective_permissions: list[EffectivePermission] = [
             EffectivePermission(raw_element=e)
             for e in raw_element.get("effectivePermissions", [])
@@ -323,12 +311,12 @@ class PolicyCreateRequest(DynatraceObject):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self.name = name
-        self.description = description
-        self.statement_query = statement_query
-        self.tags = tags or []
+        self.name: str | None = name
+        self.description: str | None = description
+        self.statement_query: str | None = statement_query
+        self.tags: list[str] = tags or []
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name = raw_element.get("name")
         self.description = raw_element.get("description")
         self.statement_query = raw_element.get("statementQuery")
@@ -356,7 +344,7 @@ class PolicyBindingsCreateRequest(DynatraceObject):
         self.groups = groups
         self.boundaries = boundaries or []
 
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.groups = raw_element.get("groups", [])
         self.boundaries = raw_element.get("boundaries", [])
 

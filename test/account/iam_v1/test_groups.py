@@ -1,6 +1,7 @@
 """Tests for account IAM v1 groups API."""
 
 import json
+from typing import Any
 from unittest import mock
 
 from dynatrace import DynatraceAsync
@@ -15,34 +16,34 @@ from dynatrace.http_client import HttpClient
 
 
 class MockResponse:
-    def __init__(self, json_data=None, status_code=200):
+    def __init__(self, json_data: Any = None, status_code: int = 200) -> None:
         self._json_data = json_data
-        self.headers = {}
+        self.headers: dict[str, str] = {}
         self.text = json.dumps(json_data) if json_data is not None else ""
         self.status_code = status_code
 
-    def json(self):
+    def json(self) -> Any:
         return self._json_data
 
 
-async def test_groups_service_is_exposed(dt: DynatraceAsync):
+async def test_groups_service_is_exposed(dt: DynatraceAsync) -> None:
     assert isinstance(dt.account.iam_groups, AccountGroupsService)
 
 
-async def test_groups_list(dt: DynatraceAsync):
+async def test_groups_list(dt: DynatraceAsync) -> None:
     account_uuid = "account-123"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == ("GET", f"/iam/v1/accounts/{account_uuid}/groups"):
             return MockResponse(
                 {
@@ -71,22 +72,22 @@ async def test_groups_list(dt: DynatraceAsync):
     assert groups.items[0].name == "Admins"
 
 
-async def test_groups_create(dt: DynatraceAsync):
+async def test_groups_create(dt: DynatraceAsync) -> None:
     account_uuid = "account-123"
     group_config = [{"name": "TestGroup", "description": "Test Group"}]
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        json=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        json: Any = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == ("POST", f"/iam/v1/accounts/{account_uuid}/groups"):
             assert json == group_config
             return MockResponse(
@@ -113,21 +114,21 @@ async def test_groups_create(dt: DynatraceAsync):
     assert groups[0].name == "TestGroup"
 
 
-async def test_groups_get_members(dt: DynatraceAsync):
+async def test_groups_get_members(dt: DynatraceAsync) -> None:
     account_uuid = "account-123"
     group_uuid = "group-1"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (
             method,
             path,
@@ -158,22 +159,22 @@ async def test_groups_get_members(dt: DynatraceAsync):
     assert members.items[0].email == "user@example.com"
 
 
-async def test_groups_update(dt: DynatraceAsync):
+async def test_groups_update(dt: DynatraceAsync) -> None:
     account_uuid = "account-123"
     group_uuid = "group-1"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        json=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        json: Any = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (
             method,
             path,
@@ -197,21 +198,21 @@ async def test_groups_update(dt: DynatraceAsync):
     assert response.status_code == 200
 
 
-async def test_groups_delete(dt: DynatraceAsync):
+async def test_groups_delete(dt: DynatraceAsync) -> None:
     account_uuid = "account-123"
     group_uuid = "group-1"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (
             method,
             path,

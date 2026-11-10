@@ -20,7 +20,7 @@ EVENT_ID = "4578933396576863909_1631255744265"
 EVENT_TYPE = "APPLICATION_OVERLOAD_PREVENTION"
 
 
-async def test_list(dt: DynatraceAsync):
+async def test_list(dt: DynatraceAsync) -> None:
     events = await dt.events_v2.list(
         page_size=100,
         time_from=datetime.fromtimestamp(1599913748, timezone.utc),
@@ -36,7 +36,7 @@ async def test_list(dt: DynatraceAsync):
     assert len(event_list) == 3
 
 
-async def test_get(dt: DynatraceAsync):
+async def test_get(dt: DynatraceAsync) -> None:
     event = await dt.events_v2.get(EVENT_ID)
 
     # type checks
@@ -73,7 +73,7 @@ async def test_get(dt: DynatraceAsync):
     assert not event.frequent_event
 
 
-async def test_list_properties(dt: DynatraceAsync):
+async def test_list_properties(dt: DynatraceAsync) -> None:
     event_properties = await dt.events_v2.list_properties()
 
     # type checks
@@ -89,7 +89,7 @@ async def test_list_properties(dt: DynatraceAsync):
     assert property_list[0].key == "dt.event.description"
 
 
-async def test_get_property(dt: DynatraceAsync):
+async def test_get_property(dt: DynatraceAsync) -> None:
     property_details = await dt.events_v2.get_property("dt.event.description")
 
     # type checks
@@ -106,7 +106,7 @@ async def test_get_property(dt: DynatraceAsync):
     assert property_details.writable is True
 
 
-async def test_list_types(dt: DynatraceAsync):
+async def test_list_types(dt: DynatraceAsync) -> None:
     event_types = await dt.events_v2.list_types()
 
     # type checks
@@ -118,7 +118,7 @@ async def test_list_types(dt: DynatraceAsync):
     assert len(event_type_list) == 5
 
 
-async def test_get_type(dt: DynatraceAsync):
+async def test_get_type(dt: DynatraceAsync) -> None:
     type_details = await dt.events_v2.get_type(EVENT_TYPE)
 
     # type checks
@@ -135,7 +135,7 @@ async def test_get_type(dt: DynatraceAsync):
     assert type_details.description == "Max user actions per minute exceeded"
 
 
-async def test_ingest(dt: DynatraceAsync):
+async def test_ingest(dt: DynatraceAsync) -> None:
     ingest = await dt.events_v2.ingest(
         "CUSTOM_ALERT",
         "Dt API Test",

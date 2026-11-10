@@ -23,5 +23,5 @@ class ManagementZoneServiceV2:
 
 
 class ManagementZoneDetails(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str = raw_element["id"]

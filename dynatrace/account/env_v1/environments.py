@@ -1,6 +1,6 @@
 """Account environment management API v1 wrappers."""
 
-from typing import Any, Union
+from typing import Any
 
 from httpx import Response
 
@@ -44,35 +44,31 @@ class AccountEnvironmentsV1Service:
         self,
         account_uuid: str,
         environment_uuid: str,
-        config: Union["IpAllowlistConfig", dict[str, Any]],
+        config: "IpAllowlistConfig",
     ) -> Response:
-        if isinstance(config, IpAllowlistConfig):
-            body = config.to_json()
-        else:
-            body = config
         return await self.__http_client.make_request(
             f"/env/v1/accounts/{account_uuid}/environments/{environment_uuid}/ip-allowlist",
             method="PUT",
-            params=body,
+            params=config.to_json(),
         )
 
 
 # Response models.
 class TenantResource(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name: str | None = raw_element.get("name")
         self.id: str | None = raw_element.get("id")
 
 
 class ManagementZoneResource(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.parent: str | None = raw_element.get("parent")
         self.name: str | None = raw_element.get("name")
         self.id: str | None = raw_element.get("id")
 
 
 class AccountEnvironmentsWithZones(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.tenant_resources: list[TenantResource] = [
             TenantResource(raw_element=e)
             for e in raw_element.get("tenantResources", [])
@@ -85,7 +81,7 @@ class AccountEnvironmentsWithZones(DynatraceObject):
 
 # Request/response payload models.
 class IpAllowlistEntry(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name: str | None = raw_element.get("name")
         self.ip_range: str | None = raw_element.get("ipRange")
 
@@ -97,7 +93,7 @@ class IpAllowlistEntry(DynatraceObject):
 
 
 class IpAllowlistConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.enabled: bool | None = raw_element.get("enabled")
         self.allow_webhook_override: bool | None = raw_element.get(
             "allowWebhookOverride"
@@ -114,7 +110,7 @@ class IpAllowlistConfig(DynatraceObject):
         }
 
     async def put(self, account_uuid: str, environment_uuid: str) -> Response:
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"/env/v1/accounts/{account_uuid}/environments/{environment_uuid}/ip-allowlist",
             method="PUT",
             params=self.to_json(),

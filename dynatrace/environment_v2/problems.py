@@ -23,11 +23,23 @@ from httpx import Response
 from dynatrace.configuration_v1.alerting_profiles import AlertingProfileStub
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.custom_tags import METag
+from dynatrace.environment_v2.events import Event
 from dynatrace.environment_v2.monitored_entities import EntityStub
 from dynatrace.environment_v2.schemas import ManagementZone
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
-from dynatrace.utils import int64_to_datetime, timestamp_to_string
+from dynatrace.utils import (
+    int64_to_datetime,
+    raw_optional_int,
+    raw_optional_object,
+    raw_optional_str,
+    raw_optional_str_list,
+    raw_required_bool,
+    raw_required_datetime,
+    raw_required_int,
+    raw_required_str,
+    timestamp_to_string,
+)
 
 
 class ProblemService:
@@ -174,16 +186,20 @@ class ProblemService:
 
 
 class Problem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         # required
-        self.display_id: str = raw_element.get("displayId")
-        self.problem_id: str = raw_element.get("problemId")
-        self.title: str = raw_element.get("title")
-        self.status: str = Status(raw_element.get("status"))
-        self.severity_level: str = SeverityLevel(raw_element.get("severityLevel"))
-        self.impact_level: str = ImpactLevel(raw_element.get("impactLevel"))
-        self.start_time: datetime = int64_to_datetime(raw_element.get("startTime"))
-        self.end_time: datetime = (
+        self.display_id: str = raw_required_str(raw_element, "displayId")
+        self.problem_id: str = raw_required_str(raw_element, "problemId")
+        self.title: str = raw_required_str(raw_element, "title")
+        self.status: Status = Status(raw_required_str(raw_element, "status"))
+        self.severity_level: SeverityLevel = SeverityLevel(
+            raw_required_str(raw_element, "severityLevel")
+        )
+        self.impact_level: ImpactLevel = ImpactLevel(
+            raw_required_str(raw_element, "impactLevel")
+        )
+        self.start_time: datetime = raw_required_datetime(raw_element, "startTime")
+        self.end_time: datetime | None = (
             int64_to_datetime(raw_element.get("endTime"))
             if raw_element.get("endTime") != -1
             else None
@@ -197,14 +213,16 @@ class Problem(DynatraceObject):
         self.affected_entities: list[EntityStub] | None = [
             EntityStub(raw_element=e) for e in raw_element.get("affectedEntities", [])
         ]
-        self.recent_comments: CommentList | None = CommentList(
-            raw_element=raw_element.get("recentComments")
+        self.recent_comments: CommentList | None = raw_optional_object(
+            raw_element, "recentComments", lambda value: CommentList(raw_element=value)
         )
         self.impacted_entities: list[EntityStub] | None = [
             EntityStub(raw_element=e) for e in raw_element.get("impactedEntities", [])
         ]
-        self.linked_problem_info: LinkedProblem | None = LinkedProblem(
-            raw_element=raw_element.get("linkedProblemInfo")
+        self.linked_problem_info: LinkedProblem | None = raw_optional_object(
+            raw_element,
+            "linkedProblemInfo",
+            lambda value: LinkedProblem(raw_element=value),
         )
         self.root_cause_entity: EntityStub | None = (
             EntityStub(raw_element=raw_element["rootCauseEntity"])
@@ -215,45 +233,62 @@ class Problem(DynatraceObject):
             AlertingProfileStub(raw_element=a)
             for a in raw_element.get("problemFilters", [])
         ]
-        self.evidence_details: EvidenceDetails | None = EvidenceDetails(
-            raw_element=raw_element.get("evidenceDetails")
+        self.evidence_details: EvidenceDetails | None = raw_optional_object(
+            raw_element,
+            "evidenceDetails",
+            lambda value: EvidenceDetails(raw_element=value),
         )
-        self.impact_analysis: ImpactAnalysis | None = ImpactAnalysis(
-            raw_element=raw_element.get("impactAnalysis")
+        self.impact_analysis: ImpactAnalysis | None = raw_optional_object(
+            raw_element,
+            "impactAnalysis",
+            lambda value: ImpactAnalysis(raw_element=value),
         )
         self.entity_tags: list[METag] | None = [
             METag(raw_element=t) for t in raw_element.get("entityTags", [])
         ]
+        self.k8s_cluster_name: list[str] = raw_optional_str_list(
+            raw_element, "k8s.cluster.name"
+        )
+        self.k8s_cluster_uid: list[str] = raw_optional_str_list(
+            raw_element, "k8s.cluster.uid"
+        )
+        self.k8s_namespace_name: list[str] = raw_optional_str_list(
+            raw_element, "k8s.namespace.name"
+        )
 
 
 class ProblemCloseResult(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.problem_id: str = raw_element.get("problemId")
-        self.closing: bool = raw_element.get("closing")
-        self.close_timestamp: datetime = int64_to_datetime(
-            raw_element.get("closeTimestamp")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.problem_id: str = raw_required_str(raw_element, "problemId")
+        self.closing: bool = raw_required_bool(raw_element, "closing")
+        self.close_timestamp: datetime = raw_required_datetime(
+            raw_element, "closeTimestamp"
         )
-        self.comment: Comment | None = Comment(raw_element=raw_element.get("comment"))
+        self.comment: Comment | None = raw_optional_object(
+            raw_element, "comment", lambda value: Comment(raw_element=value)
+        )
 
 
 class LinkedProblem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.display_id: str = raw_element.get("displayId")
-        self.problem_id: str = raw_element.get("problemId")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.display_id: str = raw_required_str(raw_element, "displayId")
+        self.problem_id: str = raw_required_str(raw_element, "problemId")
 
 
 class CommentList(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.total_count: int = raw_element.get("totalCount")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.total_count: int = raw_required_int(raw_element, "totalCount")
+        self.next_page_key: str | None = raw_optional_str(raw_element, "nextPageKey")
+        self.page_size: int | None = raw_optional_int(raw_element, "pageSize")
         self.comments: list[Comment] | None = [
             Comment(raw_element=c) for c in raw_element.get("comments", [])
         ]
 
 
 class Comment(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.created_at: datetime = int64_to_datetime(
-            raw_element.get("createdAtTimestamp")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.created_at: datetime = raw_required_datetime(
+            raw_element, "createdAtTimestamp"
         )
         self.author: str | None = raw_element.get("authorName")
         self.context: str | None = raw_element.get("context")
@@ -262,45 +297,49 @@ class Comment(DynatraceObject):
 
 
 class EvidenceDetails(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         raw_details = raw_element.get("details", [])
-        self.total_count: int = raw_element.get("totalCount")
-        self.details: list[Evidence] | None = (
-            [
-                EventEvidence(raw_element=e)
-                for e in raw_details
-                if e.get("evidenceType") == EvidenceType.EVENT.value
-            ]
-            + [
-                MetricEvidence(raw_element=e)
-                for e in raw_details
-                if e.get("evidenceType") == EvidenceType.METRIC.value
-            ]
-            + [
-                TransactionalEvidence(raw_element=e)
-                for e in raw_details
-                if e.get("evidenceType") == EvidenceType.TRANSACTIONAL.value
-            ]
-            + [
-                MaintenanceWindowEvidence(raw_element=e)
-                for e in raw_details
-                if e.get("evidenceType") == EvidenceType.MAINTENANCE_WINDOW.value
-            ]
-            + [
-                AvailabilityEvidence(raw_element=e)
-                for e in raw_details
-                if e.get("evidenceType") == EvidenceType.AVAILABILITY.value
-            ]
+        self.total_count: int = raw_required_int(raw_element, "totalCount")
+        details: list[Evidence] = []
+        details.extend(
+            EventEvidence(raw_element=e)
+            for e in raw_details
+            if e.get("evidenceType") == EvidenceType.EVENT.value
         )
+        details.extend(
+            MetricEvidence(raw_element=e)
+            for e in raw_details
+            if e.get("evidenceType") == EvidenceType.METRIC.value
+        )
+        details.extend(
+            TransactionalEvidence(raw_element=e)
+            for e in raw_details
+            if e.get("evidenceType") == EvidenceType.TRANSACTIONAL.value
+        )
+        details.extend(
+            MaintenanceWindowEvidence(raw_element=e)
+            for e in raw_details
+            if e.get("evidenceType") == EvidenceType.MAINTENANCE_WINDOW.value
+        )
+        details.extend(
+            AvailabilityEvidence(raw_element=e)
+            for e in raw_details
+            if e.get("evidenceType") == EvidenceType.AVAILABILITY.value
+        )
+        self.details = details
 
 
 class Evidence(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.evidence_type: EvidenceType = EvidenceType(raw_element.get("evidenceType"))
-        self.display_name: str = raw_element.get("displayName")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.evidence_type: EvidenceType = EvidenceType(
+            raw_required_str(raw_element, "evidenceType")
+        )
+        self.display_name: str = raw_required_str(raw_element, "displayName")
         self.entity: EntityStub = EntityStub(raw_element=raw_element.get("entity"))
-        self.root_cause_relevant: bool = raw_element.get("rootCauseRelevant")
-        self.start_time: datetime = int64_to_datetime(raw_element.get("startTime"))
+        self.root_cause_relevant: bool = raw_required_bool(
+            raw_element, "rootCauseRelevant"
+        )
+        self.start_time: datetime = raw_required_datetime(raw_element, "startTime")
         self.grouping_entity: EntityStub | None = (
             EntityStub(raw_element=raw_element.get("groupingEntity"))
             if raw_element.get("groupingEntity")
@@ -309,14 +348,22 @@ class Evidence(DynatraceObject):
 
 
 class EventEvidence(Evidence):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.event_id: str | None = raw_element.get("eventId")
         self.event_type: str | None = raw_element.get("eventType")
+        self.end_time: datetime | None = (
+            int64_to_datetime(raw_element.get("endTime"))
+            if raw_element.get("endTime") != -1
+            else None
+        )
+        self.data: Event | None = raw_optional_object(
+            raw_element, "data", lambda value: Event(raw_element=value)
+        )
 
 
 class TransactionalEvidence(Evidence):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.value_before_change_point: float | None = raw_element.get(
             "valueBeforeChangePoint"
@@ -329,7 +376,7 @@ class TransactionalEvidence(Evidence):
 
 
 class MetricEvidence(Evidence):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.value_before_change_point: float | None = raw_element.get(
             "valueBeforeChangePoint"
@@ -343,13 +390,13 @@ class MetricEvidence(Evidence):
 
 
 class AvailabilityEvidence(Evidence):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.end_time: datetime | None = int64_to_datetime(raw_element.get("endTime"))
 
 
 class MaintenanceWindowEvidence(Evidence):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element)
         self.maintenance_window_id: str | None = raw_element.get(
             "maintenanceWindowConfigId"
@@ -358,25 +405,58 @@ class MaintenanceWindowEvidence(Evidence):
 
 
 class ImpactAnalysis(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.impacts: list[Impact] = [
-            Impact(raw_element=i) for i in raw_element.get("impacts", [])
-        ]
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.impacts: list[Impact] = []
+        for impact in raw_element.get("impacts", []):
+            impact_type = impact.get("impactType")
+            if impact_type == ImpactType.SERVICE.value:
+                self.impacts.append(ServiceImpact(raw_element=impact))
+            elif impact_type == ImpactType.APPLICATION.value:
+                self.impacts.append(ApplicationImpact(raw_element=impact))
+            elif impact_type == ImpactType.MOBILE.value:
+                self.impacts.append(MobileImpact(raw_element=impact))
+            elif impact_type == ImpactType.CUSTOM_APPLICATION.value:
+                self.impacts.append(CustomApplicationImpact(raw_element=impact))
 
 
 class Impact(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.impact_type: ImpactType = ImpactType(raw_element.get("impactType"))
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.impact_type: ImpactType = ImpactType(
+            raw_required_str(raw_element, "impactType")
+        )
         self.impacted_entity: EntityStub = EntityStub(
             raw_element=raw_element.get("impactedEntity")
         )
-        self.estimated_affected_users: int = raw_element.get("estimatedAffectedUsers")
+        self.estimated_affected_users: int = raw_required_int(
+            raw_element, "estimatedAffectedUsers"
+        )
+
+
+class ServiceImpact(Impact):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        super()._create_from_raw_data(raw_element)
+        self.number_of_potentially_affected_service_calls: int | None = (
+            raw_optional_int(raw_element, "numberOfPotentiallyAffectedServiceCalls")
+        )
+
+
+class ApplicationImpact(Impact):
+    pass
+
+
+class MobileImpact(Impact):
+    pass
+
+
+class CustomApplicationImpact(Impact):
+    pass
 
 
 class SeverityLevel(Enum):
     AVAILABILITY = "AVAILABILITY"
     CUSTOM_ALERT = "CUSTOM_ALERT"
     ERROR = "ERROR"
+    INFO = "INFO"
     MONITORING_UNAVAILABLE = "MONITORING_UNAVAILABLE"
     PERFORMANCE = "PERFORMANCE"
     RESOURCE_CONTENTION = "RESOURCE_CONTENTION"

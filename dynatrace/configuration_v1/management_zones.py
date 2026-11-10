@@ -17,6 +17,8 @@ limitations under the License.
 from enum import Enum
 from typing import Any
 
+from httpx import Response
+
 from dynatrace.configuration_v1.auto_tags import (
     ComparisonBasicType,
     ConditionKeyAttribute,
@@ -28,6 +30,28 @@ from dynatrace.environment_v2.monitored_entities import EntityShortRepresentatio
 from dynatrace.environment_v2.schemas import ConfigurationMetadata
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import (
+    raw_optional_bool,
+    raw_optional_str,
+    raw_required_bool,
+    raw_required_str,
+)
+
+__all__ = [
+    "ComparisonBasic",
+    "ComparisonBasicType",
+    "ConditionKey",
+    "ConditionKeyAttribute",
+    "EntityRuleEngineCondition",
+    "ManagementZone",
+    "ManagementZoneRule",
+    "ManagementZoneService",
+    "ManagementZoneShortRepresentation",
+    "PropagationType",
+    "RuleType",
+]
+
+ComparisonValue = str | int | float | bool | list[Any] | dict[str, Any] | None
 
 
 class RuleType(Enum):
@@ -104,7 +128,7 @@ class ManagementZoneService:
             raw_element=response.json(), http_client=self.__http_client
         )
 
-    async def delete(self, management_zone_id: str):
+    async def delete(self, management_zone_id: str) -> Response:
         """Deletes the specified management zone
 
         :param networkzone_id: the ID of the management zone
@@ -116,16 +140,20 @@ class ManagementZoneService:
 
 
 class ComparisonBasic(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.operator: str = raw_element.get("operator")
-        self.value: dict = raw_element.get("value")
-        self.negate: bool = raw_element.get("negate")
-        self.type: ComparisonBasicType = ComparisonBasicType(raw_element.get("type"))
-        self.case_sensitive: bool = raw_element.get("caseSensitive")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.operator: str = raw_required_str(raw_element, "operator")
+        self.value: ComparisonValue = raw_element.get("value")
+        self.negate: bool = raw_required_bool(raw_element, "negate")
+        self.type: ComparisonBasicType = ComparisonBasicType(
+            raw_required_str(raw_element, "type")
+        )
+        self.case_sensitive: bool | None = raw_optional_bool(
+            raw_element, "caseSensitive"
+        )
 
 
 class ConditionKey(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.attribute: ConditionKeyAttribute = ConditionKeyAttribute(
             raw_element.get("attribute")
         )
@@ -133,7 +161,7 @@ class ConditionKey(DynatraceObject):
 
 
 class EntityRuleEngineCondition(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.key: ConditionKey = ConditionKey(raw_element=raw_element.get("key"))
         self.comparison_info: ComparisonBasic = ComparisonBasic(
             raw_element=raw_element.get("comparisonInfo")
@@ -141,17 +169,17 @@ class EntityRuleEngineCondition(DynatraceObject):
 
 
 class EntitySelectorBasedManagementZoneRule(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.enabled: bool = raw_element.get("enabled")
-        self.entity_selector: str = raw_element.get("entitySelector")
-        self.value_format: str = raw_element.get("valueFormat")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.enabled: bool | None = raw_optional_bool(raw_element, "enabled")
+        self.entity_selector: str = raw_required_str(raw_element, "entitySelector")
+        self.value_format: str | None = raw_optional_str(raw_element, "valueFormat")
 
 
 class ManagementZoneRule(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
-        self.type: RuleType = RuleType(raw_element.get("type"))
-        self.enabled: bool = raw_element.get("enabled")
-        self.value_format: str = raw_element.get("valueFormat")
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
+        self.type: RuleType = RuleType(raw_required_str(raw_element, "type"))
+        self.enabled: bool = raw_required_bool(raw_element, "enabled")
+        self.value_format: str | None = raw_optional_str(raw_element, "valueFormat")
         self.propagation_types: list[PropagationType] = [
             PropagationType(prop_type)
             for prop_type in (raw_element.get("propagationTypes") or [])
@@ -163,15 +191,16 @@ class ManagementZoneRule(DynatraceObject):
 
 
 class ManagementZone(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.metadata: ConfigurationMetadata = ConfigurationMetadata(
             self._http_client, None, raw_element.get("metadata")
         )
-        self.id: str = raw_element.get("id")
-        self.name: str = raw_element.get("name")
-        self.description: str = raw_element.get("description")
+        self.id: str | None = raw_optional_str(raw_element, "id")
+        self.name: str = raw_required_str(raw_element, "name")
+        self.description: str | None = raw_optional_str(raw_element, "description")
         self.rules: list[ManagementZoneRule] = [
-            ManagementZoneRule(raw_element=rule) for rule in raw_element.get("rules")
+            ManagementZoneRule(raw_element=rule)
+            for rule in raw_element.get("rules", [])
         ]
         self.entity_selector_based_rules: list[
             EntitySelectorBasedManagementZoneRule
@@ -182,13 +211,11 @@ class ManagementZone(DynatraceObject):
 
 
 class ManagementZoneShortRepresentation(EntityShortRepresentation):
-    async def get_full_configuration(self):
+    async def get_full_configuration(self) -> ManagementZone:
         """
         Get the full configuration for this management zone short representation.
         """
         response = (
-            await self._http_client.make_request(
-                f"{ManagementZoneService.ENDPOINT}/{self.id}"
-            )
+            await self._make_request(f"{ManagementZoneService.ENDPOINT}/{self.id}")
         ).json()
         return ManagementZone(http_client=self._http_client, raw_element=response)

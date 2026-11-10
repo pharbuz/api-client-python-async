@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from typing import Any
+
 from httpx import Response
 
 from dynatrace.configuration_v1.endpoint import EndpointShortRepresentation
@@ -38,7 +40,7 @@ class PluginService:
             list_item="values",
         ).initialize()
 
-    async def list_states(self, plugin_id) -> PaginatedList["PluginState"]:
+    async def list_states(self, plugin_id: str) -> PaginatedList["PluginState"]:
         """
         List the states of the specified plugin
         """
@@ -49,7 +51,7 @@ class PluginService:
             list_item="states",
         ).initialize()
 
-    async def delete(self, plugin_id) -> Response:
+    async def delete(self, plugin_id: str) -> Response:
         """
         Deletes the ZIP file of the specified plugin
         :param plugin_id: The ID of the plugin to be deleted
@@ -60,7 +62,7 @@ class PluginService:
 
 
 class PluginState(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.plugin_id: str = raw_element.get("pluginId")
         self.version: str = raw_element.get("version")
         self.endpoint_id: str = raw_element.get("endpointId")
@@ -76,7 +78,7 @@ class PluginShortRepresentation(EntityShortRepresentation):
         """
         Deletes the ZIP file of this plugin
         """
-        return await self._http_client.make_request(
+        return await self._make_request(
             f"/api/config/v1/plugins/{self.id}/binary", method="DELETE"
         )
 

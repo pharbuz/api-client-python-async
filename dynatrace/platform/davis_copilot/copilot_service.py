@@ -7,6 +7,9 @@ from httpx import Response
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.http_client import HttpClient
+from dynatrace.utils import JSONDict, JsonSerializable
+
+_Payload = JSONDict | DynatraceObject | JsonSerializable
 
 
 class CopilotService:
@@ -21,12 +24,12 @@ class CopilotService:
         """Return all skills available to the current token."""
         response = await self.__http_client.make_request(f"{self.BASE_PATH}/skills")
         return AvailableSkillsResponse(
-            self.__http_client, response.headers, response.json()
+            self.__http_client, dict(response.headers), response.json()
         )
 
     async def send_conversation_message(
         self,
-        payload: dict[str, Any] | DynatraceObject,
+        payload: _Payload,
         accept: str | None = "application/json",
         raw_response: bool = False,
     ) -> RecommenderResponse | Response:
@@ -49,12 +52,10 @@ class CopilotService:
             return response
 
         return RecommenderResponse(
-            self.__http_client, response.headers, response.json()
+            self.__http_client, dict(response.headers), response.json()
         )
 
-    async def submit_conversation_feedback(
-        self, payload: dict[str, Any] | DynatraceObject
-    ) -> Response:
+    async def submit_conversation_feedback(self, payload: _Payload) -> Response:
         """Submit feedback for a recommender conversation."""
         body = self.__normalize_payload(payload)
         return await self.__http_client.make_request(
@@ -63,9 +64,7 @@ class CopilotService:
             method="POST",
         )
 
-    async def document_search(
-        self, payload: dict[str, Any] | DynatraceObject
-    ) -> DocumentSearchResponse:
+    async def document_search(self, payload: _Payload) -> DocumentSearchResponse:
         """Execute a document search request."""
         body = self.__normalize_payload(payload)
         response = await self.__http_client.make_request(
@@ -74,12 +73,10 @@ class CopilotService:
             method="POST",
         )
         return DocumentSearchResponse(
-            self.__http_client, response.headers, response.json()
+            self.__http_client, dict(response.headers), response.json()
         )
 
-    async def explain_dql_query(
-        self, payload: dict[str, Any] | DynatraceObject
-    ) -> Dql2NlResponse:
+    async def explain_dql_query(self, payload: _Payload) -> Dql2NlResponse:
         """Explain a DQL query via the dql2nl skill."""
         body = self.__normalize_payload(payload)
         response = await self.__http_client.make_request(
@@ -87,11 +84,11 @@ class CopilotService:
             params=body,
             method="POST",
         )
-        return Dql2NlResponse(self.__http_client, response.headers, response.json())
+        return Dql2NlResponse(
+            self.__http_client, dict(response.headers), response.json()
+        )
 
-    async def submit_dql2nl_feedback(
-        self, payload: dict[str, Any] | DynatraceObject
-    ) -> Response:
+    async def submit_dql2nl_feedback(self, payload: _Payload) -> Response:
         """Submit feedback for a dql2nl response."""
         body = self.__normalize_payload(payload)
         return await self.__http_client.make_request(
@@ -100,9 +97,7 @@ class CopilotService:
             method="POST",
         )
 
-    async def generate_dql_query(
-        self, payload: dict[str, Any] | DynatraceObject
-    ) -> Nl2DqlResponse:
+    async def generate_dql_query(self, payload: _Payload) -> Nl2DqlResponse:
         """Generate a DQL query from natural language via the nl2dql skill."""
         body = self.__normalize_payload(payload)
         response = await self.__http_client.make_request(
@@ -110,11 +105,11 @@ class CopilotService:
             params=body,
             method="POST",
         )
-        return Nl2DqlResponse(self.__http_client, response.headers, response.json())
+        return Nl2DqlResponse(
+            self.__http_client, dict(response.headers), response.json()
+        )
 
-    async def submit_nl2dql_feedback(
-        self, payload: dict[str, Any] | DynatraceObject
-    ) -> Response:
+    async def submit_nl2dql_feedback(self, payload: _Payload) -> Response:
         """Submit feedback for an nl2dql response."""
         body = self.__normalize_payload(payload)
         return await self.__http_client.make_request(
@@ -125,15 +120,13 @@ class CopilotService:
 
     @staticmethod
     def __normalize_payload(
-        payload: dict[str, Any] | DynatraceObject | None,
-    ) -> dict[str, Any] | None:
+        payload: _Payload | None,
+    ) -> JSONDict | None:
         if payload is None:
             return None
         if isinstance(payload, DynatraceObject):
             return payload.json()
-        if hasattr(payload, "to_json") and callable(
-            getattr(payload, "to_json")  # noqa: B009
-        ):
+        if isinstance(payload, JsonSerializable):
             return payload.to_json()
         return payload
 
@@ -158,27 +151,27 @@ class Status(Enum):
 
 
 class AvailableSkillsResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         raw_skills = raw_element.get("skills") or []
         self.skills: list[SkillType] = [SkillType(skill) for skill in raw_skills]
 
 
 class Notification(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.severity: str | None = raw_element.get("severity")
         self.notification_type: str | None = raw_element.get("notificationType")
         self.message: str | None = raw_element.get("message")
 
 
 class SourceDocument(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.title: str | None = raw_element.get("title")
         self.url: str | None = raw_element.get("url")
         self.type: str | None = raw_element.get("type")
 
 
 class Metadata(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         notifications_raw = raw_element.get("notifications") or []
         self.notifications: list[Notification] = [
             Notification(raw_element=notification) for notification in notifications_raw
@@ -186,7 +179,7 @@ class Metadata(DynatraceObject):
 
 
 class MetadataWithSource(Metadata):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         super()._create_from_raw_data(raw_element or {})
         sources_raw = (raw_element or {}).get("sources") or []
         self.sources: list[SourceDocument] = [
@@ -195,14 +188,14 @@ class MetadataWithSource(Metadata):
 
 
 class ConversationHistoryItem(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.role: str | None = raw_element.get("role")
         self.text: str | None = raw_element.get("text")
         self.supplementary: str | None = raw_element.get("supplementary")
 
 
 class State(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.version: str | None = raw_element.get("version")
         self.conversation_id: str | None = raw_element.get("conversationId")
         self.skill_name: str | None = raw_element.get("skillName")
@@ -213,7 +206,7 @@ class State(DynatraceObject):
 
 
 class ConversationResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.text: str | None = raw_element.get("text")
         self.message_token: str | None = raw_element.get("messageToken")
         status = raw_element.get("status")
@@ -235,7 +228,7 @@ class RecommenderResponse(ConversationResponse):
 
 
 class DocumentMetadata(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.id: str | None = raw_element.get("id")
         self.external_id: str | None = raw_element.get("externalId")
         self.name: str | None = raw_element.get("name")
@@ -245,7 +238,7 @@ class DocumentMetadata(DynatraceObject):
 
 
 class ScoredDocument(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.document_id: str | None = raw_element.get("documentId")
         self.relevance_score: float | None = raw_element.get("relevanceScore")
         metadata_raw = raw_element.get("documentMetadata") or {}
@@ -255,7 +248,7 @@ class ScoredDocument(DynatraceObject):
 
 
 class DocumentSearchResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.message_token: str | None = raw_element.get("messageToken")
         status = raw_element.get("status")
         self.status: Status | None = Status(status) if status else None
@@ -266,7 +259,7 @@ class DocumentSearchResponse(DynatraceObject):
 
 
 class Nl2DqlResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.dql: str | None = raw_element.get("dql")
         self.message_token: str | None = raw_element.get("messageToken")
         status = raw_element.get("status")
@@ -278,7 +271,7 @@ class Nl2DqlResponse(DynatraceObject):
 
 
 class Dql2NlResponse(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.summary: str | None = raw_element.get("summary")
         self.explanation: str | None = raw_element.get("explanation")
         self.message_token: str | None = raw_element.get("messageToken")

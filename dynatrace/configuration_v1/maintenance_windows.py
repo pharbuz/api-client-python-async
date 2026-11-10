@@ -22,8 +22,16 @@ from httpx import Response
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.custom_tags import METag
 from dynatrace.environment_v2.monitored_entities import EntityShortRepresentation
+from dynatrace.environment_v2.schemas import ConfigurationMetadata
 from dynatrace.http_client import HttpClient
 from dynatrace.pagination import PaginatedList
+from dynatrace.utils import (
+    raw_optional_bool,
+    raw_optional_int,
+    raw_optional_object,
+    raw_optional_str,
+    raw_optional_str_list,
+)
 
 
 class TagCombination(Enum):
@@ -32,14 +40,16 @@ class TagCombination(Enum):
     NONE = None
 
     def __str__(self) -> str:
-        return self.value
+        return str(self.value)
 
 
 class MonitoredEntityFilter(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
-        self.type: str = raw_element.get("type")
-        self.mz_id: str = raw_element.get("mzId")
-        self.tags: list[METag] | None = [
+    def _create_from_raw_data(self, raw_element: Any) -> None:
+        if raw_element is None:
+            raw_element = {}
+        self.type: str | None = raw_optional_str(raw_element, "type")
+        self.mz_id: str | None = raw_optional_str(raw_element, "mzId")
+        self.tags: list[METag] = [
             METag(raw_element=tag) for tag in raw_element.get("tags", [])
         ]
         self.tag_combination: TagCombination | None = TagCombination(
@@ -47,19 +57,23 @@ class MonitoredEntityFilter(DynatraceObject):
         )
 
     def to_json(self) -> dict[str, Any]:
-        return {
+        data: dict[str, Any] = {
             "type": self.type,
             "mzId": self.mz_id,
             "tags": [t.to_json() for t in self.tags],
-            "tagCombination": str(self.tag_combination),
         }
+        if self.tag_combination not in (None, TagCombination.NONE):
+            data["tagCombination"] = str(self.tag_combination)
+        return data
 
 
 class Scope(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
-        self.entities: list[str] = raw_element.get("entities")
-        self.matches: list[MonitoredEntityFilter] | None = [
-            MonitoredEntityFilter(raw_element=m) for m in raw_element.get("matches")
+    def _create_from_raw_data(self, raw_element: Any) -> None:
+        if raw_element is None:
+            raw_element = {}
+        self.entities: list[str] = raw_optional_str_list(raw_element, "entities")
+        self.matches: list[MonitoredEntityFilter] = [
+            MonitoredEntityFilter(raw_element=m) for m in raw_element.get("matches", [])
         ]
 
     def to_json(self) -> dict[str, Any]:
@@ -76,20 +90,34 @@ class Recurrence(DynatraceObject):
         duration: int,
         day_of_week: str | None = None,
         day_of_month: int | None = None,
-    ):
+    ) -> "Recurrence":
+        day_of_week_value = day_of_week.upper() if day_of_week is not None else None
         raw_element = {
-            "dayOfWeek": day_of_week.upper(),
+            "dayOfWeek": day_of_week_value,
             "dayOfMonth": day_of_month,
             "startTime": start_time,
             "durationMinutes": duration,
         }
         return Recurrence(raw_element=raw_element)
 
-    def _create_from_raw_data(self, raw_element):
-        self.day_of_week: str = raw_element.get("dayOfWeek")
-        self.day_of_month: str = raw_element.get("dayOfMonth")
-        self.start_time: str | None = raw_element.get("startTime")
-        self.duration: int | None = raw_element.get("durationMinutes")
+    def _create_from_raw_data(self, raw_element: Any) -> None:
+        if raw_element is None:
+            raw_element = {}
+        self.day_of_week: str | None = raw_optional_str(raw_element, "dayOfWeek")
+        self.day_of_month: int | None = raw_optional_int(raw_element, "dayOfMonth")
+        self.start_time: str | None = raw_optional_str(raw_element, "startTime")
+        self.duration: int | None = raw_optional_int(raw_element, "durationMinutes")
+
+    def to_json(self) -> dict[str, Any]:
+        data: dict[str, Any] = {
+            "startTime": self.start_time,
+            "durationMinutes": self.duration,
+        }
+        if self.day_of_week is not None:
+            data["dayOfWeek"] = self.day_of_week
+        if self.day_of_month is not None:
+            data["dayOfMonth"] = self.day_of_month
+        return data
 
 
 class Schedule(DynatraceObject):
@@ -100,7 +128,7 @@ class Schedule(DynatraceObject):
         end: str,
         zone_id: str,
         recurrence: Recurrence | None = None,
-    ):
+    ) -> "Schedule":
         raw_element = {
             "recurrenceType": recurrence_type,
             "recurrence": recurrence,
@@ -112,14 +140,15 @@ class Schedule(DynatraceObject):
 
     @property
     def schedule_snippet(self) -> dict[str, Any]:
+        return self.to_json()
+
+    def to_json(self, recurrence: Recurrence | None = None) -> dict[str, Any]:
+        recurrence = recurrence or self.recurrence
         representation = {}
         if self.recurrence_type == "DAILY":
             representation = {
                 "recurrenceType": self.recurrence_type,
-                "recurrence": {
-                    "startTime": self.recurrence.start_time,
-                    "durationMinutes": self.recurrence.duration,
-                },
+                "recurrence": recurrence.to_json() if recurrence else None,
                 "start": self.start_time,
                 "end": self.end_time,
                 "zoneId": self.zone_id,
@@ -127,11 +156,7 @@ class Schedule(DynatraceObject):
         if self.recurrence_type == "WEEKLY":
             representation = {
                 "recurrenceType": self.recurrence_type,
-                "recurrence": {
-                    "dayOfWeek": self.recurrence.day_of_week,
-                    "startTime": self.recurrence.start_time,
-                    "durationMinutes": self.recurrence.duration,
-                },
+                "recurrence": recurrence.to_json() if recurrence else None,
                 "start": self.start_time,
                 "end": self.end_time,
                 "zoneId": self.zone_id,
@@ -139,11 +164,7 @@ class Schedule(DynatraceObject):
         if self.recurrence_type == "MONTHLY":
             representation = {
                 "recurrenceType": self.recurrence_type,
-                "recurrence": {
-                    "dayOfMonth": self.recurrence.day_of_month,
-                    "startTime": self.recurrence.start_time,
-                    "durationMinutes": self.recurrence.duration,
-                },
+                "recurrence": recurrence.to_json() if recurrence else None,
                 "start": self.start_time,
                 "end": self.end_time,
                 "zoneId": self.zone_id,
@@ -157,28 +178,43 @@ class Schedule(DynatraceObject):
             }
         return representation
 
-    def _create_from_raw_data(self, raw_element):
-        self.recurrence_type: str = raw_element.get("recurrenceType")
-        self.recurrence: Recurrence = Recurrence(
-            raw_element=raw_element.get("recurrence")
+    def _create_from_raw_data(self, raw_element: Any) -> None:
+        if raw_element is None:
+            raw_element = {}
+        self.recurrence_type: str | None = raw_optional_str(
+            raw_element, "recurrenceType"
         )
-        self.start_time: str = raw_element.get("start")
-        self.end_time: str = raw_element.get("end")
-        self.zone_id: str = raw_element.get("zoneId")
+        self.recurrence: Recurrence | None = raw_optional_object(
+            raw_element, "recurrence", lambda value: Recurrence(raw_element=value)
+        )
+        self.start_time: str | None = raw_optional_str(raw_element, "start")
+        self.end_time: str | None = raw_optional_str(raw_element, "end")
+        self.zone_id: str | None = raw_optional_str(raw_element, "zoneId")
 
 
 class MaintenanceWindow(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
-        self.id: str = raw_element.get("id")
-        self.name: str = raw_element.get("name")
-        self.description: str = raw_element.get("description")
-        self.type: str = raw_element.get("type")
-        self.suppression: str = raw_element.get("suppression")
-        self.suppress_synthetic_monitors_execution: bool = raw_element.get(
-            "suppressSyntheticMonitorsExecution"
+    def _create_from_raw_data(self, raw_element: Any) -> None:
+        if raw_element is None:
+            raw_element = {}
+        self.metadata: ConfigurationMetadata | None = raw_optional_object(
+            raw_element,
+            "metadata",
+            lambda value: ConfigurationMetadata(raw_element=value),
         )
-        self.scope: Scope = Scope(raw_element=raw_element.get("scope"))
-        self.schedule: Schedule = Schedule(raw_element=raw_element.get("schedule"))
+        self.id: str | None = raw_optional_str(raw_element, "id")
+        self.name: str | None = raw_optional_str(raw_element, "name")
+        self.description: str | None = raw_optional_str(raw_element, "description")
+        self.type: str | None = raw_optional_str(raw_element, "type")
+        self.suppression: str | None = raw_optional_str(raw_element, "suppression")
+        self.suppress_synthetic_monitors_execution: bool | None = raw_optional_bool(
+            raw_element, "suppressSyntheticMonitorsExecution"
+        )
+        self.scope: Scope | None = raw_optional_object(
+            raw_element, "scope", lambda value: Scope(raw_element=value)
+        )
+        self.schedule: Schedule | None = raw_optional_object(
+            raw_element, "schedule", lambda value: Schedule(raw_element=value)
+        )
 
     async def post(self) -> EntityShortRepresentation:
         """Creates the Maintenance Window configuration in Dynatrace (POST).
@@ -193,12 +229,35 @@ class MaintenanceWindow(DynatraceObject):
             raise ValueError(
                 "Object does not have an HTTP Client. Use maintenance_window.post() instead."
             )
-        response = await self._http_client.make_request(
+        response = await self._make_request(
             path=MaintenanceWindowService.ENDPOINT, params=self.to_json(), method="POST"
         )
         self.id = response.json().get("id")
 
         return EntityShortRepresentation(raw_element=response.json())
+
+    async def put(self) -> Response:
+        if not self._http_client:
+            raise ValueError(
+                "Object does not have an HTTP Client. Use maintenance_windows.put() instead."
+            )
+        return await self._make_request(
+            path=f"{MaintenanceWindowService.ENDPOINT}/{self.id}",
+            params=self.to_json(),
+            method="PUT",
+        )
+
+    async def validate(self) -> Response:
+        if not self._http_client:
+            raise ValueError(
+                "Object does not have an HTTP Client. Use maintenance_windows.validate() instead."
+            )
+        path = (
+            f"{MaintenanceWindowService.ENDPOINT}/{self.id}/validator"
+            if self.id
+            else f"{MaintenanceWindowService.ENDPOINT}/validator"
+        )
+        return await self._make_request(path=path, params=self.to_json(), method="POST")
 
     def to_json(self) -> dict[str, Any]:
         """Get a JSON (dict) representation of this config."""
@@ -209,8 +268,8 @@ class MaintenanceWindow(DynatraceObject):
             "type": self.type,
             "suppression": self.suppression,
             "suppressSyntheticMonitorsExecution": self.suppress_synthetic_monitors_execution,
-            "schedule": self.schedule.schedule_snippet,
-            "scope": self.scope.to_json(),
+            "schedule": self.schedule.to_json() if self.schedule else None,
+            "scope": self.scope.to_json() if self.scope else None,
         }
         return mw
 
@@ -252,6 +311,16 @@ class MaintenanceWindowService:
             mw._http_client = self.__http_client
         return await mw.post()
 
+    async def put(self, mw: MaintenanceWindow) -> Response:
+        if not mw._http_client:
+            mw._http_client = self.__http_client
+        return await mw.put()
+
+    async def validate(self, mw: MaintenanceWindow) -> Response:
+        if not mw._http_client:
+            mw._http_client = self.__http_client
+        return await mw.validate()
+
     def create_schedule(
         self,
         recurrence_type: str,
@@ -274,6 +343,8 @@ class MaintenanceWindowService:
                 recurrence_day_of_month,
             )
             if recurrence_type != "ONCE"
+            and recurrence_start_time is not None
+            and recurrence_duration is not None
             else None
         )
         return Schedule.create(recurrence_type, start, end, zone_id, recurrence)
@@ -290,7 +361,6 @@ class MaintenanceWindowService:
         scope: Scope | None = None,
         recurrence: Recurrence | None = None,
     ) -> "MaintenanceWindowCreated":
-        # TODO - scope and recurrence are not used here but they should
         """
         Create a maintenance window with the specified parameters.
         You must first use create_schedule() to create a schedule with optional recurrence.
@@ -302,11 +372,8 @@ class MaintenanceWindowService:
             "type": window_type,
             "suppression": suppression,
             "suppressSyntheticMonitorsExecution": suppress_synthetic,
-            "schedule": schedule.schedule_snippet,
-            "scope": {
-                "entities": scope.entities,
-                "matches": [s.to_json() for s in scope.matches],
-            },
+            "schedule": schedule.to_json(recurrence=recurrence),
+            "scope": scope.to_json() if scope is not None else None,
         }
 
         response = (
@@ -326,14 +393,14 @@ class MaintenanceWindowService:
 
 
 class MaintenanceWindowCreated(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.description: str = raw_element.get("description")
 
 
 class MaintenanceWindowStub(DynatraceObject):
-    def _create_from_raw_data(self, raw_element):
+    def _create_from_raw_data(self, raw_element: Any) -> None:
         self.id: str = raw_element.get("id")
         self.name: str = raw_element.get("name")
         self.description: str = raw_element.get("description")
@@ -343,8 +410,6 @@ class MaintenanceWindowStub(DynatraceObject):
         Gets the full maintenance window for this stub
         """
         response = (
-            await self._http_client.make_request(
-                f"{MaintenanceWindowService.ENDPOINT}/{self.id}"
-            )
+            await self._make_request(f"{MaintenanceWindowService.ENDPOINT}/{self.id}")
         ).json()
         return MaintenanceWindow(self._http_client, None, response)

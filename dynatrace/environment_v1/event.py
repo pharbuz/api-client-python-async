@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 from datetime import datetime
+from typing import Any
 
 from httpx import Response
 
@@ -74,7 +75,7 @@ class EventService:
 class EventCreation(DynatraceObject):
     def __init__(
         self,
-        http_client,
+        http_client: HttpClient,
         event_type: str,
         attach_rules: "PushEventAttachRules",
         source: str,
@@ -85,9 +86,9 @@ class EventCreation(DynatraceObject):
         annotation_description: str | None = None,
         description: str | None = None,
         title: str | None = None,
-        custom_properties: str | None = None,
+        custom_properties: dict[str, str] | None = None,
         allow_davis_merge: bool | None = None,
-    ):
+    ) -> None:
 
         raw_element = {
             "eventType": event_type,
@@ -106,8 +107,8 @@ class EventCreation(DynatraceObject):
 
         super().__init__(http_client, None, raw_element)
 
-    async def post(self):
-        return await self._http_client.make_request(
+    async def post(self) -> Response:
+        return await self._make_request(
             "/api/v1/events", params=self._raw_element, method="POST"
         )
 
@@ -115,17 +116,17 @@ class EventCreation(DynatraceObject):
 class PushEventAttachRules:
     def __init__(
         self, entity_ids: list[str] | None, tag_rule: list["TagMatchRule"] | None
-    ):
+    ) -> None:
 
-        self._raw_element = {
+        self._raw_element: dict[str, Any] = {
             "entityIds": entity_ids,
             "tagRule": [t._raw_element for t in tag_rule] if tag_rule else None,
         }
 
 
 class TagMatchRule:
-    def __init__(self, me_types: list[str], tags: list[str]):
-        self._raw_element = {
+    def __init__(self, me_types: list[str], tags: list[str]) -> None:
+        self._raw_element: dict[str, Any] = {
             "meTypes": me_types,
             "tags": tags,
         }

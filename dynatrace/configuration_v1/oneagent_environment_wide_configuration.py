@@ -89,7 +89,7 @@ class OneAgentEnvironmentWideConfigService:
 
 
 class EnvironmentAutoUpdateConfig(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.metadata: ConfigurationMetadata = ConfigurationMetadata(
             raw_element=raw_element.get("metadata")
         )
@@ -107,7 +107,7 @@ class EnvironmentAutoUpdateConfig(DynatraceObject):
         }
 
     async def put(self) -> "Response":
-        return await self._http_client.make_request(
+        return await self._make_request(
             path=OneAgentEnvironmentWideConfigService.ENDPOINT,
             method="PUT",
             params=self.to_json(),

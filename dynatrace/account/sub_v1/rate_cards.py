@@ -23,7 +23,7 @@ class RateCardService:
 
 
 class RateCardCapability(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         # Response models.
         self.key: str | None = raw_element.get("key")
         self.name: str | None = raw_element.get("name")
@@ -33,7 +33,7 @@ class RateCardCapability(DynatraceObject):
 
 
 class RateCard(DynatraceObject):
-    def _create_from_raw_data(self, raw_element: dict[str, Any]):
+    def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.quote_number: str | None = raw_element.get("quoteNumber")
         self.start_time: str | None = raw_element.get("startTime")
         self.end_time: str | None = raw_element.get("endTime")

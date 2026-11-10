@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from unittest import mock
 
 from dynatrace import DynatraceAsync
@@ -11,35 +12,37 @@ from dynatrace.http_client import HttpClient
 
 
 class MockResponse:
-    def __init__(self, json_data=None):
+    def __init__(self, json_data: Any = None) -> None:
         self._json_data = json_data
-        self.headers = {}
+        self.headers: dict[str, str] = {}
         self.text = json.dumps(json_data) if json_data is not None else ""
         self.status_code = 200
 
-    def json(self):
+    def json(self) -> Any:
         return self._json_data
 
 
-async def test_env_v1_environments_service_is_exposed(dt: DynatraceAsync):
+async def test_env_v1_environments_service_is_exposed(dt: DynatraceAsync) -> None:
     assert isinstance(dt.account.env_v1, AccountEnvironmentsV1Service)
 
 
-async def test_env_v1_environments_service_returns_expected_models(dt: DynatraceAsync):
+async def test_env_v1_environments_service_returns_expected_models(
+    dt: DynatraceAsync,
+) -> None:
     account_uuid = "account-123"
     environment_uuid = "environment-456"
 
     async def fake_make_request(
-        self,
-        path,
-        params=None,
-        headers=None,
-        method="GET",
-        data=None,
-        files=None,
-        query_params=None,
-        **kwargs,
-    ):
+        self: Any,
+        path: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None,
+        method: str = "GET",
+        data: Any = None,
+        files: Any = None,
+        query_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> MockResponse:
         if (method, path) == ("GET", f"/env/v1/accounts/{account_uuid}/environments"):
             return MockResponse(
                 {
