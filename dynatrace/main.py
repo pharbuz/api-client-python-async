@@ -64,6 +64,7 @@ from dynatrace.environment_v2.credential_vault import CredentialVaultService
 from dynatrace.environment_v2.custom_tags import CustomTagService
 from dynatrace.environment_v2.events import EventServiceV2
 from dynatrace.environment_v2.extensions import ExtensionsServiceV2
+from dynatrace.environment_v2.hub import HubService
 from dynatrace.environment_v2.logs import LogService
 from dynatrace.environment_v2.management_zones import ManagementZoneServiceV2
 from dynatrace.environment_v2.metrics import MetricService
@@ -181,6 +182,7 @@ class DynatraceAsync:
         self.extensions_v2: ExtensionsServiceV2 = ExtensionsServiceV2(
             self.__http_client
         )
+        self.hub: HubService = HubService(self.__http_client)
         self.logs: LogService = LogService(self.__http_client)
         self.metrics: MetricService = MetricService(self.__http_client)
         self.monitoring_state: MonitoringStateService = MonitoringStateService(

@@ -269,6 +269,7 @@ asyncio.run(main())
  Audit Logs                              | :heavy_check_mark: | `dt.audit_logs`                           |
  Events                                  | :heavy_check_mark: | `dt.events_v2`                            |
  Extensions 2.0                          | :heavy_check_mark: | `dt.extensions_v2`                        |
+ Hub                                     | :heavy_check_mark: | `dt.hub`                                  |
  Logs                                    | :heavy_check_mark: | `dt.logs`                                 |
  Metrics                                 | :heavy_check_mark: | `dt.metrics`                              |
  Monitored entities                      | :heavy_check_mark: | `dt.entities`                             |
