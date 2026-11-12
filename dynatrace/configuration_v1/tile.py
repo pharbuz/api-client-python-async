@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 from enum import Enum
-from typing import Any
+from typing import Any, cast
 
 from dynatrace.dynatrace_object import DynatraceObject
 from dynatrace.environment_v2.monitored_entities import EntityShortRepresentation
@@ -108,7 +108,7 @@ class TileFilter(DynatraceObject):
 
 class Tile(DynatraceObject):
     def __new__(
-        cls,
+        cls: type["Tile"],
         http_client: HttpClient | None = None,
         headers: dict[str, str] | None = None,
         raw_element: dict[str, Any] | None = None,
@@ -118,8 +118,8 @@ class Tile(DynatraceObject):
             if isinstance(tile_type, str):
                 tile_class = _TILE_CLASS_BY_TYPE.get(tile_type)
                 if tile_class is not None:
-                    return super().__new__(tile_class)
-        return super().__new__(cls)
+                    return cast(Tile, super().__new__(cast(Any, tile_class)))
+        return cast(Tile, super().__new__(cast(Any, cls)))
 
     def _create_from_raw_data(self, raw_element: dict[str, Any]) -> None:
         self.name: str | None = raw_optional_str(raw_element, "name")
