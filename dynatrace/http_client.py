@@ -141,6 +141,20 @@ class HttpClient:
             return {key: value for key, value in params.items() if value is not None}
         return params
 
+    @classmethod
+    def _merge_query_params(cls, params: Any, query_params: Any) -> Any:
+        """Combine ``params`` and ``query_params`` for requests without a body.
+
+        ``query_params`` wins when both define the same key.
+        """
+        params = cls._sanitize_params(params)
+        query_params = cls._sanitize_params(query_params)
+        if not query_params:
+            return params
+        if not params:
+            return query_params
+        return httpx.QueryParams(params).merge(query_params)
+
     def _build_mounts(self) -> dict[str, httpx.AsyncBaseTransport]:
         mounts: dict[str, httpx.AsyncBaseTransport] = {}
         for scheme in ("http", "https"):
@@ -253,12 +267,16 @@ class HttpClient:
         url = f"{self.base_url}{path}"
 
         body = json
-        request_params = self._sanitize_params(params)
 
         if method in ["POST", "PUT"]:
+            # ``params`` is the request body; only ``query_params`` go into the URL.
             if body is None:
                 body = params
             request_params = self._sanitize_params(query_params)
+        else:
+            # Requests without a ``params`` body (GET, DELETE, PATCH, ...) send both
+            # ``params`` and ``query_params`` as URL query parameters.
+            request_params = self._merge_query_params(params, query_params)
 
         request_headers = self._build_headers(headers=headers, files=files)
         cookies = self._build_cookies()
