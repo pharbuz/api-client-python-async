@@ -123,18 +123,25 @@ class HubService:
         offset: str | None = None,
         next_page_key: str | None = None,
     ) -> ItemList:
-        """Lists Hub items available in the environment."""
-        params = {
-            "pageSize": page_size,
-            "itemType": item_type,
-            "query": query,
-            "installed": installed,
-            "categoryId": category_id,
-            "offset": offset,
-            "nextPageKey": next_page_key,
-        }
+        """Lists Hub items available in the environment.
+
+        When ``next_page_key`` is given, all other filters are ignored: the key
+        already encodes them and the API rejects requests combining both.
+        """
+        params: dict[str, Any]
+        if next_page_key is not None:
+            params = {"nextPageKey": next_page_key}
+        else:
+            params = {
+                "pageSize": page_size,
+                "itemType": item_type,
+                "query": query,
+                "installed": installed,
+                "categoryId": category_id,
+                "offset": offset,
+            }
         response = await self.__http_client.make_request(
-            f"{self.ENDPOINT}/items", query_params=params
+            f"{self.ENDPOINT}/items", params=params
         )
         return ItemList(raw_element=response.json())
 
